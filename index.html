@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huerto Jiennense — Calendario de Siembra</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap');
+
+  :root {
+    --tierra:    #2C1810;
+    --arcilla:   #A0390A;
+    --oliva:     #3D6B1A;
+    --crema:     #F4EFE4;
+    --miel:      #C8900A;
+    --cielo:     #4A9FC8;
+    --blanco:    #FEFCF8;
+    --gris:      #6A6258;
+
+    /* COLORES CALENDARIO — MÁXIMO CONTRASTE ENTRE SÍ */
+    --semillero:  #FF7000;   /* naranja vivo */
+    --trasplante: #0A7A3C;   /* verde bosque oscuro */
+    --directa:    #CC0A0A;   /* rojo puro */
+    --cosecha:    #B8860B;   /* ámbar dorado */
+    --vacio:      #D8D2C8;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Inter',sans-serif;
+    background:var(--crema);
+    color:var(--tierra);
+    min-height:100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background:var(--tierra);
+    padding:15px 18px 11px;
+    position:sticky; top:0; z-index:100;
+    box-shadow:0 2px 12px rgba(0,0,0,0.4);
+  }
+  .header-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .logo { font-family:'Playfair Display',serif; font-size:1.35rem; color:#F5C842; letter-spacing:-0.5px; line-height:1; }
+  .logo span { display:block; font-family:'Inter',sans-serif; font-size:0.58rem; font-weight:300; color:#C0B8A8; letter-spacing:3px; text-transform:uppercase; margin-top:3px; }
+
+  nav { display:flex; gap:4px; margin-top:11px; flex-wrap:wrap; }
+  nav button {
+    background:transparent; border:1px solid rgba(255,255,255,0.22);
+    color:rgba(255,255,255,0.58); padding:6px 12px; border-radius:4px;
+    font-size:0.74rem; cursor:pointer; font-family:'Inter',sans-serif;
+    font-weight:500; transition:all .15s;
+  }
+  nav button.active, nav button:hover {
+    background:#F5C842; border-color:#F5C842;
+    color:var(--tierra); font-weight:700;
+  }
+
+  /* ── VISTAS ── */
+  .vista { display:none; padding:14px 14px; max-width:940px; margin:0 auto; }
+  .vista.activa { display:block; }
+
+  /* ── LEYENDA ── */
+  .leyenda { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; font-size:0.75rem; font-weight:700; }
+  .leyenda-item { display:flex; align-items:center; gap:7px; }
+  .dot { width:16px; height:16px; border-radius:3px; flex-shrink:0; }
+
+  /* ── FILTROS ── */
+  .filtros { display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap; }
+  .filtro-btn {
+    padding:5px 11px; border-radius:20px; border:2px solid #B8B0A0;
+    background:white; font-size:0.73rem; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .filtro-btn.on { color:white; border-color:transparent; }
+  .filtro-btn[data-cat="hortalizas"].on { background:#0A7A3C; }
+  .filtro-btn[data-cat="legumbres"].on  { background:#CC0A0A; }
+  .filtro-btn[data-cat="hierbas"].on    { background:#447A10; }
+  .filtro-btn[data-cat="frutales"].on   { background:#FF7000; }
+  .filtro-btn[data-cat="flores"].on     { background:#7A18B8; }
+  .filtro-btn[data-cat="all"].on        { background:var(--tierra); }
+
+  /* ── GRID CALENDARIO ── */
+  .cal-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .cal-inner   { min-width:700px; }
+
+  .cal-header-row {
+    display:grid;
+    grid-template-columns:128px repeat(12,1fr);
+    gap:3px; margin-bottom:3px;
+  }
+  .mes-label {
+    font-size:0.6rem; font-weight:800; text-align:center;
+    color:#999; text-transform:uppercase; letter-spacing:0.5px; padding:3px 1px;
+  }
+  .mes-label.actual {
+    color:#fff; background:var(--oliva); border-radius:4px;
+  }
+
+  .cultivo-row {
+    display:grid;
+    grid-template-columns:128px repeat(12,1fr);
+    gap:3px; margin-bottom:3px;
+  }
+  .cultivo-nombre {
+    font-size:0.74rem; font-weight:600; padding:5px 7px;
+    background:white; border-radius:4px;
+    display:flex; align-items:center; gap:5px;
+    cursor:pointer; transition:all .15s;
+    border-left:4px solid var(--oliva);
+    white-space:nowrap; overflow:hidden;
+  }
+  .cultivo-nombre:hover { background:var(--tierra); color:white; border-left-color:#F5C842; }
+  .cultivo-emoji { font-size:0.93rem; flex-shrink:0; }
+
+  /* CELDAS — colores sólidos sin iconos de luna */
+  .cal-cell {
+    height:26px; border-radius:3px;
+    background:var(--vacio);
+    /* SIN ::after ni iconos lunares */
+  }
+  .cal-cell.semillero  { background:var(--semillero); }
+  .cal-cell.trasplante { background:var(--trasplante); }
+  .cal-cell.directa    { background:var(--directa); }
+  .cal-cell.cosecha    { background:var(--cosecha); }
+
+  /* Columna del mes actual: borde sólido resaltado */
+  .cal-cell.col-actual {
+    outline:2px solid #2C6E10;
+    outline-offset:-2px;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.65); z-index:200;
+    justify-content:center; align-items:flex-end; padding:14px;
+  }
+  .modal-overlay.abierto { display:flex; }
+  .modal {
+    background:var(--blanco); border-radius:16px;
+    max-width:560px; width:100%; max-height:88vh;
+    overflow-y:auto; padding:20px;
+  }
+  .modal-titulo {
+    font-family:'Playfair Display',serif; font-size:1.4rem;
+    margin-bottom:4px; display:flex; align-items:center; gap:9px;
+  }
+  .modal-close {
+    background:var(--tierra); color:white; border:none;
+    border-radius:50%; width:28px; height:28px;
+    cursor:pointer; font-size:0.88rem; margin-left:auto; flex-shrink:0;
+  }
+  .modal-tags { display:flex; gap:6px; margin:10px 0 13px; flex-wrap:wrap; }
+  .tag {
+    padding:4px 10px; border-radius:12px;
+    font-size:0.69rem; font-weight:800;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .tag-semillero  { background:var(--semillero); color:white; }
+  .tag-trasplante { background:var(--trasplante); color:white; }
+  .tag-directa    { background:var(--directa);    color:white; }
+  .tag-cosecha    { background:var(--cosecha);    color:white; }
+
+  .modal-seccion { margin-bottom:13px; }
+  .modal-seccion h4 {
+    font-size:0.67rem; text-transform:uppercase; letter-spacing:1px;
+    color:var(--gris); font-weight:800; margin-bottom:5px;
+    border-bottom:1px solid #E0D8CC; padding-bottom:3px;
+  }
+  .modal-seccion p { font-size:0.83rem; line-height:1.55; }
+
+  .consejo-lista { list-style:none; display:flex; flex-direction:column; gap:5px; }
+  .consejo-lista li {
+    font-size:0.8rem; padding:7px 10px;
+    background:var(--crema); border-radius:6px;
+    border-left:3px solid var(--oliva); line-height:1.4;
+  }
+  .consejo-lista li::before { content:'→ '; color:var(--oliva); font-weight:800; }
+
+  .datos-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .dato-box { background:var(--crema); border-radius:8px; padding:10px; text-align:center; }
+  .dato-box .valor { font-family:'Courier Prime',monospace; font-size:1.03rem; font-weight:700; color:var(--oliva); }
+  .dato-box .etiq  { font-size:0.64rem; color:var(--gris); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  /* ── LUNA ── */
+  .luna-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+    gap:10px; margin-bottom:20px;
+  }
+  .luna-card { border-radius:10px; padding:14px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
+  .luna-card .fase-emoji  { font-size:2.1rem; margin-bottom:5px; }
+  .luna-card .fase-nombre { font-family:'Playfair Display',serif; font-size:0.88rem; font-weight:700; margin-bottom:4px; }
+  .luna-card .fase-desc   { font-size:0.69rem; line-height:1.4; }
+
+  /* CALENDARIO LUNAR MENSUAL — días individuales */
+  .luna-mes-nav {
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:13px; flex-wrap:wrap;
+  }
+  .luna-mes-nav h3 { font-family:'Playfair Display',serif; font-size:1.18rem; flex:1; }
+  .luna-mes-nav button {
+    background:var(--tierra); color:white; border:none;
+    width:33px; height:33px; border-radius:50%;
+    font-size:0.95rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .luna-dias-grid {
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:4px; margin-bottom:18px;
+  }
+  .luna-dia-hdr {
+    text-align:center; font-size:0.6rem; font-weight:800;
+    color:var(--gris); text-transform:uppercase; padding-bottom:3px;
+  }
+  .luna-dia-cell {
+    border-radius:7px; padding:5px 2px 4px;
+    text-align:center; min-height:50px;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:2px;
+    background:white; box-shadow:0 1px 3px rgba(0,0,0,0.07);
+  }
+  .luna-dia-cell.vacio { background:transparent; box-shadow:none; }
+
+  /* Fases exactas — colores vivos y distintos */
+  .luna-dia-cell.fase-nueva     { background:#111122; color:#AAAACC; }
+  .luna-dia-cell.fase-creciente { background:#1060A8; color:white; }
+  .luna-dia-cell.fase-llena     { background:#D4B800; color:#2C1810; }
+  .luna-dia-cell.fase-menguante { background:#7020A8; color:white; }
+
+  /* Días de transición — más suaves */
+  .luna-dia-cell.entre-nueva-creciente { background:#1E2244; color:#AABBDD; }
+  .luna-dia-cell.entre-creciente-llena { background:#4898D8; color:white; }
+  .luna-dia-cell.entre-llena-menguante { background:#E8D860; color:#2C1810; }
+  .luna-dia-cell.entre-menguante-nueva { background:#4A1880; color:#CCC; }
+
+  .luna-dia-cell.hoy-dia { outline:3px solid #3D9A1A; outline-offset:1px; }
+
+  .luna-dia-cell .ld-emoji { font-size:1.05rem; line-height:1; }
+  .luna-dia-cell .ld-num   { font-size:0.82rem; font-weight:800; line-height:1; }
+  .luna-dia-cell .ld-txt   { font-size:0.5rem; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; line-height:1.2; }
+
+  /* ── CONSEJOS ── */
+  .consejos-lista { display:flex; flex-direction:column; gap:9px; }
+  .consejo-card {
+    background:white; border-radius:10px; padding:13px;
+    border-left:4px solid var(--oliva);
+    box-shadow:0 1px 5px rgba(0,0,0,0.06);
+  }
+  .consejo-card.urgente { border-color:#CC0A0A; }
+  .consejo-card.luna    { border-color:#C4A800; }
+  .consejo-mes   { font-size:0.61rem; text-transform:uppercase; letter-spacing:1px; color:var(--gris); font-weight:800; margin-bottom:3px; }
+  .consejo-titulo { font-family:'Playfair Display',serif; font-size:0.96rem; margin-bottom:4px; }
+  .consejo-texto  { font-size:0.8rem; color:#524840; line-height:1.5; }
+
+  .seccion-titulo {
+    font-family:'Playfair Display',serif; font-size:1.18rem;
+    color:var(--tierra); margin-bottom:11px;
+    padding-bottom:6px; border-bottom:2px solid #F5C842;
+  }
+
+  /* ── PLAGAS ── */
+  .buscador {
+    width:100%; padding:9px 12px;
+    border:2px solid #C0B8A8; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:0.83rem;
+    background:white; color:var(--tierra); margin-bottom:11px;
+  }
+  .plaga-card {
+    background:white; border-radius:10px; padding:13px;
+    margin-bottom:9px; border-top:3px solid var(--arcilla);
+    box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  }
+  .plaga-titulo { font-weight:800; font-size:0.87rem; margin-bottom:3px; }
+  .plaga-texto  { font-size:0.78rem; color:#524840; line-height:1.45; }
+  .plaga-rem    { font-size:0.76rem; margin-top:5px; font-weight:700; color:var(--oliva); }
+
+  /* ── INFO BANNER ── */
+  .info-banner {
+    background:var(--oliva); color:white; border-radius:10px;
+    padding:10px 13px; font-size:0.8rem; margin-bottom:13px;
+    display:flex; align-items:center; gap:9px; line-height:1.4;
+  }
+  .info-banner .icon { font-size:1.15rem; flex-shrink:0; }
+
+  /* ── RIEGO ── */
+  .tabla-riego-wrap { overflow-x:auto; }
+
+  /* ── BOTÓN DESCARGA ── */
+  .btn-descarga {
+    position:fixed; bottom:16px; right:16px;
+    background:var(--oliva); color:white; border:none;
+    border-radius:50%; width:50px; height:50px;
+    font-size:1.25rem; cursor:pointer;
+    box-shadow:0 4px 16px rgba(0,0,0,0.3); z-index:150;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .2s, background .2s;
+  }
+  .btn-descarga:hover { transform:scale(1.1); background:var(--arcilla); }
+
+  @media (max-width:600px) {
+    .logo { font-size:1.08rem; }
+    nav button { font-size:0.67rem; padding:5px 8px; }
+  }
+  @media print {
+    header { position:static; }
+    .btn-descarga, nav { display:none; }
+    .vista { display:block !important; }
+    .modal-overlay { display:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      Huerto Jiennense
+      <span>Provincia de Jaén · Calendario de Siembra</span>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="mostrarVista('calendario',this)">📅 Calendario</button>
+    <button onclick="mostrarVista('luna',this)">🌙 Luna</button>
+    <button onclick="mostrarVista('consejos',this)">💡 Consejos</button>
+    <button onclick="mostrarVista('plagas',this)">🐛 Plagas</button>
+    <button onclick="mostrarVista('riego',this)">💧 Riego</button>
+  </nav>
+</header>
+
+<!-- ══════════════ CALENDARIO ══════════════ -->
+<div class="vista activa" id="vista-calendario">
+  <div style="padding:13px 0 0">
+    <div class="info-banner">
+      <span class="icon">📍</span>
+      <span>Adaptado al <strong>clima mediterráneo continental de Jaén</strong> — veranos secos y calurosos, inviernos fríos. Altitud media 575 m. Pulsa el nombre del cultivo para ver su ficha completa.</span>
+    </div>
+
+    <div class="filtros">
+      <button class="filtro-btn on" data-cat="all"       onclick="filtrar('all',this)">Todos</button>
+      <button class="filtro-btn"   data-cat="hortalizas" onclick="filtrar('hortalizas',this)">🥬 Hortalizas</button>
+      <button class="filtro-btn"   data-cat="legumbres"  onclick="filtrar('legumbres',this)">🫘 Legumbres</button>
+      <button class="filtro-btn"   data-cat="hierbas"    onclick="filtrar('hierbas',this)">🌿 Aromáticas</button>
+      <button class="filtro-btn"   data-cat="frutales"   onclick="filtrar('frutales',this)">🍅 Solanáceas</button>
+      <button class="filtro-btn"   data-cat="flores"     onclick="filtrar('flores',this)">🌻 Flores/abono</button>
+    </div>
+
+    <div class="leyenda">
+      <div class="leyenda-item"><div class="dot" style="background:var(--semillero)"></div>Semillero</div>
+      <div class="leyenda-item"><div class="dot" style="background:var(--trasplante)"></div>Trasplante</div>
+      <div class="leyenda-item"><div class="dot" style="background:var(--directa)"></div>Siembra directa</div>
+      <div class="leyenda-item"><div class="dot" style="background:var(--cosecha)"></div>Cosecha</div>
+    </div>
+
+    <div class="cal-wrapper">
+      <div class="cal-inner">
+        <div class="cal-header-row" id="cal-header"></div>
+        <div id="cal-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LUNA ══════════════ -->
+<div class="vista" id="vista-luna">
+  <h2 class="seccion-titulo">🌙 Calendario Lunar del Huerto</h2>
+
+  <p style="font-size:0.82rem;color:var(--gris);margin-bottom:13px;line-height:1.5;">
+    La tradición agrícola jiennense lleva siglos sembrando con la luna. Aquí tienes el calendario día a día con la fase correspondiente y qué hacer en cada una.
+  </p>
+
+  <div class="luna-grid">
+    <div class="luna-card" style="background:#111122;color:#AAAACC;">
+      <div class="fase-emoji">🌑</div>
+      <div class="fase-nombre" style="color:#DDD;">Luna Nueva</div>
+      <div class="fase-desc">Reposo. Labrar, podar fuerte, aplicar herbicidas. No sembrar.</div>
+    </div>
+    <div class="luna-card" style="background:#1060A8;color:white;">
+      <div class="fase-emoji">🌒</div>
+      <div class="fase-nombre" style="color:white;">Cuarto Creciente</div>
+      <div class="fase-desc" style="color:#DDE8FF;">Plantas de hoja: lechuga, espinaca, acelga, col, aromáticas.</div>
+    </div>
+    <div class="luna-card" style="background:#D4B800;color:#2C1810;">
+      <div class="fase-emoji">🌕</div>
+      <div class="fase-nombre">Luna Llena</div>
+      <div class="fase-desc">Frutos y semillas: tomate, pimiento, judía, pepino, maíz.</div>
+    </div>
+    <div class="luna-card" style="background:#7020A8;color:white;">
+      <div class="fase-emoji">🌘</div>
+      <div class="fase-nombre" style="color:white;">Cuarto Menguante</div>
+      <div class="fase-desc" style="color:#DDD8FF;">Raíces y bulbos: ajo, cebolla, zanahoria, remolacha, patata.</div>
+    </div>
+  </div>
+
+  <div class="luna-mes-nav">
+    <button onclick="cambiarMesLuna(-1)">◀</button>
+    <h3 id="luna-mes-titulo">—</h3>
+    <button onclick="cambiarMesLuna(1)">▶</button>
+  </div>
+
+  <div class="luna-dias-grid" id="luna-dias-grid"></div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:0.71rem;font-weight:700;margin-top:-10px;margin-bottom:16px;">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#111122;border-radius:3px;display:inline-block"></span>Luna Nueva</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#1060A8;border-radius:3px;display:inline-block"></span>Creciente — Hojas</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#D4B800;border-radius:3px;display:inline-block"></span>Llena — Frutos</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#7020A8;border-radius:3px;display:inline-block"></span>Menguante — Raíces</span>
+  </div>
+
+  <h3 class="seccion-titulo">Qué sembrar según la fase</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+    <div class="consejo-card luna">
+      <div class="consejo-mes">🌒 Cuarto Creciente</div>
+      <div class="consejo-titulo">Plantas de hoja y flor</div>
+      <div class="consejo-texto">Lechuga, espinaca, acelga, col, coliflor, brócoli, albahaca, perejil, cilantro, rúcula, endivia.</div>
+    </div>
+    <div class="consejo-card luna">
+      <div class="consejo-mes">🌕 Luna Llena</div>
+      <div class="consejo-titulo">Frutos y semillas</div>
+      <div class="consejo-texto">Tomate, pimiento, berenjena, pepino, calabacín, calabaza, judía, guisante, habas, maíz.</div>
+    </div>
+    <div class="consejo-card luna">
+      <div class="consejo-mes">🌘 Cuarto Menguante</div>
+      <div class="consejo-titulo">Raíces y bulbos</div>
+      <div class="consejo-texto">Zanahoria, remolacha, nabo, rábano, patata, boniato, ajo, cebolla, puerro, apio-nabo.</div>
+    </div>
+    <div class="consejo-card" style="border-color:#AAA;">
+      <div class="consejo-mes">🌑 Luna Nueva</div>
+      <div class="consejo-titulo">Descanso del huerto</div>
+      <div class="consejo-texto">Laboreo profundo, poda, herbicidas ecológicos, solarización, reparación de estructuras.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CONSEJOS ══════════════ -->
+<div class="vista" id="vista-consejos">
+  <h2 class="seccion-titulo">💡 Consejos por Mes — Jaén</h2>
+  <div class="consejos-lista" id="lista-consejos"></div>
+</div>
+
+<!-- ══════════════ PLAGAS ══════════════ -->
+<div class="vista" id="vista-plagas">
+  <h2 class="seccion-titulo">🐛 Plagas y Enfermedades Frecuentes</h2>
+  <input type="text" class="buscador" placeholder="Buscar plaga o cultivo afectado..." oninput="buscarPlaga(this.value)">
+  <div id="lista-plagas"></div>
+</div>
+
+<!-- ══════════════ RIEGO ══════════════ -->
+<div class="vista" id="vista-riego">
+  <h2 class="seccion-titulo">💧 Guía de Riego para Jaén</h2>
+  <div class="info-banner" style="background:var(--cielo);">
+    <span class="icon">☀️</span>
+    <span>Jaén tiene veranos extremos (+40 °C). El riego es crítico de <strong>junio a septiembre</strong>. Riega siempre al atardecer o al amanecer.</span>
+  </div>
+  <h3 class="seccion-titulo">Frecuencia de riego por época</h3>
+  <div class="tabla-riego-wrap" id="tabla-riego"></div>
+  <h3 class="seccion-titulo" style="margin-top:17px;">Técnicas recomendadas</h3>
+  <div class="consejos-lista" id="tecnicas-riego"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal" id="modal-contenido"></div>
+</div>
+
+<button class="btn-descarga" title="Guardar página" onclick="descargar()">💾</button>
+
+<script>
+// ══════ CONSTANTES ══════
+const HOY        = new Date();
+const MES_ACTUAL = HOY.getMonth();  // 0-11
+const DIA_HOY    = HOY.getDate();
+
+const MESES_NOMBRE = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_LARGO  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// Array de 12 meses empezando SIEMPRE por el mes actual
+function mesesOrdenados(){
+  return Array.from({length:12},(_,i)=>(MES_ACTUAL+i)%12);
+}
+
+// ══════ CULTIVOS ══════
+const CULTIVOS = [
+  { nombre:'Tomate',emoji:'🍅',cat:'frutales',
+    semillero:[1,2,3],trasplante:[3,4,5],directa:[],cosecha:[6,7,8,9],
+    profundidad:'0.5 cm',marco:'50×80 cm',temp:'15–25 °C',dias_germinar:'7–14 días',
+    consejos:['Pellizcado a dos brazos para mayor producción','Riego por goteo a pie de planta, nunca mojar hojas','Tutora con caña o hilo al alcanzar 30 cm','En Jaén protege del sol directo en agosto con malla sombra 30%','Asocia con albahaca para repeler mosca blanca'],
+    descripcion:'El tomate es rey en el huerto jiennense. Las variedades locales como el Tomate de la Pera aguantan bien el calor extremo.' },
+  { nombre:'Pimiento',emoji:'🫑',cat:'frutales',
+    semillero:[1,2,3],trasplante:[4,5],directa:[],cosecha:[7,8,9,10],
+    profundidad:'0.5 cm',marco:'40×60 cm',temp:'18–28 °C',dias_germinar:'10–20 días',
+    consejos:['Suelos bien drenados y abonados con compost','No regar en exceso: tolera sequía mejor que el tomate','Recolecta en verde para más producción, o deja madurar al rojo','Asocia con zanahoria para mejorar el sabor'],
+    descripcion:'Pimiento del piquillo, morrón y padrón se dan bien en Jaén. Resistente al calor pero sensible a encharcamientos.' },
+  { nombre:'Berenjena',emoji:'🍆',cat:'frutales',
+    semillero:[2,3],trasplante:[4,5],directa:[],cosecha:[7,8,9],
+    profundidad:'0.5 cm',marco:'50×70 cm',temp:'20–30 °C',dias_germinar:'10–15 días',
+    consejos:['No trasplantar si hay riesgo de helada','Riego regular y abundante en verano','Poda de fructificación: deja 4–5 ramas principales','Recolecta antes de que la piel pierda brillo'],
+    descripcion:'Muy adecuada para el clima de Jaén. Se cultiva bien en las comarcas más cálidas como la campiña.' },
+  { nombre:'Pepino',emoji:'🥒',cat:'hortalizas',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[6,7,8,9],
+    profundidad:'1 cm',marco:'40×100 cm',temp:'18–28 °C',dias_germinar:'5–10 días',
+    consejos:['Necesita soporte para crecer en vertical','Riego frecuente: suelo húmedo constante','Recolecta antes de que amarillee','Protege de araña roja con pulverizaciones de agua'],
+    descripcion:'Cultivo de verano muy agradecido. Crece con vigor en el calor jiennense con riego suficiente.' },
+  { nombre:'Calabacín',emoji:'🥬',cat:'hortalizas',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[6,7,8,9,10],
+    profundidad:'2 cm',marco:'80×80 cm',temp:'15–25 °C',dias_germinar:'5–8 días',
+    consejos:['Con 2–3 plantas basta para una familia','Corta pequeño para más producción','Abona bien en primavera con compost maduro','Ojo al oídio en verano: buena ventilación entre plantas'],
+    descripcion:'Uno de los cultivos más fáciles y productivos para el huerto jiennense. Da frutos durante meses.' },
+  { nombre:'Calabaza',emoji:'🎃',cat:'hortalizas',
+    semillero:[3,4],trasplante:[5],directa:[4,5],cosecha:[9,10],
+    profundidad:'2 cm',marco:'1.5×2 m',temp:'15–28 °C',dias_germinar:'7–14 días',
+    consejos:['Necesita mucho espacio: planifica bien','Riego en la base, nunca mojar hojas','Deja 2–3 frutos por planta para calidad','Cura bien antes de guardar (2 semanas al sol)'],
+    descripcion:'Perfecta para el huerto jiennense. Las variedades de invierno se guardan meses y son muy productivas.' },
+  { nombre:'Lechuga',emoji:'🥬',cat:'hortalizas',
+    semillero:[1,2,8,9],trasplante:[2,3,9,10],directa:[2,3,9,10],cosecha:[4,5,6,11,12],
+    profundidad:'0.3 cm',marco:'25×30 cm',temp:'10–18 °C',dias_germinar:'5–10 días',
+    consejos:['Evita sembrar en verano: bolte con calor','Siembra escalonada cada 15 días para cosecha continua','Protege de babosas en otoño','En Jaén va bien en medias sombras en primavera tardía'],
+    descripcion:'Cultivo de temporada fría. En Jaén va de septiembre a mayo antes de que el calor la haga espigar.' },
+  { nombre:'Espinaca',emoji:'🌿',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,9,10,11],cosecha:[4,5,11,12,1],
+    profundidad:'2 cm',marco:'20×25 cm',temp:'5–18 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra directa a chorrillo y aclara a 20 cm','Abona con nitrógeno (compost o estiércol)','Riega con frecuencia: suelo húmedo','Soporta heladas ligeras sin problema'],
+    descripcion:'Ideal para el huerto de invierno jiennense. Tolerante al frío y poco exigente.' },
+  { nombre:'Acelga',emoji:'🥬',cat:'hortalizas',
+    semillero:[1,2,8,9],trasplante:[3,10],directa:[2,3,8,9,10],cosecha:[4,5,6,11,12,1],
+    profundidad:'2 cm',marco:'30×40 cm',temp:'8–25 °C',dias_germinar:'7–14 días',
+    consejos:['Muy resistente al frío y al calor moderado','Cosecha hoja a hoja, nunca toda la planta','Abona con nitrógeno en primavera','Dura hasta 2 años si se cuida bien'],
+    descripcion:'Una de las hortalizas más agradecidas del huerto jiennense. Tolerante a casi todo.' },
+  { nombre:'Zanahoria',emoji:'🥕',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,4,8,9],cosecha:[5,6,7,11,12],
+    profundidad:'0.5 cm',marco:'5×20 cm',temp:'10–20 °C',dias_germinar:'14–21 días',
+    consejos:['Suelo profundo, suelto y sin piedras para raíces rectas','Mezcla semilla con arena fina para siembra uniforme','No trasplantar: siembra directa siempre','En Jaén, siembra de otoño para cosecha invernal es la mejor'],
+    descripcion:'Requiere suelos sueltos y profundos. Los suelos arcillosos de Jaén deben trabajarse bien previamente.' },
+  { nombre:'Remolacha',emoji:'🟣',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,4,8,9],cosecha:[5,6,10,11],
+    profundidad:'2 cm',marco:'10×25 cm',temp:'10–20 °C',dias_germinar:'10–20 días',
+    consejos:['El "grano" contiene 2–3 semillas: aclara bien','Hoja joven también comestible en ensaladas','Tolera heladas ligeras','Riego moderado'],
+    descripcion:'Cultivo fácil y nutritivo. Admite tanto siembra de primavera como de otoño.' },
+  { nombre:'Cebolla',emoji:'🧅',cat:'hortalizas',
+    semillero:[10,11,1],trasplante:[1,2,3],directa:[10,11],cosecha:[6,7],
+    profundidad:'1 cm',marco:'10×30 cm',temp:'10–25 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra de otoño para cebollas grandes de verano','Cuando las hojas caen y se secan, ya está lista','Cura al sol 2–3 semanas antes de guardar','No riegues en los últimos 15 días antes de cosechar'],
+    descripcion:'Cultivo fundamental en Jaén. La cebolla de Fuentes de Cesna es famosa en toda la provincia.' },
+  { nombre:'Ajo',emoji:'🧄',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[10,11],cosecha:[6,7],
+    profundidad:'5 cm',marco:'10×30 cm',temp:'5–20 °C',dias_germinar:'10–20 días',
+    consejos:['Planta dientes grandes, verticales y puntiagudos hacia arriba','Siembra en luna menguante para mejor resultado','Corta el escapo floral para que engorde el bulbo','Trenza para guardar en lugar fresco y seco'],
+    descripcion:'El ajo morado se adapta muy bien al clima de Jaén. Riqueza aromática excepcional.' },
+  { nombre:'Puerro',emoji:'🌱',cat:'hortalizas',
+    semillero:[1,2,8,9],trasplante:[3,4,10],directa:[],cosecha:[10,11,12,1,2],
+    profundidad:'0.5 cm',marco:'10×30 cm',temp:'8–20 °C',dias_germinar:'14–21 días',
+    consejos:['Trasplanta cuando tengan el grosor de un lápiz','Aporca progresivamente para blanquear el tallo','Aguanta heladas fuertes','Riego regular pero sin encharcamiento'],
+    descripcion:'Cultivo de larga duración ideal para el huerto de otoño-invierno jiennense.' },
+  { nombre:'Col / Repollo',emoji:'🥦',cat:'hortalizas',
+    semillero:[1,2,7,8],trasplante:[3,4,9,10],directa:[],cosecha:[5,6,11,12],
+    profundidad:'0.5 cm',marco:'50×50 cm',temp:'10–20 °C',dias_germinar:'7–14 días',
+    consejos:['Abona generosamente con nitrógeno','Vigila la oruga de la col (Pieris)','Red antiinsectos en verano','Cosecha antes de que agriete en calor'],
+    descripcion:'La col es muy productiva en el huerto de invierno jiennense. Prefiere los meses frescos.' },
+  { nombre:'Brócoli',emoji:'🥦',cat:'hortalizas',
+    semillero:[7,8],trasplante:[9,10],directa:[],cosecha:[11,12,1,2],
+    profundidad:'0.5 cm',marco:'50×50 cm',temp:'10–18 °C',dias_germinar:'7–14 días',
+    consejos:['Cosecha la pella central antes de que abra en flor','Deja las laterales para segunda cosecha','Vigila pulgón verde','En Jaén el brócoli de otoño es espectacular'],
+    descripcion:'Cultivo de temporada fría excelente para Jaén. Las pellas de otoño son de gran calidad.' },
+  { nombre:'Coliflor',emoji:'🥦',cat:'hortalizas',
+    semillero:[7,8],trasplante:[9,10],directa:[],cosecha:[12,1,2],
+    profundidad:'0.5 cm',marco:'50×60 cm',temp:'10–16 °C',dias_germinar:'7–14 días',
+    consejos:['Tapa la pella con hojas para blanquearla','Riego muy regular','Abona con potasio para pellas compactas','Cosecha antes de que la pella se abra'],
+    descripcion:'Más exigente que el brócoli. El invierno suave de las campiñas jiennenses le va bien.' },
+  { nombre:'Nabo',emoji:'⚪',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[8,9,10,2,3],cosecha:[10,11,12,4,5],
+    profundidad:'1 cm',marco:'15×25 cm',temp:'8–18 °C',dias_germinar:'5–10 días',
+    consejos:['Siembra directa a chorrillo','Cosecha antes de que endurezca','Las hojas también son comestibles (grelo)','Tolera heladas'],
+    descripcion:'Cultivo rápido y nutritivo para el huerto de otoño-invierno.' },
+  { nombre:'Rábano',emoji:'🔴',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,4,9,10],cosecha:[3,4,5,10,11],
+    profundidad:'1 cm',marco:'5×15 cm',temp:'8–18 °C',dias_germinar:'4–7 días',
+    consejos:['Cultivo ultrarápido: 25–30 días','Siembra entre otros cultivos como señalizador','No dejes pasar el punto de madurez','Riega regularmente para que no pique'],
+    descripcion:'El cultivo más rápido del huerto. Perfecto para aprovechar huecos entre plantas.' },
+  { nombre:'Judía verde',emoji:'🫛',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[4,5,6,7],cosecha:[6,7,8,9,10],
+    profundidad:'3 cm',marco:'20×60 cm',temp:'15–28 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra directa siempre: no tolera trasplante','Riego regular en floración','Cosecha cada 2–3 días para más producción','Asocia con maíz y calabaza (Las Tres Hermanas)'],
+    descripcion:'La judía verde es protagonista del huerto jiennense de verano. Alta productividad con cuidados básicos.' },
+  { nombre:'Habas',emoji:'🫘',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[10,11,2,3],cosecha:[4,5,6],
+    profundidad:'5 cm',marco:'20×60 cm',temp:'5–18 °C',dias_germinar:'10–20 días',
+    consejos:['Las mejores son las de siembra de otoño en Jaén','Desbrota los pulgones en los ápices con las manos','Riega poco: aguantan sequía','Cosecha en tierno para comer frescas'],
+    descripcion:'El haba de Jaén es legendaria. La siembra de otoño produce las mejores cosechas en mayo-junio.' },
+  { nombre:'Guisante',emoji:'💚',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[10,11,2,3],cosecha:[4,5],
+    profundidad:'3 cm',marco:'10×50 cm',temp:'8–18 °C',dias_germinar:'7–14 días',
+    consejos:['Necesita tutor o red para trepar','En Jaén, siembra de octubre para cosecha en abril','El calor de mayo los hace madurar rápido: cosecha a tiempo'],
+    descripcion:'Cultivo de invierno-primavera. El guisante jiennense de siembra otoñal es de sabor excepcional.' },
+  { nombre:'Garbanzo',emoji:'🫘',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[2,3,4],cosecha:[7,8],
+    profundidad:'5 cm',marco:'20×50 cm',temp:'15–30 °C',dias_germinar:'10–15 días',
+    consejos:['Suelo bien drenado, seco','No riegues en exceso: planta de secano','Cosecha cuando la mata se seca completamente','El garbanzo pedrosillano de Jaén es muy conocido'],
+    descripcion:'El garbanzo es cultivo tradicional en Jaén. Se da muy bien en las condiciones de sequía veraniegas.' },
+  { nombre:'Lenteja',emoji:'🟤',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[2,3],cosecha:[6,7],
+    profundidad:'3 cm',marco:'10×30 cm',temp:'10–25 °C',dias_germinar:'7–14 días',
+    consejos:['Cultivo de secano: riega muy poco','Cosecha cuando el 80% de vainas están marrones','Resiste heladas ligeras en plántula'],
+    descripcion:'Legumbre de secano muy adaptada al clima de Jaén. Poca atención necesaria.' },
+  { nombre:'Patata',emoji:'🥔',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[2,3,4,10,11],cosecha:[6,7,11,12],
+    profundidad:'10 cm',marco:'30×60 cm',temp:'10–20 °C',dias_germinar:'15–25 días',
+    consejos:['Usa patata de siembra certificada','Aporca cuando alcance 20 cm de altura','Riego regular y constante','La patata nueva de Jaén de mayo es excepcional'],
+    descripcion:'La patata se cultiva muy bien en las zonas altas de Jaén (Sierra Mágina, Segura). Dos cosechas posibles.' },
+  { nombre:'Maíz',emoji:'🌽',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[4,5],cosecha:[8,9],
+    profundidad:'3 cm',marco:'30×70 cm',temp:'15–30 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra en bloques de 4+ filas para buena polinización','Riego abundante en floración y grano','Asocia con judía y calabaza (Las Tres Hermanas)'],
+    descripcion:'El calor jiennense es ideal para el maíz. Cultivo de verano muy productivo.' },
+  { nombre:'Albahaca',emoji:'🌿',cat:'hierbas',
+    semillero:[3,4],trasplante:[5,6],directa:[5,6],cosecha:[6,7,8,9],
+    profundidad:'0.3 cm',marco:'20×30 cm',temp:'18–28 °C',dias_germinar:'5–10 días',
+    consejos:['No soporta el frío ni el exceso de agua','Pellizca las flores para prolongar la producción','Asocia con tomate: se protegen mutuamente','En Jaén funciona muy bien en macetas a resguardo'],
+    descripcion:'La albahaca ama el calor jiennense. En verano crece con vigor impresionante.' },
+  { nombre:'Perejil',emoji:'🌿',cat:'hierbas',
+    semillero:[2,3,9,10],trasplante:[],directa:[2,3,9,10],cosecha:[4,5,6,10,11,12],
+    profundidad:'0.5 cm',marco:'15×20 cm',temp:'10–22 °C',dias_germinar:'14–28 días',
+    consejos:['Germina lento: ten paciencia','Remoja semillas 24h antes de sembrar','Cosecha hoja a hoja del exterior','Bienal: siembra cada año'],
+    descripcion:'Imprescindible en el huerto jiennense. Aguanta fríos moderados y se puede cultivar todo el año.' },
+  { nombre:'Romero',emoji:'🌿',cat:'hierbas',
+    semillero:[],trasplante:[3,4,9,10],directa:[],cosecha:[1,2,3,4,5,6,7,8,9,10,11,12],
+    profundidad:'—',marco:'50×50 cm',temp:'5–30 °C',dias_germinar:'21–30 días',
+    consejos:['Planta perenne: estará años en el huerto','Poca agua: muy resistente a sequía','Poda tras la floración','Se multiplica fácil por esquejes'],
+    descripcion:'El romero es la planta aromática por excelencia de Jaén. Crece silvestre en toda la sierra.' },
+  { nombre:'Menta/Hierbabuena',emoji:'🌿',cat:'hierbas',
+    semillero:[],trasplante:[3,4,5,9,10],directa:[],cosecha:[1,2,3,4,5,6,7,8,9,10,11,12],
+    profundidad:'—',marco:'30×30 cm',temp:'8–25 °C',dias_germinar:'—',
+    consejos:['Invasiva: planta en maceta o con barrera','Necesita más humedad que otras aromáticas','Se reproduce por rizoma','La menta de monte de Jaén es aromática excepcional'],
+    descripcion:'Muy fácil de cultivar. Úsala en tiesto si no quieres que invada el huerto.' },
+  { nombre:'Cilantro',emoji:'🌿',cat:'hierbas',
+    semillero:[],trasplante:[],directa:[3,4,8,9],cosecha:[5,6,10,11],
+    profundidad:'1 cm',marco:'10×20 cm',temp:'10–25 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra directa: no tolera trasplante','Evita el calor extremo: bolte rápido','Siembra escalonada cada 2–3 semanas','En Jaén va mejor en otoño que en primavera'],
+    descripcion:'Se adapta bien a Jaén en siembras de primavera temprana y otoño.' },
+  { nombre:'Caléndula',emoji:'🌼',cat:'flores',
+    semillero:[2,3,8,9],trasplante:[3,4,10],directa:[3,4,9,10],cosecha:[4,5,6,10,11],
+    profundidad:'0.5 cm',marco:'20×25 cm',temp:'10–22 °C',dias_germinar:'7–14 días',
+    consejos:['Repele pulgones y nemátodos: planta en bordes del huerto','Flor comestible y medicinal','Se resiembra sola año tras año','En Jaén florece desde otoño hasta junio'],
+    descripcion:'La caléndula es la guardiana del huerto. Plántalas en los bordes y verás menos plagas.' },
+  { nombre:'Tagetes/Clavelón',emoji:'🌸',cat:'flores',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[6,7,8,9,10],
+    profundidad:'0.3 cm',marco:'20×20 cm',temp:'15–28 °C',dias_germinar:'5–10 días',
+    consejos:['Aleja mosca blanca, nemátodos y pulgones','Planta junto a tomates y pimientos','Muy resistente al calor jiennense','Sus raíces limpian el suelo de nemátodos'],
+    descripcion:'Aliado fundamental del huerto. Planta junto a tus solanáceas y nota la diferencia.' },
+  { nombre:'Mostaza (abono verde)',emoji:'🌱',cat:'flores',
+    semillero:[],trasplante:[],directa:[9,10,11],cosecha:[],
+    profundidad:'1 cm',marco:'5×20 cm',temp:'5–18 °C',dias_germinar:'5–10 días',
+    consejos:['Siembra densa y voltea antes de florecer','Mejora la estructura del suelo','Desinfecta de enfermedades fúngicas','En Jaén se usa entre cosechas de verano y las de invierno'],
+    descripcion:'Abono verde clásico para el huerto jiennense de otoño. Mejora el suelo para la siguiente siembra.' },
+  { nombre:'Girasol',emoji:'🌻',cat:'flores',
+    semillero:[],trasplante:[],directa:[4,5],cosecha:[8,9],
+    profundidad:'2 cm',marco:'50×50 cm',temp:'15–30 °C',dias_germinar:'7–14 días',
+    consejos:['Atrae polinizadores beneficiosos al huerto','Sus raíces descompactan el suelo','Aguanta muy bien la sequía jiennense de verano','Planta en los bordes norte del huerto para no dar sombra'],
+    descripcion:'El girasol es icónico en los campos jiennenses. Atrae insectos beneficiosos y embellece el huerto.' },
+];
+
+// ══════ CONSEJOS POR MES ══════
+const CONSEJOS_MES = [
+  { mes:'Enero',icon:'🥶',consejos:[
+    {titulo:'Protege del hielo',texto:'Las heladas en Jaén pueden llegar a -8 °C. Cubre las plantas sensibles con geotextil o plástico de noche.',tipo:'urgente'},
+    {titulo:'Semillero interior: tomate y pimiento',texto:'Es hora de empezar semilleros en interior o invernadero. Necesitan 20–25 °C para germinar.',tipo:''},
+    {titulo:'Poda de frutales',texto:'Enero es el mes ideal para podar olivares, higueras y frutales de hueso. Herramientas desinfectadas con alcohol.',tipo:''},
+    {titulo:'Planifica el huerto',texto:'Dibuja el plano de la temporada. Recuerda la rotación de cultivos: no repitas familia en el mismo bancal.',tipo:''},
+  ]},
+  { mes:'Febrero',icon:'🌱',consejos:[
+    {titulo:'Primeros trasplantes',texto:'Si el tiempo lo permite, puedes trasplantar lechuga, col y espinacas. Vigila heladas tardías.',tipo:''},
+    {titulo:'Patata temprana',texto:'En zonas bajas de Jaén (campiña), puedes plantar patata a finales de febrero con acolchado.',tipo:''},
+    {titulo:'Última siembra de habas',texto:'Si no sembraste en otoño, puedes hacer una última siembra de habas en febrero.',tipo:'urgente'},
+    {titulo:'Prepara bancales',texto:'Enmienda el suelo con compost maduro o estiércol. Los suelos arcillosos de Jaén agradecen la materia orgánica.',tipo:''},
+  ]},
+  { mes:'Marzo',icon:'🌷',consejos:[
+    {titulo:'Actividad máxima en semillero',texto:'Siembra tomate, pimiento, berenjena, pepino y calabacín si no lo has hecho. Mínimo 15 °C.',tipo:''},
+    {titulo:'Cuidado con heladas tardías',texto:'En Jaén las heladas pueden llegar hasta mediados de marzo. No te precipites con los trasplantes.',tipo:'urgente'},
+    {titulo:'Control de malas hierbas',texto:'Escarda manual antes de que las malas hierbas semillen. Azada pequeña entre líneas.',tipo:''},
+    {titulo:'Riego de primavera',texto:'Aumenta progresivamente el riego. El suelo se seca más rápido con el calor creciente.',tipo:''},
+  ]},
+  { mes:'Abril',icon:'🌸',consejos:[
+    {titulo:'¡Ojo a la helada de Abril!',texto:'La "helada de los Santos" es un riesgo real en Jaén. Hasta Sant Jordi (23 abr) mantén protecciones.',tipo:'urgente'},
+    {titulo:'Trasplanta solanáceas',texto:'A partir del 20 de abril puedes trasplantar tomates, pimientos y berenjenas en zonas bajas de Jaén.',tipo:''},
+    {titulo:'Siembra directa de verano',texto:'Judías, pepino, calabacín y maíz se pueden sembrar directamente a finales de abril.',tipo:''},
+    {titulo:'Acolcha para conservar humedad',texto:'Empieza a poner acolchado (paja, corteza) alrededor de las plantas. El verano seco de Jaén lo agradecerá.',tipo:''},
+  ]},
+  { mes:'Mayo',icon:'🌞',consejos:[
+    {titulo:'Calor en aumento',texto:'Las temperaturas suben rápido. Aumenta la frecuencia de riego. Los días de más de 30 °C ya son frecuentes.',tipo:''},
+    {titulo:'Cosecha de primavera: ahora',texto:'Recoge habas, guisantes, lechuga, espinacas y acelgas antes de que el calor los estropee.',tipo:'urgente'},
+    {titulo:'Tutora tomates y pepinos',texto:'Con el crecimiento rápido de mayo, tutora semanalmente. Usa hilo de yute o cañas.',tipo:''},
+    {titulo:'Siembra escalonada de judías',texto:'Para producción continua, siembra judías cada 3 semanas hasta julio.',tipo:''},
+  ]},
+  { mes:'Junio',icon:'☀️',consejos:[
+    {titulo:'Riego solo en horas frescas',texto:'Riega siempre al amanecer o atardecer. Nunca al mediodía en Jaén: se evapora y quema las raíces.',tipo:'urgente'},
+    {titulo:'Primeras cosechas de verano',texto:'Tomates tempranos, pepinos, calabacines y pimientos empiezan a dar fruto. Cosecha frecuente.',tipo:''},
+    {titulo:'Protección solar',texto:'Instala mallas de sombreo 30–40 % sobre hortalizas más sensibles.',tipo:''},
+    {titulo:'Cosecha de ajos y cebollas',texto:'Cuando las hojas se tumban y secan, es hora de cosechar. Cura al sol 2 semanas antes de guardar.',tipo:''},
+  ]},
+  { mes:'Julio',icon:'🔥',consejos:[
+    {titulo:'El mes más duro de Jaén',texto:'Jaén es de las provincias más calurosas de España en julio. Riega cada 1–2 días. El goteo es fundamental.',tipo:'urgente'},
+    {titulo:'Poda verde de tomates',texto:'Quita hojas secas y enfermas. Mantén buena ventilación para evitar hongos en el calor húmedo nocturno.',tipo:''},
+    {titulo:'Planifica los cultivos de otoño',texto:'Prepara semillas y semilleros para los cultivos de otoño (brócoli, col, lechuga). Se siembran en agosto.',tipo:''},
+    {titulo:'Una planta de tomate: 3–4 litros/día',texto:'El goteo programado es la mejor inversión del huerto. Sin agua suficiente en julio, pierdes la cosecha.',tipo:'urgente'},
+  ]},
+  { mes:'Agosto',icon:'🌡️',consejos:[
+    {titulo:'Siembra de otoño: ya es hora',texto:'Segunda quincena: siembra brócoli, coliflor, col, lechuga y puerro en semillero.',tipo:''},
+    {titulo:'Pimiento para pimentón',texto:'Los pimientos para secar y hacer pimentón se recogen en agosto–septiembre. Riega bien para que engorden.',tipo:''},
+    {titulo:'Recoge y guarda semillas',texto:'Elige las mejores plantas y guarda semillas: tomate, pimiento, judía, calabacín. Sécalas a la sombra.',tipo:''},
+    {titulo:'Abono post-verano',texto:'Prepara el suelo agotado con compost para los cultivos de otoño.',tipo:''},
+  ]},
+  { mes:'Septiembre',icon:'🍂',consejos:[
+    {titulo:'Trasplanta cultivos de otoño',texto:'Col, brócoli, coliflor, lechuga y puerro salen del semillero. El tiempo refresca y facilita el arraigo.',tipo:''},
+    {titulo:'Siembra directa de otoño',texto:'Zanahoria, remolacha, espinaca, rábano y nabo se siembran directos en septiembre–octubre.',tipo:''},
+    {titulo:'Siembra de ajos en luna menguante',texto:'Última quincena: siembra ajo morado. La tradición dice que en menguante salen más grandes y se conservan mejor.',tipo:'luna'},
+    {titulo:'Refresca el compostador',texto:'Añade los restos vegetales del verano. Añade tierra de jardín para activar la descomposición.',tipo:''},
+  ]},
+  { mes:'Octubre',icon:'🍁',consejos:[
+    {titulo:'Siembra de habas y guisantes',texto:'Octubre es el momento ideal en Jaén para las legumbres de invierno. Siembra directa en luna llena.',tipo:''},
+    {titulo:'Siembra de cebollas',texto:'Siembra cebolla de primavera directa o en semillero para trasplante en enero.',tipo:''},
+    {titulo:'Protege de primeras heladas',texto:'Las heladas en zonas altas de Jaén (Sierra) llegan en octubre. Protege los últimos tomates y pimientos.',tipo:'urgente'},
+    {titulo:'Limpia bancales agotados',texto:'Arranca las plantas de verano terminadas. Añade compost y deja el suelo preparado para invierno.',tipo:''},
+  ]},
+  { mes:'Noviembre',icon:'🌧️',consejos:[
+    {titulo:'Lluvias de otoño',texto:'Las primeras lluvias son bienvenidas. Aprovecha para plantar o trasplantar con el suelo húmedo.',tipo:''},
+    {titulo:'Labores de suelo',texto:'Labra profundo en bancales vacíos. Las heladas de invierno mejorarán la estructura del suelo arcilloso.',tipo:''},
+    {titulo:'Siembra de abono verde',texto:'Siembra mostaza, veza o centeno en bancales vacíos. Mejora el suelo para primavera.',tipo:''},
+    {titulo:'Cosecha de otoño',texto:'Brócoli, col, coliflor, puerro, acelga. El huerto jiennense de noviembre es muy productivo.',tipo:''},
+  ]},
+  { mes:'Diciembre',icon:'❄️',consejos:[
+    {titulo:'Pausa activa del huerto',texto:'El huerto descansa pero sigue produciendo: acelgas, espinacas, col, brócoli, puerro y lechugas aguantan bien.',tipo:''},
+    {titulo:'Planifica la próxima temporada',texto:'Haz balance del año: qué funcionó, qué no. Pide el catálogo de semillas para el año que viene.',tipo:''},
+    {titulo:'Compost listo',texto:'Si empezaste el compostador en verano, el compost ya está maduro. Aplica en bancales vacíos.',tipo:''},
+    {titulo:'Poda de olivares',texto:'Diciembre–enero es la época tradicional de poda del olivo en Jaén.',tipo:''},
+  ]},
+];
+
+// ══════ PLAGAS ══════
+const PLAGAS = [
+  {nombre:'Pulgón',cultivos:'Habas, tomate, pimiento, judía, col',descripcion:'Insecto pequeño que chupa la savia. Se agrupa en brotes tiernos y envés de hojas. Debilita la planta y transmite virus.',remedio:'🌿 Jabón potásico diluido, purín de ortiga o extracto de ajo. Introduce mariquitas. Retira manualmente los brotes infestados.'},
+  {nombre:'Araña roja',cultivos:'Pepino, pimiento, berenjena, judía',descripcion:'Ácaro que ataca en calor y sequedad. Hojas con moteado amarillo y telarañas finas en envés.',remedio:'💧 Aumenta la humedad con pulverizaciones. Extracto de cola de caballo. Azufre mojable en primera fase.'},
+  {nombre:'Mosca blanca',cultivos:'Tomate, pimiento, berenjena, pepino',descripcion:'Insecto diminuto blanco. Las larvas chupan la savia y producen melaza que atrae hongos.',remedio:'🟡 Trampas cromotrópicas amarillas. Jabón potásico. Tagetes cerca. Piretrina en casos graves.'},
+  {nombre:'Trips',cultivos:'Pimiento, pepino, cebolla, ajo',descripcion:'Insecto minúsculo que raspa la epidermis. Transmite el virus del bronceado del tomate (TSWV).',remedio:'🔵 Trampas azules. Aceite de neem. Spinosad en casos graves. Elimina restos vegetales.'},
+  {nombre:'Oruga de la col (Pieris)',cultivos:'Col, coliflor, brócoli, repollo, nabo',descripcion:'Oruga verde que devora las hojas de crucíferas. Las mariposas blancas ponen huevos amarillos en grupos.',remedio:'🦋 Recoge huevos y orugas a mano. Red antiinsectos. Bacillus thuringiensis (BT) es eficaz y ecológico.'},
+  {nombre:'Mildiu',cultivos:'Tomate, patata, cebolla, lechuga',descripcion:'Hongo que causa manchas amarillo-verdosas en hoja superior y vello grisáceo en el envés. Se dispara con humedad y calor.',remedio:'🍄 Caldo bordelés preventivo. Evita mojar hojas. Buena ventilación entre plantas.'},
+  {nombre:'Oídio',cultivos:'Calabacín, calabaza, pepino, tomate',descripcion:'Hongo que forma un polvillo blanco harinoso en hojas. Se agrava con días calurosos y noches frescas (típico de Jaén en septiembre).',remedio:'⚪ Bicarbonato sódico (1 cucharada por litro). Azufre mojable. Leche diluida al 10%.'},
+  {nombre:'Botritis (moho gris)',cultivos:'Tomate, judía, lechuga, fresa',descripcion:'Hongo que produce manchas marrones y moho gris en condiciones de alta humedad.',remedio:'🔬 Elimina tejido afectado. Mejora la ventilación. No mojar hojas. Caldo de cola de caballo preventivo.'},
+  {nombre:'Babosas y caracoles',cultivos:'Lechuga, espinaca, fresa, plántulas',descripcion:'Moluscos que atacan de noche. Dejan agujeros irregulares y rastro de baba plateada.',remedio:'🐌 Trampas de cerveza. Ceniza alrededor de los bancales. Cáscaras de huevo trituradas.'},
+  {nombre:'Nemátodos del suelo',cultivos:'Tomate, pimiento, zanahoria, patata',descripcion:'Gusanos microscópicos que atacan las raíces causando agallas y debilidad general. Problema serio en monocultivo.',remedio:'🌱 Rotación de cultivos. Tagetes como cultivo trampa. Solarización del suelo en verano (plástico 6 semanas).'},
+  {nombre:'Gorgojo del garbanzo',cultivos:'Garbanzo, lenteja, judía (en almacén)',descripcion:'Coleóptero que ataca los granos almacenados. Las larvas devoran el grano.',remedio:'🫙 Guarda en recipientes herméticos. Congela los granos 4 días antes de guardar. Hoja de laurel en los tarros.'},
+  {nombre:'Minador de hojas',cultivos:'Tomate, pimiento, lechuga, espinaca',descripcion:'Larva de mosca que hace galerías sinuosas dentro de las hojas visibles como dibujos plateados.',remedio:'✏️ Elimina hojas muy afectadas. Trampas amarillas para adultos. Aceite de neem.'},
+];
+
+// ══════ RIEGO ══════
+const RIEGO_TABLA = [
+  {periodo:'Enero–Febrero',freq:'Cada 7–10 días',cantidad:'Baja',nota:'Suelo húmedo natural por lluvias'},
+  {periodo:'Marzo–Abril',freq:'Cada 4–6 días',cantidad:'Media',nota:'Temperaturas en aumento, plantas creciendo'},
+  {periodo:'Mayo',freq:'Cada 3–4 días',cantidad:'Media-alta',nota:'Calor moderado, cosecha de primavera'},
+  {periodo:'Junio',freq:'Cada 2–3 días',cantidad:'Alta',nota:'Inicio del verano extremo jiennense'},
+  {periodo:'Julio–Agosto',freq:'Diario o cada 2 días',cantidad:'Muy alta',nota:'🔥 Pico de calor. Goteo esencial. +35–42 °C'},
+  {periodo:'Septiembre',freq:'Cada 2–4 días',cantidad:'Alta-Media',nota:'Bajada de temperaturas progresiva'},
+  {periodo:'Octubre–Noviembre',freq:'Cada 5–8 días',cantidad:'Baja-Media',nota:'Lluvias otoñales reducen la necesidad'},
+  {periodo:'Diciembre',freq:'Cada 10–15 días',cantidad:'Mínima',nota:'Plantas en reposo semi-activo'},
+];
+
+const TECNICAS_RIEGO = [
+  {titulo:'Riego por goteo: la inversión más rentable',texto:'En el verano de Jaén, el goteo puede reducir el consumo de agua hasta un 60% respecto al riego a manta. Los tomates, pimientos y pepinos lo agradecen enormemente. Instala goteros de 2–4 l/h.'},
+  {titulo:'Acolchado: el aliado del calor',texto:'Una capa de 8–10 cm de paja, corteza o hierba seca puede reducir la evaporación hasta un 70%. En el verano de Jaén, marca la diferencia entre perder o salvar una cosecha.'},
+  {titulo:'Riega al amanecer o al atardecer',texto:'Nunca riegues entre las 11h y las 19h en verano. El agua se evapora antes de llegar a las raíces, y las gotitas sobre las hojas actúan como lupas que queman.'},
+  {titulo:'El truco del dedo',texto:'Introduce el dedo 5 cm en el suelo. Si está seco al fondo, toca regar. Si está húmedo, espera. Mejor que cualquier programador para aprender la necesidad de tus plantas.'},
+  {titulo:'Agua embalsada o de acequia',texto:'El agua de acequia a temperatura ambiente es la mejor. El agua de grifo muy fría en verano puede dañar las raíces calientes. Si usas grifo, llena un bidón y deja reposar al sol.'},
+  {titulo:'Fertirriego: abona mientras riegas',texto:'Puedes añadir purín de ortiga, agua de compost o fertilizante líquido al agua de riego. Más eficiente que el abonado sólido en verano.'},
+];
+
+// ══════ FASES LUNARES 2025–2026 ══════
+// fase: 0=nueva 1=creciente 2=llena 3=menguante
+const LUNAS = {
+  2025:[
+    {mes:0,dia:13,fase:2},{mes:0,dia:21,fase:3},{mes:0,dia:29,fase:0},
+    {mes:1,dia:5,fase:1},{mes:1,dia:12,fase:2},{mes:1,dia:20,fase:3},{mes:1,dia:28,fase:0},
+    {mes:2,dia:6,fase:1},{mes:2,dia:14,fase:2},{mes:2,dia:22,fase:3},{mes:2,dia:29,fase:0},
+    {mes:3,dia:5,fase:1},{mes:3,dia:13,fase:2},{mes:3,dia:21,fase:3},{mes:3,dia:28,fase:0},
+    {mes:4,dia:4,fase:1},{mes:4,dia:12,fase:2},{mes:4,dia:20,fase:3},{mes:4,dia:27,fase:0},
+    {mes:5,dia:3,fase:1},{mes:5,dia:11,fase:2},{mes:5,dia:18,fase:3},{mes:5,dia:25,fase:0},
+    {mes:6,dia:2,fase:1},{mes:6,dia:10,fase:2},{mes:6,dia:17,fase:3},{mes:6,dia:24,fase:0},
+    {mes:7,dia:1,fase:1},{mes:7,dia:9,fase:2},{mes:7,dia:16,fase:3},{mes:7,dia:23,fase:0},{mes:7,dia:31,fase:1},
+    {mes:8,dia:7,fase:2},{mes:8,dia:14,fase:3},{mes:8,dia:21,fase:0},{mes:8,dia:29,fase:1},
+    {mes:9,dia:7,fase:2},{mes:9,dia:13,fase:3},{mes:9,dia:21,fase:0},{mes:9,dia:29,fase:1},
+    {mes:10,dia:5,fase:2},{mes:10,dia:12,fase:3},{mes:10,dia:20,fase:0},{mes:10,dia:28,fase:1},
+    {mes:11,dia:4,fase:2},{mes:11,dia:11,fase:3},{mes:11,dia:20,fase:0},{mes:11,dia:27,fase:1},
+  ],
+  2026:[
+    {mes:0,dia:3,fase:2},{mes:0,dia:10,fase:3},{mes:0,dia:18,fase:0},{mes:0,dia:25,fase:1},
+    {mes:1,dia:1,fase:2},{mes:1,dia:9,fase:3},{mes:1,dia:17,fase:0},{mes:1,dia:24,fase:1},
+    {mes:2,dia:3,fase:2},{mes:2,dia:11,fase:3},{mes:2,dia:18,fase:0},{mes:2,dia:25,fase:1},
+    {mes:3,dia:1,fase:2},{mes:3,dia:10,fase:3},{mes:3,dia:17,fase:0},{mes:3,dia:24,fase:1},
+    {mes:4,dia:1,fase:2},{mes:4,dia:9,fase:3},{mes:4,dia:16,fase:0},{mes:4,dia:23,fase:1},{mes:4,dia:31,fase:2},
+    {mes:5,dia:8,fase:3},{mes:5,dia:14,fase:0},{mes:5,dia:22,fase:1},{mes:5,dia:29,fase:2},
+    {mes:6,dia:7,fase:3},{mes:6,dia:14,fase:0},{mes:6,dia:21,fase:1},{mes:6,dia:29,fase:2},
+    {mes:7,dia:5,fase:3},{mes:7,dia:12,fase:0},{mes:7,dia:20,fase:1},{mes:7,dia:28,fase:2},
+    {mes:8,dia:4,fase:3},{mes:8,dia:11,fase:0},{mes:8,dia:18,fase:1},{mes:8,dia:27,fase:2},
+    {mes:9,dia:3,fase:3},{mes:9,dia:11,fase:0},{mes:9,dia:18,fase:1},{mes:9,dia:26,fase:2},
+    {mes:10,dia:2,fase:3},{mes:10,dia:10,fase:0},{mes:10,dia:17,fase:1},{mes:10,dia:26,fase:2},
+    {mes:11,dia:2,fase:3},{mes:11,dia:9,fase:0},{mes:11,dia:17,fase:1},{mes:11,dia:25,fase:2},
+  ]
+};
+
+const FASE_EMOJI       = ['🌑','🌒','🌕','🌘'];
+const FASE_NOMBRE_CORTO = ['Nueva','Creciente','Llena','Menguante'];
+const FASE_CLASS       = ['fase-nueva','fase-creciente','fase-llena','fase-menguante'];
+
+function getFaseDelDia(anyo, mes, dia){
+  const lista = (LUNAS[anyo]||[]).filter(l=>l.mes===mes);
+  // Busca fase anterior si hay para interpolar
+  const prevMes = mes === 0 ? 11 : mes-1;
+  const prevAnyo = mes === 0 ? anyo-1 : anyo;
+  const prevLista = (LUNAS[prevAnyo]||[]).filter(l=>l.mes===prevMes);
+  const ultimaAnterior = prevLista.length ? prevLista[prevLista.length-1] : null;
+
+  const todas = [];
+  if(ultimaAnterior) todas.push({...ultimaAnterior, diaRel:-1});
+  lista.forEach(f=>todas.push({...f, diaRel:f.dia}));
+
+  let actual=null, siguiente=null;
+  for(let i=0;i<todas.length;i++){
+    if(todas[i].diaRel<=dia){ actual=todas[i]; siguiente=todas[i+1]||null; }
+  }
+  if(!actual) return null;
+  if(actual.diaRel===dia) return {fase:actual.fase, esFase:true};
+  const sigFase=(actual.fase+1)%4;
+  return {fase:sigFase, esFase:false};
+}
+
+// ══════ LUNA MES ══════
+let lunaMesVista = MES_ACTUAL;
+let lunaAnyoVista = HOY.getFullYear();
+
+function cambiarMesLuna(dir){
+  lunaMesVista+=dir;
+  if(lunaMesVista>11){lunaMesVista=0;lunaAnyoVista++;}
+  if(lunaMesVista<0){lunaMesVista=11;lunaAnyoVista--;}
+  renderLunaMes();
+}
+
+function renderLunaMes(){
+  document.getElementById('luna-mes-titulo').textContent =
+    MESES_LARGO[lunaMesVista]+' '+lunaAnyoVista;
+
+  const grid = document.getElementById('luna-dias-grid');
+  const diasSem = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  let html = diasSem.map(d=>`<div class="luna-dia-hdr">${d}</div>`).join('');
+
+  const primerDia = new Date(lunaAnyoVista,lunaMesVista,1).getDay();
+  const offset = primerDia===0?6:primerDia-1;
+  for(let i=0;i<offset;i++) html+=`<div class="luna-dia-cell vacio"></div>`;
+
+  const diasMes = new Date(lunaAnyoVista,lunaMesVista+1,0).getDate();
+  const transMap = ['entre-menguante-nueva','entre-nueva-creciente','entre-creciente-llena','entre-llena-menguante'];
+
+  for(let d=1;d<=diasMes;d++){
+    const info = getFaseDelDia(lunaAnyoVista,lunaMesVista,d);
+    const esHoy = lunaAnyoVista===HOY.getFullYear()&&lunaMesVista===MES_ACTUAL&&d===DIA_HOY;
+
+    let cls='luna-dia-cell', emoji='', txt='';
+    if(info){
+      if(info.esFase){
+        cls+=' '+FASE_CLASS[info.fase];
+        emoji=FASE_EMOJI[info.fase];
+        txt=FASE_NOMBRE_CORTO[info.fase];
+      } else {
+        cls+=' '+transMap[info.fase];
+        emoji=FASE_EMOJI[info.fase];
+      }
+    }
+    if(esHoy) cls+=' hoy-dia';
+
+    html+=`<div class="${cls}">
+      <div class="ld-emoji">${emoji}</div>
+      <div class="ld-num">${d}</div>
+      ${txt?`<div class="ld-txt">${txt}</div>`:''}
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+// ══════ CALENDARIO ANUAL ══════
+let filtroCat='all';
+const ORDEN_MESES = mesesOrdenados();
+
+function renderHeader(){
+  const h=document.getElementById('cal-header');
+  let html='<div></div>';
+  ORDEN_MESES.forEach(m=>{
+    html+=`<div class="mes-label${m===MES_ACTUAL?' actual':''}">${MESES_NOMBRE[m]}</div>`;
+  });
+  h.innerHTML=html;
+}
+
+function renderCalendario(){
+  const grid=document.getElementById('cal-grid');
+  const cultivos=CULTIVOS.filter(c=>filtroCat==='all'||c.cat===filtroCat);
+  let html='';
+  for(const c of cultivos){
+    html+=`<div class="cultivo-row">`;
+    html+=`<div class="cultivo-nombre" onclick="abrirModal('${c.nombre.replace(/'/g,"\\'")}')">
+      <span class="cultivo-emoji">${c.emoji}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;">${c.nombre}</span>
+    </div>`;
+    for(const m of ORDEN_MESES){
+      let tipo='';
+      if(c.semillero  && c.semillero.includes(m))  tipo='semillero';
+      else if(c.trasplante && c.trasplante.includes(m)) tipo='trasplante';
+      else if(c.directa   && c.directa.includes(m))    tipo='directa';
+      else if(c.cosecha   && c.cosecha.includes(m))    tipo='cosecha';
+      const act=m===MES_ACTUAL?' col-actual':'';
+      // SIN iconos lunares — limpio
+      html+=`<div class="cal-cell${tipo?' '+tipo:''}${act}" title="${MESES_NOMBRE[m]}${tipo?': '+tipo:''}"></div>`;
+    }
+    html+=`</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function filtrar(cat,btn){
+  filtroCat=cat;
+  document.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderCalendario();
+}
+
+function abrirModal(nombre){
+  const c=CULTIVOS.find(x=>x.nombre===nombre);
+  if(!c) return;
+  const mS=c.semillero &&c.semillero.length ?c.semillero.map(m=>MESES_NOMBRE[m]).join(', '):'—';
+  const mT=c.trasplante&&c.trasplante.length?c.trasplante.map(m=>MESES_NOMBRE[m]).join(', '):'—';
+  const mD=c.directa  &&c.directa.length   ?c.directa.map(m=>MESES_NOMBRE[m]).join(', ')  :'—';
+  const mC=c.cosecha  &&c.cosecha.length   ?c.cosecha.map(m=>MESES_NOMBRE[m]).join(', ')  :'—';
+  let tags='';
+  if(c.semillero &&c.semillero.length)  tags+=`<span class="tag tag-semillero">🌱 Semillero: ${mS}</span>`;
+  if(c.trasplante&&c.trasplante.length) tags+=`<span class="tag tag-trasplante">🪴 Trasplante: ${mT}</span>`;
+  if(c.directa   &&c.directa.length)   tags+=`<span class="tag tag-directa">🌾 Directa: ${mD}</span>`;
+  if(c.cosecha   &&c.cosecha.length)   tags+=`<span class="tag tag-cosecha">🧺 Cosecha: ${mC}</span>`;
+  document.getElementById('modal-contenido').innerHTML=`
+    <div class="modal-titulo"><span style="font-size:1.65rem">${c.emoji}</span>${c.nombre}
+      <button class="modal-close" onclick="cerrarModal()">✕</button></div>
+    <div class="modal-tags">${tags}</div>
+    <div class="modal-seccion"><h4>Descripción</h4><p>${c.descripcion}</p></div>
+    <div class="modal-seccion"><h4>Datos técnicos</h4>
+      <div class="datos-grid">
+        <div class="dato-box"><div class="valor">${c.profundidad}</div><div class="etiq">Prof. siembra</div></div>
+        <div class="dato-box"><div class="valor">${c.marco}</div><div class="etiq">Marco plantación</div></div>
+        <div class="dato-box"><div class="valor">${c.temp}</div><div class="etiq">Temperatura</div></div>
+        <div class="dato-box"><div class="valor">${c.dias_germinar}</div><div class="etiq">Germinación</div></div>
+      </div>
+    </div>
+    <div class="modal-seccion"><h4>Consejos para Jaén</h4>
+      <ul class="consejo-lista">${c.consejos.map(x=>`<li>${x}</li>`).join('')}</ul>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('abierto');
+}
+
+function cerrarModal(e){
+  if(!e||e.target===document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('abierto');
+}
+
+function mostrarVista(id,btn){
+  document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
+  document.getElementById('vista-'+id).classList.add('activa');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderConsejos(){
+  let html='';
+  for(let i=0;i<12;i++){
+    const m=(MES_ACTUAL+i)%12;
+    const mc=CONSEJOS_MES[m];
+    html+=`<div style="font-family:'Playfair Display',serif;font-size:0.98rem;color:var(--gris);padding-top:${i?'13px':'0'};margin-bottom:7px;">
+      ${mc.icon} ${mc.mes}${i===0?` <span style="font-size:0.63rem;background:var(--oliva);color:white;padding:2px 8px;border-radius:10px;vertical-align:middle;font-family:Inter,sans-serif;font-weight:700;">Ahora</span>`:''}
+    </div>`;
+    mc.consejos.forEach(c=>{
+      html+=`<div class="consejo-card ${c.tipo}">
+        <div class="consejo-titulo">${c.titulo}</div>
+        <div class="consejo-texto">${c.texto}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('lista-consejos').innerHTML=html;
+}
+
+function renderPlagas(){ renderPlagasFiltradas(''); }
+function buscarPlaga(q){ renderPlagasFiltradas(q.toLowerCase()); }
+function renderPlagasFiltradas(q){
+  const f=PLAGAS.filter(p=>
+    p.nombre.toLowerCase().includes(q)||
+    p.cultivos.toLowerCase().includes(q)||
+    p.descripcion.toLowerCase().includes(q));
+  document.getElementById('lista-plagas').innerHTML=f.map(p=>`
+    <div class="plaga-card">
+      <div class="plaga-titulo">${p.nombre}</div>
+      <div style="font-size:0.71rem;color:var(--gris);margin-bottom:4px;">Afecta a: ${p.cultivos}</div>
+      <div class="plaga-texto">${p.descripcion}</div>
+      <div class="plaga-rem">${p.remedio}</div>
+    </div>`).join('');
+}
+
+function renderRiego(){
+  document.getElementById('tabla-riego').innerHTML=`
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead><tr style="background:var(--tierra);color:white;">
+        <th style="padding:9px 11px;text-align:left;">Período</th>
+        <th style="padding:9px 11px;text-align:left;">Frecuencia</th>
+        <th style="padding:9px 11px;text-align:left;">Cantidad</th>
+        <th style="padding:9px 11px;text-align:left;">Nota</th>
+      </tr></thead>
+      <tbody>${RIEGO_TABLA.map((r,i)=>`
+        <tr style="background:${i%2?'var(--crema)':'white'}">
+          <td style="padding:8px 11px;font-weight:700">${r.periodo}</td>
+          <td style="padding:8px 11px">${r.freq}</td>
+          <td style="padding:8px 11px">${r.cantidad}</td>
+          <td style="padding:8px 11px;color:var(--gris)">${r.nota}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  document.getElementById('tecnicas-riego').innerHTML=TECNICAS_RIEGO.map(t=>`
+    <div class="consejo-card"><div class="consejo-titulo">${t.titulo}</div><div class="consejo-texto">${t.texto}</div></div>`).join('');
+}
+
+function descargar(){
+  const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='calendario-siembra-jaen.html';
+  a.click();
+}
+
+window.onload=function(){
+  renderHeader();
+  renderCalendario();
+  renderConsejos();
+  renderPlagas();
+  renderRiego();
+  renderLunaMes();
+};
+</script>
+</body>
+</html>
