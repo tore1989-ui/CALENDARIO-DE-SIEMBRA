@@ -326,6 +326,10 @@
     <button onclick="mostrarVista('consejos',this)">💡 Consejos</button>
     <button onclick="mostrarVista('plagas',this)">🐛 Plagas</button>
     <button onclick="mostrarVista('riego',this)">💧 Riego</button>
+    <button onclick="mostrarVista('tareas',this)">🔨 Tareas</button>
+    <button onclick="mostrarVista('animales',this)">🐓 Animales</button>
+    <button onclick="mostrarVista('aromaticas',this)">🌿 Aromáticas</button>
+    <button onclick="mostrarVista('medicinales',this)">💊 Medicinales</button>
   </nav>
 </header>
 
@@ -457,6 +461,57 @@
   <div class="tabla-riego-wrap" id="tabla-riego"></div>
   <h3 class="seccion-titulo" style="margin-top:17px;">Técnicas recomendadas</h3>
   <div class="consejos-lista" id="tecnicas-riego"></div>
+</div>
+
+<!-- ══════════════ TAREAS ══════════════ -->
+<div class="vista" id="vista-tareas">
+  <h2 class="seccion-titulo">🔨 Tareas del Huerto — Mes a Mes</h2>
+  <p style="font-size:0.82rem;color:var(--gris);margin-bottom:13px;line-height:1.5;">
+    Más allá de sembrar y cosechar, el huerto necesita atención constante. Aquí tienes todas las tareas de mantenimiento organizadas por mes para Jaén.
+  </p>
+  <div class="consejos-lista" id="lista-tareas"></div>
+</div>
+
+<!-- ══════════════ ANIMALES ══════════════ -->
+<div class="vista" id="vista-animales">
+  <h2 class="seccion-titulo">🐓 Animales en la Huerta Jiennense</h2>
+  <div class="info-banner">
+    <span class="icon">🌿</span>
+    <span>Integrar animales en el huerto cierra el ciclo: comen los restos vegetales, abonan el suelo y producen alimento. Guía adaptada al clima extremo de Jaén.</span>
+  </div>
+  <div class="filtros" id="filtros-animales" style="margin-bottom:14px;">
+    <button class="filtro-btn on" data-animal="all" onclick="filtrarAnimal('all',this)">Todos</button>
+    <button class="filtro-btn" data-animal="gallinas" onclick="filtrarAnimal('gallinas',this)">🐔 Gallinas</button>
+    <button class="filtro-btn" data-animal="cerdos" onclick="filtrarAnimal('cerdos',this)">🐷 Cerdo ibérico</button>
+    <button class="filtro-btn" data-animal="conejos" onclick="filtrarAnimal('conejos',this)">🐇 Conejos</button>
+    <button class="filtro-btn" data-animal="cabras" onclick="filtrarAnimal('cabras',this)">🐐 Cabras</button>
+    <button class="filtro-btn" data-animal="abejas" onclick="filtrarAnimal('abejas',this)">🐝 Abejas</button>
+    <button class="filtro-btn" data-animal="patos" onclick="filtrarAnimal('patos',this)">🦆 Patos</button>
+    <button class="filtro-btn" data-animal="palomas" onclick="filtrarAnimal('palomas',this)">🕊️ Palomas</button>
+  </div>
+  <div id="lista-animales"></div>
+</div>
+
+<!-- ══════════════ AROMÁTICAS ══════════════ -->
+<div class="vista" id="vista-aromaticas">
+  <h2 class="seccion-titulo">🌿 Plantas Aromáticas — Jaén</h2>
+  <div class="info-banner">
+    <span class="icon">🏔️</span>
+    <span>La Sierra de Jaén es un paraíso de plantas aromáticas silvestres. Muchas crecen solas en el campo. Aquí tienes la guía completa para cultivarlas en el huerto.</span>
+  </div>
+  <input type="text" class="buscador" placeholder="Buscar aromática..." oninput="buscarAromatica(this.value)">
+  <div id="lista-aromaticas"></div>
+</div>
+
+<!-- ══════════════ MEDICINALES ══════════════ -->
+<div class="vista" id="vista-medicinales">
+  <h2 class="seccion-titulo">💊 Plantas Medicinales — Jaén</h2>
+  <div class="info-banner" style="background:#5A3A8A;color:white;">
+    <span class="icon">⚕️</span>
+    <span>La fitoterapia tradicional jiennense tiene siglos de historia. Estas plantas crecen en nuestras sierras y se pueden cultivar fácilmente en el huerto.</span>
+  </div>
+  <input type="text" class="buscador" placeholder="Buscar planta o uso medicinal..." oninput="buscarMedicinal(this.value)">
+  <div id="lista-medicinales"></div>
 </div>
 
 <!-- MODAL -->
@@ -1027,6 +1082,638 @@ function renderRiego(){
     <div class="consejo-card"><div class="consejo-titulo">${t.titulo}</div><div class="consejo-texto">${t.texto}</div></div>`).join('');
 }
 
+// ══════ TAREAS MES A MES ══════
+const TAREAS_MES = [
+  { mes:'Enero', icon:'🥶', tareas:[
+    { titulo:'Laboreo profundo', texto:'Voltea los bancales vacíos con azada o motocultor. Las heladas ayudan a mejorar la estructura del suelo arcilloso jiennense.', tipo:'' },
+    { titulo:'Enmienda con cal', texto:'Si el suelo es muy ácido, enero es buen momento para aplicar cal agrícola. El pH ideal para la mayoría de cultivos es 6.5–7.', tipo:'' },
+    { titulo:'Afilado y mantenimiento de herramientas', texto:'Acondiciona azadas, palas, tijeras de podar. Aceita las partes metálicas para evitar oxidación.', tipo:'' },
+    { titulo:'Poda del olivo', texto:'Enero–febrero es la época tradicional de poda del olivo en Jaén. Poda de formación en árboles jóvenes, de mantenimiento en adultos.', tipo:'' },
+    { titulo:'Revisión del sistema de riego', texto:'Comprueba goteros, tuberías y programadores antes de que empiece la temporada. Sustituye lo que esté dañado.', tipo:'' },
+    { titulo:'Preparar el semillero interior', texto:'Monta el semillero con sustrato de siembra, bandejas alveoladas y fuente de calor (manta térmica o lugar cálido a 20°C).', tipo:'' },
+    { titulo:'Voltear el compostador', texto:'Mezcla el material con horca para activar la descomposición. Añade tierra si está muy húmedo.', tipo:'' },
+  ]},
+  { mes:'Febrero', icon:'🌱', tareas:[
+    { titulo:'Preparar bancales para primavera', texto:'Añade compost maduro (5–10 kg/m²) y mezcla con el suelo. Los bancales deben estar listos antes de los trasplantes de marzo.', tipo:'' },
+    { titulo:'Instalar tutores y estructuras', texto:'Monta los tutores para tomates y pepinos antes de trasplantar. Es más fácil hacerlo con el bancal vacío.', tipo:'' },
+    { titulo:'Poda de frutales de hueso', texto:'Melocotoneros, ciruelos y almendros se podan en febrero, antes de que broten. Desinfecta las herramientas entre árbol y árbol.', tipo:'' },
+    { titulo:'Primera escarda del año', texto:'Las malas hierbas empiezan a crecer. Escarda en cuanto veas los primeros brotes para evitar que compitan con los cultivos.', tipo:'' },
+    { titulo:'Acolchar bancales vacíos', texto:'Cubre con paja o corteza los bancales que no uses aún para evitar la pérdida de humedad y la proliferación de malas hierbas.', tipo:'' },
+  ]},
+  { mes:'Marzo', icon:'🌷', tareas:[
+    { titulo:'Fertilización de fondo', texto:'Aplica compost o abono orgánico granulado en todos los bancales antes de sembrar. Es la base de una buena temporada.', tipo:'' },
+    { titulo:'Instalación de malla anti-insectos', texto:'Prepara las estructuras de malla para proteger coles y brásicas de la mariposa de la col.', tipo:'' },
+    { titulo:'Limpieza de malas hierbas', texto:'Escarda intensa antes de los trasplantes. Una buena escarda ahora ahorra mucho trabajo en verano.', tipo:'' },
+    { titulo:'Revisión del invernadero o túneles', texto:'Comprueba el plástico, ventilación y cierres. En Jaén los túneles permiten adelantar 3–4 semanas la temporada.', tipo:'' },
+    { titulo:'Instalación del riego por goteo', texto:'Si no lo tienes, marzo es el momento de instalar el sistema de goteo antes de trasplantar. Ahorra agua y tiempo todo el verano.', tipo:'' },
+  ]},
+  { mes:'Abril', icon:'🌸', tareas:[
+    { titulo:'Acolchar con paja', texto:'Cubre todos los bancales con 8–10 cm de paja al trasplantar. En el verano de Jaén es fundamental para conservar la humedad.', tipo:'' },
+    { titulo:'Instalar malla sombra', texto:'Prepara la estructura para la malla sombra de verano (30–40%). Los tomates y lechugas tardías la agradecerán en julio.', tipo:'' },
+    { titulo:'Primera fertilización líquida', texto:'Aplica purín de ortiga o compost líquido a las plantas recién trasplantadas para estimular el enraizamiento.', tipo:'' },
+    { titulo:'Control de babosas', texto:'Las lluvias de abril disparan las babosas. Coloca trampas de cerveza y ceniza alrededor de los bancales.', tipo:'urgente' },
+    { titulo:'Siembra de abono verde en huecos', texto:'Los bancales que queden vacíos hasta junio, siémbralos con mostaza o veza para mejorar el suelo.', tipo:'' },
+  ]},
+  { mes:'Mayo', icon:'🌞', tareas:[
+    { titulo:'Tutoraje semanal', texto:'Los tomates, pepinos y judías crecen muy rápido en mayo. Tutora cada semana para evitar que las ramas se partan.', tipo:'' },
+    { titulo:'Fertilización nitrogenada', texto:'Aplica abono rico en nitrógeno (estiércol líquido, purín) a las plantas de hoja y a los tomates en crecimiento activo.', tipo:'' },
+    { titulo:'Primer tratamiento preventivo de hongos', texto:'Aplica caldo bordelés preventivo antes de que llegue el calor húmedo. Protege tomates y patatas del mildiu.', tipo:'' },
+    { titulo:'Revisión del goteo', texto:'Comprueba que todos los goteros funcionan correctamente. Un gotero tapado en junio puede matar una planta en 2 días.', tipo:'urgente' },
+    { titulo:'Instalación de trampas cromotrópicas', texto:'Coloca trampas amarillas y azules para mosca blanca y trips antes de que se disparen las poblaciones en verano.', tipo:'' },
+  ]},
+  { mes:'Junio', icon:'☀️', tareas:[
+    { titulo:'Programar el riego automático', texto:'Configura el programador para riego antes del amanecer (5–7h) o al atardecer (20–22h). Nunca al mediodía.', tipo:'urgente' },
+    { titulo:'Desherbado post-cosecha', texto:'Cuando retires las plantas de primavera, escarda bien el bancal antes de prepararlo para el siguiente cultivo.', tipo:'' },
+    { titulo:'Abonar con potasio', texto:'Para la fase de fructificación (tomate, pimiento, pepino), aplica abono rico en potasio para mejorar el sabor y la resistencia.', tipo:'' },
+    { titulo:'Recolectar y secar hierbas aromáticas', texto:'Junio es el mejor mes para secar romero, tomillo, lavanda y orégano. Corta antes de la floración y cuelga a la sombra.', tipo:'' },
+    { titulo:'Cosechar y curar ajos y cebollas', texto:'Extiende los bulbos en un lugar ventilado y soleado durante 2–3 semanas antes de guardarlos. Fundamental para su conservación.', tipo:'' },
+  ]},
+  { mes:'Julio', icon:'🔥', tareas:[
+    { titulo:'Vigilancia diaria del riego', texto:'Comprueba cada mañana que el sistema de riego ha funcionado. En julio, un fallo de riego destruye la cosecha en 24–48h.', tipo:'urgente' },
+    { titulo:'Eliminar hojas enfermas', texto:'Quita a mano las hojas secas, amarillas o con síntomas de enfermedad. Mejora la ventilación y reduce la propagación de hongos.', tipo:'' },
+    { titulo:'Protección solar con malla', texto:'Si no tienes malla sombra instalada, ponla urgentemente. El sol directo de julio en Jaén quema los frutos.', tipo:'urgente' },
+    { titulo:'Preparar semillero de otoño', texto:'Monta el semillero para brócoli, col, coliflor y lechuga. Ponlo en semisombra: las semillas no germinan bien con más de 30°C.', tipo:'' },
+    { titulo:'Voltear el compost', texto:'El calor de julio acelera la descomposición. Voltea el compostador y añade agua si está muy seco.', tipo:'' },
+  ]},
+  { mes:'Agosto', icon:'🌡️', tareas:[
+    { titulo:'Recolectar semillas', texto:'Selecciona las mejores plantas y deja madurar completamente algunos frutos para guardar semilla. Sécalas 2–3 semanas a la sombra.', tipo:'' },
+    { titulo:'Solarización de bancales vacíos', texto:'Cubre con plástico transparente los bancales que hayas vaciado. El calor de agosto esteriliza el suelo de hongos y nemátodos.', tipo:'' },
+    { titulo:'Preparar compost para otoño', texto:'Empieza una nueva pila de compost con los restos del verano. Estará listo para abonar en primavera.', tipo:'' },
+    { titulo:'Revisar estructura de invernadero', texto:'Antes del otoño, comprueba el estado del plástico o policarbonato. Repara antes de las primeras lluvias.', tipo:'' },
+    { titulo:'Trasplante de cultivos de otoño', texto:'Segunda quincena: trasplanta brócoli, col y coliflor del semillero. El terreno aún está cálido y favorece el arraigo.', tipo:'' },
+  ]},
+  { mes:'Septiembre', icon:'🍂', tareas:[
+    { titulo:'Enmienda otoñal del suelo', texto:'Añade compost maduro (5 kg/m²) a los bancales vaciados. El otoño es el mejor momento para mejorar el suelo de cara a la primavera.', tipo:'' },
+    { titulo:'Reducir el riego gradualmente', texto:'Con las temperaturas bajando, reduce la frecuencia de riego progresivamente. El exceso de agua en otoño favorece los hongos.', tipo:'' },
+    { titulo:'Instalar protecciones anti-helada', texto:'Prepara el geotextil y los túneles antes de que lleguen las primeras heladas en zonas altas de Jaén.', tipo:'' },
+    { titulo:'Limpieza general del huerto', texto:'Retira restos vegetales de verano, tutores viejos y cualquier material que pueda albergar plagas durante el invierno.', tipo:'' },
+    { titulo:'Revisión y limpieza del sistema de riego', texto:'Limpia los filtros del goteo y purga las tuberías antes de reducir el riego. Guarda las partes más delicadas del hielo.', tipo:'' },
+  ]},
+  { mes:'Octubre', icon:'🍁', tareas:[
+    { titulo:'Laboreo otoñal', texto:'Labra profundo los bancales vacíos antes de las lluvias. El suelo labrado absorbe mejor el agua y mejora la aireación.', tipo:'' },
+    { titulo:'Plantación de abono verde', texto:'Siembra veza, centeno o mostaza en todos los bancales que vayas a dejar en barbecho hasta primavera.', tipo:'' },
+    { titulo:'Poda de limpieza en frutales', texto:'Retira ramas secas, enfermas o que se crucen. No podar fuerte hasta enero–febrero.', tipo:'' },
+    { titulo:'Instalación de trampas para roedores', texto:'En otoño los ratones buscan cobijo en el huerto. Instala trampas preventivas cerca de los almacenes.', tipo:'' },
+    { titulo:'Preparar el almacén de invierno', texto:'Limpia y acondiciona el lugar donde guardarás patatas, cebollas, ajos y calabazas. Debe ser fresco, seco y oscuro.', tipo:'' },
+  ]},
+  { mes:'Noviembre', icon:'🌧️', tareas:[
+    { titulo:'Aprovechar las lluvias', texto:'Transplanta con el suelo húmedo. Las raíces arraigan mucho mejor con la tierra en tempero que regando después.', tipo:'' },
+    { titulo:'Cubrir bancales vacíos', texto:'Aplica una capa gruesa de paja o corteza en los bancales sin cultivo para proteger el suelo de la erosión por lluvias.', tipo:'' },
+    { titulo:'Revisión de drenajes', texto:'Comprueba que los bancales no se encharcan con las lluvias. El exceso de agua es el principal problema en invierno.', tipo:'' },
+    { titulo:'Hacer conservas y encurtidos', texto:'Aprovecha los excedentes de la cosecha de otoño para hacer conservas, encurtidos y mermeladas. Tradición jiennense.', tipo:'' },
+    { titulo:'Planificar la próxima temporada', texto:'Dibuja el plano de rotación de cultivos para el año siguiente. Es fundamental no repetir familia de cultivo en el mismo bancal.', tipo:'' },
+  ]},
+  { mes:'Diciembre', icon:'❄️', tareas:[
+    { titulo:'Mantenimiento de herramientas', texto:'Limpia, afila y aceita todas las herramientas del huerto. El invierno es el momento perfecto para tenerlas a punto.', tipo:'' },
+    { titulo:'Pedir catálogos de semillas', texto:'Repasa los catálogos de semillas para la próxima temporada. Encarga variedades locales jiennenses antes de que se agoten.', tipo:'' },
+    { titulo:'Compost maduro: aplicar', texto:'El compost iniciado en verano ya está maduro. Aplícalo en los bancales vacíos y trabájalo con el suelo.', tipo:'' },
+    { titulo:'Proteger cañerías y depósitos', texto:'Con heladas fuertes, protege las tuberías del riego expuestas con aislante de espuma. Una helada puede romper la instalación.', tipo:'urgente' },
+    { titulo:'Observar y descansar', texto:'El huerto en invierno también enseña. Observa cómo reaccionan las plantas al frío, qué aguanta y qué no. Toma notas para mejorar.', tipo:'' },
+  ]},
+];
+
+// ══════ ANIMALES ══════
+const AROMATICAS = [
+  { nombre:'Romero', emoji:'🌿', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Muy escasa',
+    siembra:'Esquejes en marzo-abril o septiembre', cosecha:'Todo el año',
+    descripcion:'El romero es símbolo de la sierra jiennense. Crece silvestre en toda la provincia y es increíblemente resistente a la sequía y el calor.',
+    usos:['Condimento en asados, guisos y marinados','Aceite aromatizado de romero','Infusión digestiva y estimulante','Repelente de mosquitos en el huerto','Perfume artesanal y cosmética'],
+    cultivo:['Propaga por esquejes de 15 cm: enraíza en agua o tierra','Suelo pobre y bien drenado','Poda tras la floración para mantener forma compacta','En Jaén puede vivir 20 años sin apenas cuidados','No necesita abono: planta de suelos pobres'],
+    conservacion:'Seca al aire en manojos colgados boca abajo. Guarda en tarro hermético. Dura 1-2 años.'
+  },
+  { nombre:'Tomillo', emoji:'🌱', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Muy escasa',
+    siembra:'Semillas en marzo o esquejes en otoño', cosecha:'Primavera-verano antes de florecer',
+    descripcion:'El tomillo silvestre de Jaén (Thymus zygis) es de los más aromáticos del mundo. Crece en todos los cerros pedregosos de la provincia.',
+    usos:['Condimento en carnes, sopas y conservas','Infusión antiséptica para tos y bronquitis','Aceite esencial antibacteriano','Sahumerios y aromaterapia','Miel de tomillo: la más valorada de Jaén'],
+    cultivo:['Siembra directa a voleo en zona pedregosa','Tolera heladas y sequías extremas','Divide la mata cada 3-4 años para rejuvenecer','Florece de abril a junio: ideal para las abejas'],
+    conservacion:'Corta ramitas finas y seca a la sombra. Separa las hojas y guarda en tarro. Muy aromático seco.'
+  },
+  { nombre:'Lavanda', emoji:'💜', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Escasa',
+    siembra:'Esquejes en primavera o semillas en febrero-marzo', cosecha:'Junio-julio antes de que abra la flor',
+    descripcion:'La lavanda se naturaliza perfectamente en Jaén. Sus flores azul-violetas son ornamentales, muy apreciadas por las abejas y con mil usos.',
+    usos:['Saquitos aromáticos para armarios','Aceite esencial relajante y antiséptico','Infusión para insomnio y ansiedad','Cosmética y jabones artesanales','Decoración seca en el hogar'],
+    cultivo:['Suelo muy bien drenado: no tolera encharcamiento','Poda intensa tras la floración','Se multiplica fácil por esquejes en verano','En Jaén aguanta 40C sin problemas'],
+    conservacion:'Corta en racimos cuando el 50% de flores estén abiertas. Ata y cuelga boca abajo en lugar seco y oscuro.'
+  },
+  { nombre:'Orégano', emoji:'🌿', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Escasa',
+    siembra:'Semillas en febrero-marzo o división en otoño', cosecha:'Junio-agosto antes de florecer',
+    descripcion:'El orégano jiennense tiene un aroma intensísimo gracias al calor seco. Imprescindible en la cocina andaluza.',
+    usos:['Condimento en pizzas, carnes y guisos','Infusión digestiva y antiespasmódica','Aceite aromatizado','Conservas de aceitunas y queso','Repelente natural de insectos'],
+    cultivo:['Crece en cualquier suelo bien drenado','Divide la mata cada 2-3 años','Riega poco: el exceso reduce el aroma','Cosecha antes de que florezca: máximo contenido en aceites'],
+    conservacion:'Seca a la sombra en manojos. Las hojas secas tienen más aroma que las frescas.'
+  },
+  { nombre:'Albahaca', emoji:'🌿', familia:'Lamiaceae',
+    ciclo:'Anual', exposicion:'Sol pleno a semisombra', agua:'Moderada',
+    siembra:'Semillero en marzo-abril, trasplante en mayo', cosecha:'Junio-septiembre',
+    descripcion:'La albahaca adora el calor jiennense. Crece con vigor explosivo en verano. Imprescindible junto al tomate.',
+    usos:['Pesto, salsas y ensaladas','Aceite aromatizado de albahaca','Repelente de mosca blanca y pulgón','Infusión digestiva y antiinflamatoria'],
+    cultivo:['No soporta temperaturas bajo 10C','Pellizca los ápices florales para prolongar producción','Riega en la base: el agua en las hojas provoca manchas','Asocia siempre con tomate'],
+    conservacion:'Mejor fresca o en aceite. Congela en cubitos de aceite de oliva.'
+  },
+  { nombre:'Hierbabuena', emoji:'🌿', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol a semisombra', agua:'Moderada',
+    siembra:'División de rizomas en primavera u otoño', cosecha:'Todo el año',
+    descripcion:'La menta de monte de las sierras jiennenses es de aroma excepcional. Muy fácil de cultivar pero invasora.',
+    usos:['Infusiones digestivas y refrescantes','Condimento en ensaladas y salsas','Repelente natural de hormigas y pulgones','Cosmética y dentífricos artesanales'],
+    cultivo:['Planta SIEMPRE en maceta o con barrera: es invasora','Necesita más agua que otras aromáticas','Divide la maceta cada año para rejuvenecer'],
+    conservacion:'Seca a la sombra o congela fresca.'
+  },
+  { nombre:'Salvia', emoji:'🌿', familia:'Lamiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Escasa',
+    siembra:'Semillas en febrero-marzo o esquejes en primavera', cosecha:'Primavera-verano',
+    descripcion:'La salvia es una planta poderosa, medicinal y aromática. Se da muy bien en el clima seco de Jaén.',
+    usos:['Condimento en carnes grasas (cordero, cerdo)','Infusión para dolores de garganta','Repelente de plagas en el huerto','Enjuague bucal y aromaterapia'],
+    cultivo:['Suelo pobre y muy bien drenado','Poda intensa en primavera','Tolera heladas moderadas (-8C)','Florece en azul-violeta: atractiva para abejas'],
+    conservacion:'Seca en manojos a la sombra. Guarda en tarro. Conserva muy bien el aroma hasta 2 años.'
+  },
+  { nombre:'Cilantro', emoji:'🌿', familia:'Apiaceae',
+    ciclo:'Anual', exposicion:'Sol a semisombra', agua:'Moderada',
+    siembra:'Directa en marzo-abril y agosto-septiembre', cosecha:'Hojas: mayo-junio. Semillas: julio-agosto',
+    descripcion:'El cilantro prefiere las temporadas frescas en Jaén. El calor extremo lo hace espigarse rápido.',
+    usos:['Condimento en ensaladas y guisos','Las semillas: especia en panes y conservas','Infusión digestiva','Base de muchas cocinas del mundo'],
+    cultivo:['Siembra directa: no tolera el trasplante','Siembra escalonada cada 2-3 semanas','En Jaén va mejor en otoño que en verano'],
+    conservacion:'Hojas: úsalas frescas o congela. Semillas: seca al sol y guarda en tarro hermético.'
+  },
+  { nombre:'Perejil', emoji:'🌿', familia:'Apiaceae',
+    ciclo:'Bienal', exposicion:'Sol a semisombra', agua:'Moderada',
+    siembra:'Directa en febrero-marzo y septiembre-octubre', cosecha:'Todo el año',
+    descripcion:'Imprescindible en la cocina jiennense. Se cultiva prácticamente todo el año excepto en pleno verano.',
+    usos:['Condimento universal en carnes y sopas','Rico en vitaminas A, C y K','Infusión diurética','Pesticida natural contra pulgones'],
+    cultivo:['Germina muy lento (14-28 días): remoja 24h antes','Cosecha hoja a hoja desde el exterior','Tolera fríos moderados sin protección'],
+    conservacion:'Fresco: aguanta 1 semana en vaso de agua. Mejor congelado picado.'
+  },
+  { nombre:'Eneldo', emoji:'🌿', familia:'Apiaceae',
+    ciclo:'Anual', exposicion:'Sol pleno', agua:'Moderada',
+    siembra:'Directa en marzo y septiembre', cosecha:'Hojas: mayo-julio. Semillas: agosto',
+    descripcion:'El eneldo crece bien en Jaén en primavera y otoño. Imprescindible para encurtidos y pescados.',
+    usos:['Condimento en pepinillos, salmón y sopas','Semillas en panes y quesos','Infusión digestiva','Atrae insectos beneficiosos al huerto'],
+    cultivo:['Siembra directa: no tolera trasplante','El calor de julio lo hace espigar rápido','Se resiembra solo si dejas madurar las semillas'],
+    conservacion:'Hojas: congela. Semillas: seca y guarda en tarro hermético. Dura 3 años.'
+  },
+  { nombre:'Hinojo', emoji:'🌿', familia:'Apiaceae',
+    ciclo:'Perenne', exposicion:'Sol pleno', agua:'Escasa',
+    siembra:'Semillas en marzo o división en otoño', cosecha:'Todo el año (hojas). Semillas en agosto-septiembre',
+    descripcion:'El hinojo silvestre abunda en los bordes de caminos jiennenses. Crece con muy poca agua y es muy productivo.',
+    usos:['Condimento en pescados y licores','Infusión digestiva y para cólicos','Semillas en panes y embutidos','Repelente de pulgones'],
+    cultivo:['Puede volverse invasor: controla bien','Alelopático: no plantes cerca de tomates','El hinojo silvestre de Jaén es el más aromático'],
+    conservacion:'Hojas frescas o secas. Semillas: seca al sol y guarda en tarro.'
+  },
+  { nombre:'Estragón', emoji:'🌿', familia:'Asteraceae',
+    ciclo:'Perenne', exposicion:'Sol a semisombra', agua:'Moderada',
+    siembra:'División de mata en primavera', cosecha:'Mayo-septiembre',
+    descripcion:'El estragón francés es uno de los condimentos más finos. Se adapta bien a Jaén con riego moderado.',
+    usos:['Vinagres y aceites aromatizados','Salsas clásicas (béarnesa, tártara)','Condimento en pollo y pescados','Infusión digestiva'],
+    cultivo:['Solo propaga por división: las semillas dan estragón ruso sin aroma','Necesita algo más de agua que otras aromáticas','En verano puede secarse: rebrotará en otoño'],
+    conservacion:'Mejor fresco o en vinagre. El secado le hace perder casi todo el aroma.'
+  },
+];
+
+const MEDICINALES = [
+  { nombre:'Caléndula', emoji:'🌼', familia:'Asteraceae',
+    parte:'Flores', ciclo:'Anual', epoca_recoleccion:'Mayo-octubre',
+    descripcion:'La caléndula es la planta medicinal más versátil del huerto. Sus flores naranja-amarillas tienen potentes propiedades antiinflamatorias y cicatrizantes.',
+    propiedades:['Cicatrizante y regeneradora de la piel','Antiinflamatoria tópica','Antifúngica natural','Antiséptica suave','Calmante digestiva en infusión'],
+    usos_medicinales:[
+      {uso:'Heridas y quemaduras leves', prep:'Ungüento: flores secas en aceite de oliva 4 semanas. Filtra y aplica.'},
+      {uso:'Hongos en la piel', prep:'Infusión fuerte (50g/litro), deja enfriar y aplica con gasa.'},
+      {uso:'Gastritis y ulcera', prep:'Infusión de flores frescas o secas, 2-3 tazas al día.'},
+      {uso:'Eccemas y dermatitis', prep:'Baño con infusión concentrada o crema casera de caléndula.'},
+    ],
+    cultivo:['Se resiembra sola año tras año','Florece desde octubre hasta junio en Jaén','Muy fácil: apta para principiantes'],
+    precauciones:'Sin precauciones relevantes. Evitar en embarazo en dosis altas internas.'
+  },
+  { nombre:'Manzanilla', emoji:'🌼', familia:'Asteraceae',
+    parte:'Flores', ciclo:'Anual', epoca_recoleccion:'Abril-junio',
+    descripcion:'La manzanilla silvestre abunda en los campos jiennenses. Sus flores blancas con centro amarillo son inconfundibles y de uso medicinal milenario.',
+    propiedades:['Digestiva y carminativa','Antiinflamatoria','Calmante y ansiolítica suave','Antiespasmódica','Cicatrizante ocular'],
+    usos_medicinales:[
+      {uso:'Digestión pesada, gases y cólicos', prep:'Infusión: 1 cucharada de flores secas en agua caliente. 3 tazas al día.'},
+      {uso:'Conjuntivitis y ojos cansados', prep:'Infusión fría, filtra bien y aplica con gasa limpia en los ojos cerrados.'},
+      {uso:'Insomnio y ansiedad leve', prep:'Infusión antes de dormir con miel de tomillo.'},
+      {uso:'Aftas y encías inflamadas', prep:'Enjuague bucal con infusión concentrada 3 veces al día.'},
+    ],
+    cultivo:['Crece silvestre en campos de Jaén','Siembra directa en otoño','Cosecha flores recién abiertas por la mañana'],
+    precauciones:'Alergia cruzada con otras asteráceas. Evitar en embarazo en dosis altas.'
+  },
+  { nombre:'Lavanda', emoji:'💜', familia:'Lamiaceae',
+    parte:'Flores y sumidades', ciclo:'Perenne', epoca_recoleccion:'Junio-julio',
+    descripcion:'La lavanda tiene poderosas propiedades medicinales. Muy abundante en las sierras jiennenses.',
+    propiedades:['Ansiolítica y sedante suave','Antiséptica y antibacteriana','Analgésica tópica','Repelente de insectos','Cicatrizante de quemaduras leves'],
+    usos_medicinales:[
+      {uso:'Insomnio y nerviosismo', prep:'Infusión de flores secas con miel. También aromaterapia con aceite esencial.'},
+      {uso:'Picaduras de insectos', prep:'Aplica aceite esencial puro directamente sobre la picadura.'},
+      {uso:'Dolor de cabeza tensional', prep:'Masaje en sienes con 2 gotas de aceite esencial en aceite de almendras.'},
+      {uso:'Quemaduras leves', prep:'Aceite esencial puro sobre la zona afectada.'},
+    ],
+    cultivo:['Suelo muy drenado','Poda tras la floración','Propaga por esquejes en verano'],
+    precauciones:'Aceite esencial puro: solo uso externo. Evitar en bebés y embarazo.'
+  },
+  { nombre:'Romero', emoji:'🌿', familia:'Lamiaceae',
+    parte:'Hojas y flores', ciclo:'Perenne', epoca_recoleccion:'Todo el año',
+    descripcion:'El romero jiennense tiene propiedades medicinales excepcionales amplificadas por el calor y la sequía, que concentran los aceites esenciales.',
+    propiedades:['Estimulante circulatorio','Antiinflamatorio muscular','Digestivo y hepático','Antioxidante potente','Estimulante de la memoria'],
+    usos_medicinales:[
+      {uso:'Dolores musculares y articulares', prep:'Aceite de romero: ramitas frescas cubiertas de aceite de oliva 4 semanas al sol. Masajea.'},
+      {uso:'Mala digestión y hígado', prep:'Infusión de 2-3 ramitas en agua caliente tras las comidas.'},
+      {uso:'Caída del cabello', prep:'Masaje en cuero cabelludo con infusión fuerte de romero tras el lavado.'},
+      {uso:'Fatiga y agotamiento mental', prep:'Baño con infusión concentrada o aromaterapia con aceite esencial.'},
+    ],
+    cultivo:['Perenne, sin cuidados en Jaén','Crece silvestre en toda la provincia'],
+    precauciones:'Evitar en epilepsia. No tomar aceite esencial internamente. Contraindicado en embarazo en grandes cantidades.'
+  },
+  { nombre:'Tomillo', emoji:'🌱', familia:'Lamiaceae',
+    parte:'Sumidades floridas', ciclo:'Perenne', epoca_recoleccion:'Abril-junio (en flor)',
+    descripcion:'El tomillo silvestre de Jaén es el más rico en timol. Potente antiséptico natural usado desde la antigüedad.',
+    propiedades:['Antiséptico respiratorio potente','Expectorante y broncodilatador','Antibacteriano natural','Antifúngico','Vermífugo'],
+    usos_medicinales:[
+      {uso:'Tos, bronquitis y catarro', prep:'Infusión con miel y limón. 3-4 tazas al día. También inhalaciones de vapor.'},
+      {uso:'Infecciones bucales y faringitis', prep:'Gargarismos con infusión fuerte y sal.'},
+      {uso:'Hongos en las uñas', prep:'Baño de pies con infusión muy concentrada cada noche durante 3 semanas.'},
+      {uso:'Parásitos intestinales', prep:'Infusión en ayunas durante 7 días. Consultar con médico antes.'},
+    ],
+    cultivo:['Crece silvestre en Jaén','Mínima agua, suelo pedregoso'],
+    precauciones:'No usar aceite esencial puro internamente. Evitar en hipertensión y embarazo en dosis altas.'
+  },
+  { nombre:'Aloe Vera', emoji:'🌵', familia:'Asphodelaceae',
+    parte:'Gel de las hojas', ciclo:'Perenne', epoca_recoleccion:'Todo el año (plantas adultas)',
+    descripcion:'El aloe vera crece de forma excepcional en Jaén gracias al calor y la sequía. Una planta adulta de 3 años tiene gel muy concentrado.',
+    propiedades:['Cicatrizante y regenerador cutáneo','Calmante de quemaduras','Antiinflamatorio','Laxante suave','Hidratante profundo'],
+    usos_medicinales:[
+      {uso:'Quemaduras solares y del fuego', prep:'Corta una hoja, extrae el gel transparente y aplica directamente.'},
+      {uso:'Heridas, cortes y eccemas', prep:'Gel fresco aplicado 2-3 veces al día.'},
+      {uso:'Psoriasis y dermatitis', prep:'Gel aplicado diariamente durante semanas.'},
+      {uso:'Estreñimiento ocasional', prep:'Látex amarillo (SOLO 1-2 gotas en agua): laxante muy potente. Uso puntual.'},
+    ],
+    cultivo:['Resistente a la sequía total','No tolera heladas bajo -3C','Propaga por hijuelos laterales','Maceta con sustrato de cactus'],
+    precauciones:'El látex amarillo es muy irritante: no confundir con el gel. Contraindicado internamente en embarazo.'
+  },
+  { nombre:'Melisa', emoji:'🌿', familia:'Lamiaceae',
+    parte:'Hojas', ciclo:'Perenne', epoca_recoleccion:'Mayo-septiembre',
+    descripcion:'La melisa huele a limón y tiene potentes propiedades calmantes. Se cultiva bien en Jaén con algo de riego en verano.',
+    propiedades:['Ansiolítica y sedante suave','Antiviral (herpes labial)','Digestiva y antiespasmódica','Antidepresiva suave','Repelente de mosquitos'],
+    usos_medicinales:[
+      {uso:'Ansiedad, estrés y nerviosismo', prep:'Infusión de hojas frescas o secas. 2-3 tazas al día.'},
+      {uso:'Herpes labial', prep:'Aplica infusión concentrada con gasa sobre el herpes 4-5 veces al día.'},
+      {uso:'Insomnio leve', prep:'Infusión de melisa con valeriana y pasiflora antes de dormir.'},
+      {uso:'Cólicos y digestión nerviosa', prep:'Infusión tras las comidas o en momentos de estrés digestivo.'},
+    ],
+    cultivo:['Necesita más agua que otras lamiáceas','Puede ser invasora: planta con barrera','Divide la mata cada 2 años'],
+    precauciones:'Muy segura. Interacción con sedantes y medicamentos tiroideos: consultar médico.'
+  },
+  { nombre:'Hipérico', emoji:'🌻', familia:'Hypericaceae',
+    parte:'Flores y sumidades', ciclo:'Perenne', epoca_recoleccion:'Junio-julio (día de San Juan)',
+    descripcion:'El hipérico crece silvestre en los bordes de caminos de las sierras jiennenses. Florece alrededor del 24 de junio, de ahí su nombre popular.',
+    propiedades:['Antidepresivo natural (demostrado científicamente)','Cicatrizante y antiinflamatorio tópico','Antiviral','Analgésico suave','Nervino'],
+    usos_medicinales:[
+      {uso:'Depresión leve y tristeza estacional', prep:'Infusión 3 veces al día durante 4-6 semanas mínimo.'},
+      {uso:'Dolores musculares y neurálgicos', prep:'Aceite rojo de hipérico: flores en aceite de oliva 6 semanas al sol.'},
+      {uso:'Quemaduras y heridas', prep:'Aceite rojo aplicado sobre la zona afectada 2-3 veces al día.'},
+      {uso:'Nerviosismo y ansiedad', prep:'Infusión de flores secas con melisa. 2 tazas al día.'},
+    ],
+    cultivo:['Crece silvestre en sierras de Jaén','Recolecta flores el día de San Juan: tradición muy arraigada'],
+    precauciones:'IMPORTANTE: interacciona con muchos medicamentos (anticonceptivos, anticoagulantes). Fotosensibilizante: evitar sol tras uso.'
+  },
+  { nombre:'Valeriana', emoji:'🌸', familia:'Valerianaceae',
+    parte:'Raíz seca', ciclo:'Perenne', epoca_recoleccion:'Otoño (2 año)',
+    descripcion:'La valeriana crece en zonas húmedas de las sierras de Jaén. Sedante natural de eficacia demostrada.',
+    propiedades:['Sedante y ansiolítica','Hipnótica suave (ayuda al sueño)','Antiespasmódica muscular','Antihipertensiva suave','Relajante muscular'],
+    usos_medicinales:[
+      {uso:'Insomnio', prep:'Infusión de raíz seca 30 minutos antes de dormir. Efecto a las 2-4 semanas.'},
+      {uso:'Ansiedad y estrés', prep:'Infusión de raíz con melisa. El olor es fuerte pero el efecto es muy bueno.'},
+      {uso:'Contracturas y espasmos musculares', prep:'Baño con infusión concentrada de raíz.'},
+      {uso:'Hipertensión nerviosa', prep:'Infusión 2 veces al día como complemento (no sustituye medicación).'},
+    ],
+    cultivo:['Necesita suelo húmedo y semisombra','Cosecha la raíz en el segundo año en otoño','Las flores atraen mariposas'],
+    precauciones:'No combinar con alcohol ni sedantes. No usar en embarazo ni menores de 12 años.'
+  },
+  { nombre:'Equinácea', emoji:'🌸', familia:'Asteraceae',
+    parte:'Raíz y partes aéreas', ciclo:'Perenne', epoca_recoleccion:'Flores en verano, raíz en otoño del 3 año',
+    descripcion:'La equinácea es la planta inmunoestimulante más estudiada del mundo. Se cultiva fácilmente en Jaén como ornamental y medicinal.',
+    propiedades:['Inmunoestimulante (refuerza defensas)','Antiviral y antibacteriana','Antiinflamatoria','Cicatrizante','Antioxidante'],
+    usos_medicinales:[
+      {uso:'Prevención de resfriados y gripe', prep:'Infusión de raíz seca: 2-3 semanas antes del invierno. Max 8 semanas seguidas.'},
+      {uso:'Infecciones respiratorias activas', prep:'Infusión 4 tazas al día durante 7-10 días.'},
+      {uso:'Heridas infectadas', prep:'Infusión fuerte aplicada como lavado 2-3 veces al día.'},
+      {uso:'Cistitis', prep:'Infusión junto con gayuba y cola de caballo. Consultar médico.'},
+    ],
+    cultivo:['Planta ornamental muy vistosa: flores rosas grandes','Suelo bien drenado, sol pleno','Se multiplica por semillas en primavera'],
+    precauciones:'No usar mas de 8 semanas seguidas. Contraindicada en enfermedades autoinmunes.'
+  },
+];
+
+const ANIMALES = [
+  {
+    id:'gallinas', nombre:'Gallinas', emoji:'🐔',
+    descripcion:'Las gallinas son el animal más rentable y fácil para el huerto jiennense. Producen huevos, abonan el suelo y controlan insectos. Se adaptan perfectamente al clima de Jaén.',
+    espacio:'4 m² por gallina en exterior + 0.3 m² en gallinero',
+    inicio:'Cualquier época. Mejor primavera para pollitas jóvenes.',
+    razas:'Castellana Negra (raza local), Andaluza Azul, Rhode Island Red, Leghorn para huevos. Brahma para carne.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Producción baja por las pocas horas de luz. Añade luz artificial (14h/día) si quieres mantener la puesta. Vacuna contra Newcastle.'},
+      {mes:'Marzo–Abril', tarea:'Aumenta la puesta con el alargamiento del día. Revisa el gallinero tras el invierno. Desparasitación externa (piojos, ácaros rojos).'},
+      {mes:'Mayo–Junio', tarea:'Máxima producción. Vigila el golpe de calor: sombra, agua fresca y electrolitos en el agua en días de +35°C.'},
+      {mes:'Julio–Agosto', tarea:'Crítico por el calor jiennense. Riega el suelo del gallinero para refrescarlo. Recoge huevos 2 veces al día para evitar que se cocinen.'},
+      {mes:'Sep–Octubre', tarea:'Muda de plumas: baja la puesta temporalmente. Añade proteína extra (legumbres cocidas, insectos). Revisa el gallinero para el invierno.'},
+      {mes:'Nov–Diciembre', tarea:'Desparasitación interna. Calienta el gallinero en noches de helada. Revisa que el agua no se congele.'},
+    ],
+    consejos:[
+      'En Jaén el calor de julio–agosto es el mayor enemigo: sombra obligatoria y agua fresca siempre',
+      'Rota el terreno de campeo para que no lo destruyan completamente',
+      'El estiércol de gallina es el fertilizante más rico: compostar antes de usar (quema las plantas en fresco)',
+      'Mínimo 3 gallinas: son animales sociales y solas se estresan',
+      'El gallo no es necesario para la puesta, solo para fertilizar huevos',
+      'Cierra siempre el gallinero al anochecer: zorros y garduñas son habituales en el campo jiennense',
+    ],
+    alimentacion:'Pienso de postura (120 g/gallina/día) + desperdicios vegetales del huerto + grit (piedrecillas) para la digestión. Siempre agua fresca disponible.',
+  },
+  {
+    id:'cerdos', nombre:'Cerdo ibérico', emoji:'🐷',
+    descripcion:'El cerdo ibérico es parte del patrimonio rural de Jaén. Se cría para la matanza familiar (noviembre–enero). Muy rústico y adaptado al clima.',
+    espacio:'Mínimo 50 m² por cerdo. Mejor en recinto con encinas o árboles.',
+    inicio:'Comprar lechones en primavera (marzo–abril) para sacrificio en noviembre–enero.',
+    razas:'Ibérico puro o cruce ibérico-duroc. Evita razas blancas en el campo jiennense: sufren más el calor.',
+    calendario:[
+      {mes:'Marzo–Abril', tarea:'Compra los lechones (8–12 semanas). Vacunación inicial (peste porcina, parvovirosis). Instala el bebedero y comedero.'},
+      {mes:'Mayo–Junio', tarea:'Crecimiento activo. Alimentación con pienso + bellota temprana si hay encinas. Desparasitación interna.'},
+      {mes:'Julio–Agosto', tarea:'Calor extremo: imprescindible zona de barro/agua para refrescarse. Sin barro el cerdo se estresa y deja de comer. Sombra obligatoria.'},
+      {mes:'Sep–Octubre', tarea:'Montanera si tienes encinas: los cerdos engordan con la bellota. Suplementa con pienso si la montanera es escasa.'},
+      {mes:'Noviembre', tarea:'Preparación para la matanza. Últimos 30 días solo bellota y hierba si es posible. Avisa al veterinario para el certificado sanitario.'},
+      {mes:'Diciembre–Enero', tarea:'Matanza tradicional jiennense. Temperatura ideal: noches por debajo de 5°C. Elaboración de embutidos, jamón y lomo.'},
+    ],
+    consejos:[
+      'El cerdo ibérico necesita barro para termorregularse: en verano en Jaén es imprescindible',
+      'Un cerdo adulto puede pesar 150–180 kg: planifica bien el espacio',
+      'El estiércol de cerdo es muy rico pero debe compostarse 6 meses antes de usar en el huerto',
+      'Vigila la valla: los cerdos son muy inteligentes y aprenden a escaparse',
+      'La normativa exige registro en el REGA y guías de movimiento para el traslado',
+      'Macho castrado (barracho) engorda más rápido y tiene mejor carácter',
+    ],
+    alimentacion:'Pienso de crecimiento + restos del huerto (no carne ni cítricos) + bellota en otoño. Un cerdo come 2–3 kg de pienso al día en crecimiento.',
+  },
+  {
+    id:'conejos', nombre:'Conejos', emoji:'🐇',
+    descripcion:'El conejo es el animal más eficiente para producir carne con poco espacio. Muy popular en el campo jiennense. Sus excrementos son el mejor abono directo para el huerto.',
+    espacio:'Jaula mínima 0.5 m² por conejo. En colony: 2 m² por animal.',
+    inicio:'Todo el año. Mejor primavera u otoño para nuevos reproductores.',
+    razas:'Nueva Zelanda, California o Gigante Español para carne. Mariposa para doble aptitud.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Protege del frío y el viento. Los gazapos recién nacidos son muy sensibles a las heladas. Nidales bien forrados con paja.'},
+      {mes:'Marzo–Abril', tarea:'Época de máxima reproducción. Una coneja puede parir cada 30 días. Revisa nidales y separa los gazapos a las 4 semanas.'},
+      {mes:'Mayo–Junio', tarea:'Ofrece hierba fresca del huerto (sin rocío): lechuga, acelga, diente de león. Es el mejor suplemento vitamínico.'},
+      {mes:'Julio–Agosto', tarea:'Golpe de calor: el mayor riesgo en Jaén. Sombra total, agua fresca constante, ventilación. Temperatura máxima soportada: 30°C.'},
+      {mes:'Sep–Octubre', tarea:'Reactiva la reproducción tras el estrés del verano. Desparasitación y vacuna mixomatosis–VHD (obligatoria en otoño).'},
+      {mes:'Nov–Diciembre', tarea:'Sacrificio de los animales de engorde de primavera. Planifica los reproductores para la siguiente temporada.'},
+    ],
+    consejos:[
+      'El calor de julio–agosto en Jaén es letal: coloca botellas de agua helada en la jaula',
+      'Los excrementos de conejo son el único estiércol que se puede aplicar fresco al huerto',
+      'Una coneja reproductora puede producir 40–50 kg de carne al año',
+      'No mezcles conejos adultos desconocidos: peleas graves',
+      'La mixomatosis y la VHD son enfermedades graves: vacuna obligatoria cada año',
+      'El pelo de angora sirve para artesanía textil si tienes razas productoras',
+    ],
+    alimentacion:'Pienso granulado + heno ad libitum + verduras frescas del huerto. Agua siempre disponible. No dar lechuga iceberg, patata cruda ni aguacate.',
+  },
+  {
+    id:'cabras', nombre:'Cabras', emoji:'🐐',
+    descripcion:'La cabra es el animal más adaptado al terreno accidentado y seco de Jaén. Produce leche para queso artesanal, carne de cabrito y excelente estiércol.',
+    espacio:'Mínimo 200 m² de pasto por cabra + cobertizo de 1.5 m².',
+    inicio:'Comprar cabritas en primavera. El parto es en invierno–primavera.',
+    razas:'Murciano-Granadina (la más común en Jaén), Florida o Malagueña para leche. Blanca Celtibérica para carne.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Época de partos. Vigila de cerca las cabras en días previos al parto. Los cabritos nacen en frío: sécalos y asegura que mamen calostro en las primeras 2h.'},
+      {mes:'Marzo–Abril', tarea:'Máxima producción de leche. Ordeño 2 veces al día. Vacunación anual (enterotoxemia, agalaxia). Desparasitación.'},
+      {mes:'Mayo–Junio', tarea:'Aprovecha el pasto de primavera. Empieza a fabricar queso fresco con el excedente de leche.'},
+      {mes:'Julio–Agosto', tarea:'Reducción del pasto por la sequía jiennense. Suplementa con heno de calidad y pienso. Agua fresca abundante.'},
+      {mes:'Sep–Octubre', tarea:'Época de celo. Introduce el macho o planifica la inseminación para partos en enero–febrero. Desparasitación otoñal.'},
+      {mes:'Nov–Diciembre', tarea:'Gestación. Alimentación extra con pienso de gestación. Prepara el cobertizo para los partos de enero.'},
+    ],
+    consejos:[
+      'La cabra murciano-granadina produce 2–3 litros de leche al día durante 9 meses',
+      'El queso fresco de cabra es el producto estrella del huerto familiar jiennense',
+      'Las cabras son escapistas: la valla debe tener al menos 1.2 m de altura',
+      'El estiércol de cabra es excelente: rico en nutrientes y fácil de compostar',
+      'Recuerda el saneamiento oficial: prueba de tuberculosis y brucelosis cada año',
+      'Una cabra bien cuidada puede producir leche durante 10–12 años',
+    ],
+    alimentacion:'Heno de calidad ad libitum + pienso de lactación (0.5 kg/día en ordeño) + pasto. Sal mineral en bloque siempre disponible. Agua fresca: 3–5 litros al día.',
+  },
+  {
+    id:'abejas', nombre:'Abejas', emoji:'🐝',
+    descripcion:'La apicultura en Jaén es una actividad con gran tradición. La miel de flores silvestres de la Sierra de Cazorla es excepcional. Las abejas mejoran la polinización del huerto en un 30–40%.',
+    espacio:'Una colmena ocupa 0.5 m². Colocar a 2 m del suelo o con vuelo orientado lejos del paso de personas.',
+    inicio:'Primavera (abril–mayo) con un paquete de abejas o enjambre.',
+    razas:'Apis mellifera iberiensis (abeja negra ibérica, más rústica y adaptada a Jaén). Italiana o Cárnica para principiantes.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'La colonia está en reposo. No abras la colmena. Solo comprueba que no hay humedades ni ratones. Si el invierno es muy frío, protege con láminas aislantes.'},
+      {mes:'Marzo–Abril', tarea:'Revisión de primavera: comprueba la reina, el estado de los panales y las reservas de miel. Añade alzas si la colonia es fuerte.'},
+      {mes:'Mayo–Junio', tarea:'Época de enjambrazón: vigila que la colonia no se divida. Primera cata de miel de primavera. Florece el romero, jara y tomillo en Jaén.'},
+      {mes:'Julio–Agosto', tarea:'Calor extremo: asegura sombra para las colmenas. Ventilación suficiente. Las abejas hacen "barba" (racimo exterior): es normal con calor.'},
+      {mes:'Sep–Octubre', tarea:'Cosecha principal de miel. Tratamiento obligatorio contra Varroa (ácido oxálico o timol). Deja reservas suficientes para el invierno (15 kg de miel).'},
+      {mes:'Nov–Diciembre', tarea:'Colonia en semi-reposo. Tratamiento invernal contra Varroa. No molestes la colmena con frío: consumen las reservas más rápido si se alteran.'},
+    ],
+    consejos:[
+      'La miel de Sierra de Cazorla y Segura es de las más valoradas de Andalucía',
+      'Una colmena bien manejada produce 20–40 kg de miel al año en Jaén',
+      'El equipo básico: traje completo, ahumador, palanca y alza. Inversión: 200–400€',
+      'La Varroa es el principal enemigo: tratamiento obligatorio en otoño',
+      'Registra tus colmenas en el registro apícola de la Junta de Andalucía (es obligatorio)',
+      'Las abejas mejoran la producción de tomates, pepinos y calabacines en el huerto',
+      'Nunca pongas colmenas junto a caminos públicos ni a menos de 100 m de viviendas ajenas',
+    ],
+    alimentacion:'Las abejas se alimentan solas del néctar y polen de las flores. Solo suplementa con jarabe de azúcar (1:1) si las reservas son bajas en otoño o tras una cosecha intensa.',
+  },
+  {
+    id:'patos', nombre:'Patos', emoji:'🦆',
+    descripcion:'Los patos son excelentes para el huerto: controlan babosas y caracoles, fertilizan el suelo y producen huevos más ricos en grasa que los de gallina. El pato de Barbería aguanta bien el calor jiennense.',
+    espacio:'10 m² por pato con acceso a agua (cubo o estanque pequeño)',
+    inicio:'Comprar patitos en primavera (marzo–abril)',
+    razas:'Pato de Barbería (el más rústico para Jaén), Pato de Pekín para carne, Khaki Campbell para huevos.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Reducción de puesta. Protege del frío con cama de paja gruesa. Vigila que el agua no se congele.'},
+      {mes:'Marzo–Abril', tarea:'Reactiva la puesta. Cambia el agua del estanque con más frecuencia. Época de cría si tienes macho.'},
+      {mes:'Mayo–Junio', tarea:'Suelta los patos por el huerto al atardecer: eliminarán babosas y caracoles sin tocar las plantas adultas.'},
+      {mes:'Julio–Agosto', tarea:'Calor crítico: agua fresca siempre disponible. Los patos necesitan mojarse la cabeza. Sombra obligatoria.'},
+      {mes:'Sep–Octubre', tarea:'Excelente época para controlar plagas otoñales. Desparasitación. Prepara el refugio para el invierno.'},
+      {mes:'Nov–Diciembre', tarea:'Reduce la suelta si hay heladas. Alimentación extra con cereales. Recoge huevos antes de que se enfríen.'},
+    ],
+    consejos:[
+      'El pato de Barbería es el más silencioso: ideal si tienes vecinos cerca',
+      'Los patos controlan babosas mejor que cualquier producto: suéltalos al anochecer',
+      'El estiércol de pato es muy rico en nitrógeno: compostar antes de aplicar',
+      'Necesitan agua para limpiar el pico y los ojos: mínimo un cubo grande',
+      'El huevo de pato dura más que el de gallina y es ideal para repostería',
+      'No los sueltes con plántulas pequeñas: las pisotean',
+    ],
+    alimentacion:'Pienso de aves de corral + verduras del huerto + babosas y caracoles que encuentren. Maíz y trigo como suplemento. Agua siempre disponible.',
+  },
+  {
+    id:'palomas', nombre:'Palomas mensajeras / Zurita', emoji:'🕊️',
+    descripcion:'La cría de palomas tiene siglos de tradición en los cortijos jiennenses. Producen carne (pichones), abono excelente y en la variedad mensajera, son un hobby apasionante.',
+    espacio:'Palomar de 1 m² por pareja + vuelo libre exterior',
+    inicio:'Primavera con parejas jóvenes (6–8 meses)',
+    razas:'Paloma zurita local para carne, Deportiva/Mensajera para deporte, Mondego para ornamental.',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Época de cría activa: los pichones nacen y crecen rápido en invierno. Limpieza semanal del palomar. Recoge los pichones a los 28 días para consumo.'},
+      {mes:'Marzo–Abril', tarea:'Máxima actividad reproductora. Una pareja puede criar 8–10 pichones al año. Vacunación contra paramixovirus.'},
+      {mes:'Mayo–Junio', tarea:'Sigue la cría activa. Añade minerales y calcio (sepia) para la formación de huevos. Desparasitación.'},
+      {mes:'Julio–Agosto', tarea:'Calor: ventilación del palomar fundamental. Las palomas toleran bien el calor si tienen sombra y agua fresca.'},
+      {mes:'Sep–Octubre', tarea:'Época de muda: reducción de la cría. Añade suplemento vitamínico. Limpieza profunda del palomar antes del invierno.'},
+      {mes:'Nov–Diciembre', tarea:'Cría invernal activa. Las palomas crían durante todo el año si el palomar está protegido del frío.'},
+    ],
+    consejos:[
+      'El palomino (excremento) es el abono más concentrado: diluir mucho antes de usar o compostar',
+      'Las palomas mensajeras son un hobby apasionante: existen clubes colombófilos en toda Jaén',
+      'El pichón de 28 días es un manjar en la cocina tradicional jiennense: en escabeche o guisado',
+      'El palomar debe estar alto: las palomas necesitan ver el horizonte para orientarse',
+      'Son muy territorriales: introduce nuevas aves con cuidado',
+      'La paramixovirosis es la enfermedad más grave: vacuna anual obligatoria',
+    ],
+    alimentacion:'Mezcla de cereales (maíz, trigo, cebada, guisantes). 40–50 g por paloma al día. Agua limpia siempre. Mineral de sepia para el calcio de los huevos.',
+  },
+];
+
+let filtroAnimal = 'all';
+
+function renderAromaticas(){ renderAromaticasFiltradas(''); }
+function buscarAromatica(q){ renderAromaticasFiltradas(q.toLowerCase()); }
+function renderAromaticasFiltradas(q){
+  const lista = q ? AROMATICAS.filter(a=>
+    a.nombre.toLowerCase().includes(q)||
+    a.usos.join(' ').toLowerCase().includes(q)||
+    a.descripcion.toLowerCase().includes(q)
+  ) : AROMATICAS;
+  let html='';
+  for(const a of lista){
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #447A10;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.4rem">${a.emoji}</span>${a.nombre}
+        <span style="font-size:0.65rem;background:#EEF7E0;color:#447A10;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto;">${a.ciclo}</span>
+      </div>
+      <p style="font-size:0.78rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${a.descripcion}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.7rem">${a.exposicion}</div><div class="etiq">Exposición</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.7rem">${a.agua}</div><div class="etiq">Riego</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.7rem">${a.siembra}</div><div class="etiq">Siembra/Propag.</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.7rem">${a.cosecha}</div><div class="etiq">Cosecha</div></div>
+      </div>
+      <div class="modal-seccion"><h4>🍽️ Usos</h4>
+        <ul class="consejo-lista">${a.usos.map(u=>`<li>${u}</li>`).join('')}</ul>
+      </div>
+      <div class="modal-seccion"><h4>🌱 Cultivo en Jaén</h4>
+        <ul class="consejo-lista">${a.cultivo.map(c=>`<li>${c}</li>`).join('')}</ul>
+      </div>
+      <div style="background:#FFF8E8;border-radius:7px;padding:8px 10px;font-size:0.77rem;color:#6A4A00;border-left:3px solid var(--miel);">
+        <strong>🫙 Conservación:</strong> ${a.conservacion}
+      </div>
+    </div>`;
+  }
+  document.getElementById('lista-aromaticas').innerHTML = html || '<p style="color:var(--gris);font-size:0.85rem;">Sin resultados.</p>';
+}
+
+function renderMedicinales(){ renderMedicinalesFiltradas(''); }
+function buscarMedicinal(q){ renderMedicinalesFiltradas(q.toLowerCase()); }
+function renderMedicinalesFiltradas(q){
+  const lista = q ? MEDICINALES.filter(a=>
+    a.nombre.toLowerCase().includes(q)||
+    a.propiedades.join(' ').toLowerCase().includes(q)||
+    a.descripcion.toLowerCase().includes(q)||
+    a.usos_medicinales.map(u=>u.uso).join(' ').toLowerCase().includes(q)
+  ) : MEDICINALES;
+  let html='';
+  for(const a of lista){
+    const usosHtml = a.usos_medicinales.map(u=>`
+      <div style="background:white;border-radius:7px;padding:8px 10px;margin-bottom:5px;border-left:3px solid #5A3A8A;">
+        <div style="font-size:0.69rem;font-weight:800;color:#5A3A8A;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;">${u.uso}</div>
+        <div style="font-size:0.78rem;line-height:1.4;">${u.prep}</div>
+      </div>`).join('');
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #5A3A8A;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:1.4rem">${a.emoji}</span>${a.nombre}
+        <span style="font-size:0.63rem;background:#F0E8F8;color:#5A3A8A;padding:2px 8px;border-radius:10px;font-weight:700;">Parte: ${a.parte}</span>
+        <span style="font-size:0.63rem;background:#EEF7E0;color:#447A10;padding:2px 8px;border-radius:10px;font-weight:700;">${a.epoca_recoleccion}</span>
+      </div>
+      <p style="font-size:0.78rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${a.descripcion}</p>
+      <div class="modal-seccion"><h4>⚕️ Propiedades</h4>
+        <ul class="consejo-lista">${a.propiedades.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div class="modal-seccion"><h4>💊 Preparaciones y usos</h4>${usosHtml}</div>
+      <div class="modal-seccion"><h4>🌱 Cultivo</h4>
+        <ul class="consejo-lista">${a.cultivo.map(c=>`<li>${c}</li>`).join('')}</ul>
+      </div>
+      <div style="background:#FDE8E8;border-radius:7px;padding:8px 10px;font-size:0.77rem;color:#8A0000;border-left:3px solid #CC0A0A;">
+        <strong>⚠️ Precauciones:</strong> ${a.precauciones}
+      </div>
+    </div>`;
+  }
+  document.getElementById('lista-medicinales').innerHTML = html || '<p style="color:var(--gris);font-size:0.85rem;">Sin resultados.</p>';
+}
+
+let filtroAnimalVar = 'all';
+
+function renderTareas(){
+  let html = '';
+  for(let i=0;i<12;i++){
+    const m=(MES_ACTUAL+i)%12;
+    const mt=TAREAS_MES[m];
+    html+=`<div style="font-family:'Playfair Display',serif;font-size:0.98rem;color:var(--gris);padding-top:${i?'13px':'0'};margin-bottom:7px;">
+      ${mt.icon} ${mt.mes}${i===0?` <span style="font-size:0.63rem;background:var(--oliva);color:white;padding:2px 8px;border-radius:10px;vertical-align:middle;font-family:Inter,sans-serif;font-weight:700;">Ahora</span>`:''}
+    </div>`;
+    mt.tareas.forEach(t=>{
+      html+=`<div class="consejo-card ${t.tipo||''}">
+        <div class="consejo-titulo">${t.titulo}</div>
+        <div class="consejo-texto">${t.texto}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('lista-tareas').innerHTML=html;
+}
+
+function filtrarAnimal(id,btn){
+  filtroAnimal=id;
+  document.querySelectorAll('#filtros-animales .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAnimales();
+}
+
+function renderAnimales(){
+  const lista = filtroAnimal==='all' ? ANIMALES : ANIMALES.filter(a=>a.id===filtroAnimal);
+  let html='';
+  for(const a of lista){
+    const calHtml = a.calendario.map(c=>`
+      <div style="background:var(--crema);border-radius:8px;padding:9px 11px;margin-bottom:6px;border-left:3px solid var(--oliva);display:flex;gap:10px;align-items:flex-start;">
+        <div style="min-width:90px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;letter-spacing:0.4px;padding-top:2px;">${c.mes}</div>
+        <div style="font-size:0.79rem;line-height:1.45;color:var(--tierra);">${c.tarea}</div>
+      </div>`).join('');
+    const consHtml = a.consejos.map(c=>`<li>${c}</li>`).join('');
+    html+=`<div style="background:white;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 3px 12px rgba(0,0,0,0.09);border-top:5px solid var(--oliva);overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:2rem;background:var(--crema);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">${a.emoji}</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;">${a.nombre}</div>
+          <div style="font-size:0.65rem;color:var(--gris);font-weight:600;">Inicio: ${a.inicio}</div>
+        </div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--gris);margin-bottom:12px;line-height:1.5;border-bottom:1px solid #EEE;padding-bottom:10px;">${a.descripcion}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:13px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;line-height:1.3">${a.espacio}</div><div class="etiq">Espacio</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;line-height:1.3">${a.razas.split(',')[0]}</div><div class="etiq">Raza principal</div></div>
+      </div>
+      <div class="modal-seccion"><h4>📅 Calendario de cuidados mes a mes</h4>${calHtml}</div>
+      <div class="modal-seccion">
+        <h4>🌾 Alimentación</h4>
+        <div style="background:var(--crema);border-radius:8px;padding:10px;font-size:0.8rem;line-height:1.5;">${a.alimentacion}</div>
+      </div>
+      <div class="modal-seccion"><h4>💡 Consejos para Jaén</h4><ul class="consejo-lista">${consHtml}</ul></div>
+    </div>`;
+  }
+  document.getElementById('lista-animales').innerHTML=html;
+}
+
 function descargar(){
   const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -1042,6 +1729,10 @@ window.onload=function(){
   renderPlagas();
   renderRiego();
   renderLunaMes();
+  renderTareas();
+  renderAnimales();
+  renderAromaticas();
+  renderMedicinales();
 };
 </script>
 </body>
