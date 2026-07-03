@@ -537,7 +537,7 @@
     <button onclick="imprimirCalendario()" style="background:transparent;border:1px solid rgba(255,255,255,0.22);color:rgba(255,255,255,0.58);padding:6px 12px;border-radius:4px;font-size:0.74rem;cursor:pointer;font-family:Inter,sans-serif;font-weight:500;">🖨️ Imprimir</button>
     <button onclick="mostrarVista('setas',this)">🍄 Setas</button>
     <button onclick="mostrarVista('cereales',this)">🌾 Cereales</button>
-    <button onclick="mostrarVista('fito',this)">💉 Fitoterapia</button>
+    <button onclick="mostrarVista('fitoveterinaria',this)">💉 Fitoveterinaria</button>
   </nav>
 </header>
 
@@ -918,14 +918,14 @@
 <div class="vista" id="vista-setas">
   <h2 class="seccion-titulo">🍄 Setas y Hongos de Jaén</h2>
   <div class="info-banner">
-    <span class="icon">🌲</span>
-    <span>Las sierras jiennenses (Cazorla, Segura, Mágina) son paraísos micológicos. Guía de recolección silvestre y cultivo en casa.</span>
+    <span class="icon">🏔️</span>
+    <span>Las sierras de Jaén (Cazorla, Segura, Mágina) son paraíso micológico. Aquí tienes las especies comestibles, cómo cultivarlas en casa y cuándo salir a buscarlas.</span>
   </div>
   <div class="filtros" id="filtros-setas">
     <button class="filtro-btn on" data-seta="all" onclick="filtrarSeta('all',this)">Todas</button>
-    <button class="filtro-btn" data-seta="comestible" onclick="filtrarSeta('comestible',this)">✅ Comestibles</button>
-    <button class="filtro-btn" data-seta="cultivable" onclick="filtrarSeta('cultivable',this)">🏠 Cultivables</button>
-    <button class="filtro-btn" data-seta="peligrosa" onclick="filtrarSeta('peligrosa',this)">☠️ Peligrosas</button>
+    <button class="filtro-btn" data-seta="silvestre" onclick="filtrarSeta('silvestre',this)">🌲 Silvestres</button>
+    <button class="filtro-btn" data-seta="cultivo" onclick="filtrarSeta('cultivo',this)">🏠 Cultivo en casa</button>
+    <button class="filtro-btn" data-seta="peligrosa" onclick="filtrarSeta('peligrosa',this)">☠️ Tóxicas (avisos)</button>
   </div>
   <div id="lista-setas"></div>
 </div>
@@ -934,27 +934,30 @@
 <div class="vista" id="vista-cereales">
   <h2 class="seccion-titulo">🌾 Cereales para Autoconsumo</h2>
   <div class="info-banner">
-    <span class="icon">🏡</span>
-    <span>Cultivar tu propio trigo, cebada o avena en Jaén es posible y muy gratificante. Guía completa para el huerto familiar.</span>
+    <span class="icon">🌻</span>
+    <span>Cultivar tus propios cereales en Jaén es posible incluso en pequeña escala. Pan, harina, pienso para animales y paja para el huerto.</span>
   </div>
   <div id="lista-cereales"></div>
 </div>
 
-<!-- ══════════════ FITOTERAPIA VETERINARIA ══════════════ -->
-<div class="vista" id="vista-fito">
+<!-- ══════════════ FITOVETERINARIA ══════════════ -->
+<div class="vista" id="vista-fitoveterinaria">
   <h2 class="seccion-titulo">💉 Fitoterapia Veterinaria</h2>
   <div class="info-banner" style="background:#5A3A8A;color:white;">
     <span class="icon">🌿</span>
-    <span>Remedios naturales con plantas para los animales del huerto. Complemento a la veterinaria convencional, nunca sustituto.</span>
+    <span>Remedios naturales con plantas para los animales del huerto. Tradición veterinaria popular de Jaén. Siempre consulta al veterinario en casos graves.</span>
   </div>
   <div class="filtros" id="filtros-fito">
     <button class="filtro-btn on" data-fito="all" onclick="filtrarFito('all',this)">Todos</button>
     <button class="filtro-btn" data-fito="gallinas" onclick="filtrarFito('gallinas',this)">🐔 Gallinas</button>
+    <button class="filtro-btn" data-fito="cerdos" onclick="filtrarFito('cerdos',this)">🐷 Cerdos</button>
     <button class="filtro-btn" data-fito="conejos" onclick="filtrarFito('conejos',this)">🐇 Conejos</button>
-    <button class="filtro-btn" data-fito="cabras" onclick="filtrarFito('cabras',this)">🐐 Cabras/Cerdos</button>
+    <button class="filtro-btn" data-fito="cabras" onclick="filtrarFito('cabras',this)">🐐 Cabras</button>
+    <button class="filtro-btn" data-fito="abejas" onclick="filtrarFito('abejas',this)">🐝 Abejas</button>
+    <button class="filtro-btn" data-fito="garrapatas" onclick="filtrarFito('garrapatas',this)">🕷️ Garrapatas</button>
     <button class="filtro-btn" data-fito="general" onclick="filtrarFito('general',this)">🌿 General</button>
   </div>
-  <div id="lista-fito"></div>
+  <div id="lista-fitoveterinaria"></div>
 </div>
 
 <!-- MODAL -->
@@ -3150,415 +3153,428 @@ function imprimirCalendario(){
 
 // ══════ SETAS ══════
 const SETAS = [
-  // COMESTIBLES SILVESTRES
-  { nombre:'Boletus edulis (Calabaza)', emoji:'🍄', tipo:'comestible', cultivable:false,
-    temporada:'Otoño (oct–dic) tras primeras lluvias', habitat:'Pinares y robledales de Cazorla y Segura',
-    descripcion:'El rey de las setas. Sombrero pardo, pie robusto con retículo blanco. Carne blanca, firme y aromática. Muy apreciado en Jaén.',
-    identificacion:'Sombrero: pardo rojizo 5–25cm. Pie: grueso con red blanca. Carne: blanca, no cambia de color al corte. Sin falda ni volva.',
-    confusiones:'Boletus erythropus (pie rojo, se azulea al corte — tóxico). Boletus satanas (sombrero gris claro, pie rojo — muy tóxico).',
-    usos_culinarios:'Revueltos, arroces, guisos, secado para conserva. El más valorado gastronómicamente.',
-    cultivo_casa:null,
-    aviso:''
+  { nombre:'Boletus edulis (Hongo porcino)', emoji:'🍄', tipo:'silvestre',
+    temporada:'Oct–Dic y Feb–Abr', habitat:'Pinares y robledales de sierra (Cazorla, Segura, Mágina)',
+    descripcion:'El rey de las setas jiennenses. Sombrero marrón-caoba, carne blanca y sabor excepcional. Muy apreciado y de alto valor gastronómico.',
+    identificacion:['Sombrero 8–25 cm, marrón castaño, convexo','Pie robusto, blanco-marrón con retículo (red) visible','Tubos blancos que amarillean con la edad','Carne blanca, no cambia de color al corte','Olor agradable, afrutado'],
+    confusion:'Boletus satanas (tóxico): poros rojos, pie rojo, azulea al corte. Nunca confundas.',
+    cocina:'Salteado con ajo y perejil, revuelto con huevos, en risotto o secado en rodajas para conserva.',
+    cultivo: false,
+    consejos:['Busca bajo pinos y robles tras lluvias de otoño','Corta con navaja limpia al ras del suelo','Lleva cesta de mimbre: las esporas caen y resiembran','Zona de Cazorla: altitud 1000–1600m es la mejor','En años secos escasean: la lluvia de septiembre es clave']
   },
-  { nombre:'Níscalo (Lactarius deliciosus)', emoji:'🍄', tipo:'comestible', cultivable:false,
-    temporada:'Otoño (oct–nov)', habitat:'Pinares de repoblación de toda la sierra jiennense',
-    descripcion:'La seta más abundante en los pinares de Jaén. Sombrero naranja-zanahoria con círculos concéntricos. Látex naranja al corte.',
-    identificacion:'Sombrero: naranja con anillos 5–15cm. Látex: naranja que no cambia. Láminas: naranja. Pie: naranja con hoyuelos.',
-    confusiones:'Lactarius torminosus (láminas rosas, sin látex naranja — tóxico). Distinguibles por el látex naranja característico.',
-    usos_culinarios:'A la plancha con ajo y perejil, en escabeche, guisos. Tradicional en Jaén.',
-    cultivo_casa:null,
-    aviso:''
+  { nombre:'Níscalo (Lactarius deliciosus)', emoji:'🍄', tipo:'silvestre',
+    temporada:'Oct–Dic', habitat:'Pinares de repoblación — muy abundante en toda la sierra jiennense',
+    descripcion:'El níscalo es la seta más popular y abundante de Jaén. Color naranja-zanahoria con manchas verdosas. Inconfundible y deliciosa a la plancha.',
+    identificacion:['Sombrero 5–15 cm, naranja con zonas concéntricas más oscuras','Láminas naranja que verdean con el tiempo','Látex naranja-zanahoria al corte (imprescindible)','Se vuelve verde al oxidarse: normal y seguro','Olor afrutado, agradable'],
+    confusion:'Lactarius torminosus (tóxico): látex blanco, no naranja. El látex naranja es señal inequívoca.',
+    cocina:'A la plancha con ajo y limón es la forma más típica de Jaén. También en guisos y revueltos.',
+    cultivo: false,
+    consejos:['Es LA seta de Jaén: abundantísima en buenos años','Busca bajo pinos (especialmente Pinus sylvestris y P. pinaster)','El verde en las láminas no indica que esté mala','Congela bien: saltéalas antes de congelar','Lleva ropa vieja: el látex mancha permanentemente']
   },
-  { nombre:'Seta de cardo (Pleurotus eryngii)', emoji:'🍄', tipo:'comestible', cultivable:true,
-    temporada:'Primavera y otoño', habitat:'Praderas y matorrales con cardos (muy abundante en campiña jiennense)',
-    descripcion:'La seta más típica de la campiña jiennense. Crece en las raíces del cardo corredor. Carne firme y sabrosa. Se puede cultivar en casa.',
-    identificacion:'Sombrero: pardo claro 5–12cm, excéntrico. Pie: blanco, grueso y corto. Láminas: blancas, decurrentes. Sin olores extraños.',
-    confusiones:'Prácticamente inconfundible en su hábitat. El pie excéntrico y las láminas decurrentes son distintivos.',
-    usos_culinarios:'A la plancha, en arroces, guisos, revueltos. Textura carnosa ideal para cocina.',
-    cultivo_casa:'Kits disponibles en tiendas especializadas. También en paja de cereal inoculada con micelio. Producción en 3–4 semanas.',
-    aviso:''
+  { nombre:'Seta de cardo (Pleurotus eryngii)', emoji:'🍄', tipo:'silvestre',
+    temporada:'Mar–May y Oct–Nov', habitat:'Campos, bordes de camino, zonas con cardos (muy común en campiña jiennense)',
+    descripcion:'La seta de cardo es la más apreciada de las llanuras jiennenses. Crece en los restos de las raíces de los cardos silvestres. Carne prieta y sabor intenso.',
+    identificacion:['Sombrero 5–12 cm, marrón-grisáceo, convexo luego aplanado','Pie corto, blanco, excéntrico','Láminas blancas que bajan por el pie','Sin látex','Carne firme y blanca, olor agradable'],
+    confusion:'Muy difícil de confundir. Es la única especie grande que crece en cardos secos en campos abiertos.',
+    cocina:'A la plancha con sal es perfecta. También rebozada, en guisos y como sustituto de la carne.',
+    cultivo: true,
+    kit_cultivo:'Kits de cultivo disponibles online (20–35€). Sustrato de paja de trigo. Produce 3–4 cosechas.',
+    consejos:['Busca en campos barbecho con cardos secos después de lluvias','Crece en grupos: donde hay una hay más cerca','Se puede cultivar fácilmente en casa con kit','La seta de cardo cultivada tiene menos sabor que la silvestre','Congela muy bien: es de las mejores para conserva']
   },
-  { nombre:'Champiñón silvestre (Agaricus campestris)', emoji:'🍄', tipo:'comestible', cultivable:false,
-    temporada:'Primavera y otoño tras lluvias', habitat:'Prados y pastizales, zonas con estiércol',
-    descripcion:'El champiñón silvestre abunda en los prados jiennenses tras las lluvias. Más aromático que el cultivado.',
-    identificacion:'Sombrero: blanco 5–12cm. Láminas: rosas en joven, marrones en adulto. Pie: blanco con anillo. Olor: anisado agradable.',
-    confusiones:'¡PELIGRO! Amanita phalloides (láminas blancas siempre, volva en la base — mortal). Comprueba SIEMPRE que las láminas sean rosas/marrones NUNCA blancas.',
-    usos_culinarios:'Como el champiñón cultivado pero con más sabor. Salteados, rellenos, sopas.',
-    cultivo_casa:null,
-    aviso:'⚠️ Confirma siempre el color de las láminas: ROSAS o MARRONES. Nunca blancas.'
+  { nombre:'Champiñón silvestre (Agaricus campestris)', emoji:'🍄', tipo:'silvestre',
+    temporada:'Sep–Nov y Mar–May', habitat:'Prados, pastos y dehesas con ganado — muy común en Jaén',
+    descripcion:'El champiñón de campo silvestre tiene un sabor muy superior al cultivado. Crece en prados y pastizales, especialmente donde ha habido ganado.',
+    identificacion:['Sombrero 5–12 cm, blanco o blanco-crema','Láminas rosa en joven, marrón-chocolate en adulto','Pie corto con anillo membranoso','Carne blanca que rosea ligeramente al corte','Olor agradable a champiñón'],
+    confusion:'Amanita phalloides (mortal): láminas siempre blancas, volva en la base. NUNCA comas setas con láminas blancas en adulto si no eres experto.',
+    cocina:'Igual que el champiñón cultivado pero con mucho más sabor. Al ajillo, rellenos, en tortilla.',
+    cultivo: true,
+    kit_cultivo:'Cultivo en sustrato de compost enriquecido. Temperatura 15–20°C. Cosecha en 3–4 semanas.',
+    consejos:['Busca en prados tras lluvias otoñales','El rosado de la carne al corte es señal de seguridad','Nunca comas setas con láminas blancas sin identificación experta','El champiñón silvestre de Jaén es 10 veces más sabroso que el de supermercado']
   },
-  { nombre:'Seta de chopo (Agrocybe aegerita)', emoji:'🍄', tipo:'comestible', cultivable:true,
-    temporada:'Primavera y otoño', habitat:'Troncos de chopo y álamo — riberas de ríos jiennenses',
-    descripcion:'Muy común en las choperas de las riberas del Guadalquivir y sus afluentes. Excelente comestible y muy fácil de cultivar en casa.',
-    identificacion:'Sombrero: pardo claro a oscuro 3–10cm. Pie: fibroso, con anillo. Láminas: blanquecinas a pardas. Crece en racimos en madera.',
-    confusiones:'Galerina marginata (también en madera, sombrero similar — MORTAL). Diferencia clave: Galerina tiene esporas marrones oxidadas.',
-    usos_culinarios:'Salteadas, en pasta, arroces. Sabor suave y textura firme.',
-    cultivo_casa:'Inocula un tronco de chopo con tacos de micelio (taladra agujeros de 10mm, introduce tacos, sella con cera). Producción al año.',
-    aviso:''
+  { nombre:'Seta de ostra (Pleurotus ostreatus)', emoji:'🍄', tipo:'cultivo',
+    temporada:'Oct–Mar (silvestre). Todo el año (cultivo)', habitat:'Madera muerta de frondosas (álamos, chopos, olmos)',
+    descripcion:'La seta de ostra es la más fácil de cultivar en casa. Crece en madera muerta y produce abundantes cosechas. Perfecta para iniciarse en el cultivo de setas.',
+    identificacion:['Sombrero 5–20 cm, gris-azulado o marrón','Láminas blancas que bajan por el pie','Pie corto o ausente','Carne blanca, firme','Crece en racimos sobre madera'],
+    confusion:'Sin confusión relevante cuando crece en madera.',
+    cocina:'Salteada con ajo, en cremas, pasta, arroces. Textura carnosa que absorbe bien los sabores.',
+    cultivo: true,
+    kit_cultivo:'Kit de cultivo: 15–25€. Sustrato de paja, serrín de haya o cartón. Temperatura 12–20°C. Primera cosecha en 2–3 semanas. Produce 4–6 cosechas del mismo bloque.',
+    consejos:['Es la seta más fácil de cultivar: perfecta para principiantes','Mantén humedad alta: pulveriza agua 2 veces al día','Temperatura ideal en Jaén: otoño-invierno en interior','Tras agotar el kit, usa el sustrato como abono para el huerto','Puedes inocular troncos de chopo o álamo del huerto']
   },
-  { nombre:'Gírgola / Ostra (Pleurotus ostreatus)', emoji:'🍄', tipo:'comestible', cultivable:true,
-    temporada:'Otoño–invierno', habitat:'Madera de frondosas muertas',
-    descripcion:'Una de las setas más fáciles de cultivar en casa. Crece en paja, cartón o madera. Muy productiva y nutritiva.',
-    identificacion:'Sombrero: gris azulado a pardo, en forma de ostra 5–20cm. Pie: lateral o ausente. Láminas: blancas decurrentes. Crece en racimos.',
-    confusiones:'Crepidotus spp (mucho más pequeñas, láminas marrones). La gírgola es inconfundible por su tamaño.',
-    usos_culinarios:'Salteadas con ajo, en cremas, arroces, wok. Textura carnosa.',
-    cultivo_casa:'El cultivo más fácil: inocula paja de trigo pasteurizada con micelio. En bolsas con agujeros. Producción en 2–3 semanas. Temperatura ideal 15–20°C.',
-    aviso:''
+  { nombre:'Champiñón cultivado (Agaricus bisporus)', emoji:'🍄', tipo:'cultivo',
+    temporada:'Todo el año (cultivo en interior/sótano)', habitat:'Cultivo en compost pasteurizado, en interior fresco y oscuro',
+    descripcion:'El champiñón blanco de bandeja es el más fácil de cultivar en cantidad para autoconsumo. En Jaén se cultiva bien en sótanos, cuartos oscuros o bajo la sombra de la casa, aprovechando temperaturas estables de 15–18°C.',
+    identificacion:['Sombrero 4–10 cm, blanco o crema, muy uniforme','Láminas rosadas en joven, marrón oscuro en adulto','Pie corto y grueso con anillo','Carne blanca firme, no cambia de color','Aroma suave característico'],
+    confusion:'Cultivado en casa desde micelio certificado no hay riesgo de confusión. Solo cuidado si se recolecta silvestre: no confundir con Amanita phalloides (ver ficha tóxica).',
+    cocina:'El más versátil de todos: crudo en ensalada, salteado, relleno, en revuelto, a la plancha con ajo y perejil.',
+    cultivo: true,
+    kit_cultivo:'Kit de compost enfundado (18–30€) o bandejas de compost a granel para mayor producción. Temperatura ideal: 15–18°C, humedad 85–90%, oscuridad casi total. Primera cosecha en 3–4 semanas, produce 3 oleadas cada 7–10 días.',
+    consejos:['El sótano o la bodega de la casa de campo es el lugar ideal en Jaén','Cubre el compost con una capa de turba o "casing" para que fructifique','Pulveriza agua a diario sin encharcar: la humedad es clave','Tras 3 cosechas, el sustrato agotado es abono excelente para el huerto','En verano jiennense, busca la zona más fresca de la casa: el champiñón no tolera el calor extremo']
   },
-  { nombre:'Shiitake (Lentinula edodes)', emoji:'🍄', tipo:'comestible', cultivable:true,
-    temporada:'Todo el año (cultivado)', habitat:'Madera de roble y encina',
-    descripcion:'El shiitake crece en los robles y encinas de la sierra jiennense. Muy valorado por sus propiedades medicinales y gastronómicas.',
-    identificacion:'Sombrero: pardo con escamas blancas 5–20cm. Pie: fibroso, con restos de velo. Láminas: blancas. Olor: a hongos intenso.',
-    confusiones:'Poco probable en madera de roble con estas características.',
-    usos_culinarios:'Salteados, sopas asiáticas, seco para caldo, té medicinal.',
-    cultivo_casa:'Inocula troncos de encina o roble de 30–40cm de diámetro. Mantén húmedo en semisombra. Primera cosecha en 6–12 meses pero produce 5–7 años.',
-    aviso:''
+  { nombre:'Shiitake (Lentinula edodes)', emoji:'🍄', tipo:'cultivo',
+    temporada:'Todo el año (cultivo interior)', habitat:'Cultivo en troncos de roble, encina o sustrato enriquecido',
+    descripcion:'El shiitake es la segunda seta más cultivada del mundo. Rico en lentinano (inmunoestimulante) y con sabor umami intenso. Se cultiva bien en Jaén en otoño-invierno.',
+    identificacion:['Sombrero 5–15 cm, marrón oscuro con escamas','Láminas blancas','Pie central firme','Velo parcial en ejemplares jóvenes','Olor a ajo y madera'],
+    confusion:'Sin confusión relevante en cultivo.',
+    cocina:'En salteados asiáticos, sopas, ramen, risotto. Seco tiene más sabor que fresco. El pie es más duro: usa solo el sombrero fresco.',
+    cultivo: true,
+    kit_cultivo:'Kit de tronco inoculado: 25–40€. Produce durante 2–3 años. También en kits de sustrato de serrín de roble. Temperatura ideal: 15–22°C.',
+    consejos:['El "shock" de frío activa la fructificación: mete el tronco en agua fría 12h','En Jaén funciona bien de octubre a abril en interior','El pie seco triturado es un condimento excepcional','Los troncos de encina del olivar son sustrato ideal','Una vez agotado el tronco, es excelente carbón para barbacoa']
   },
-  // PELIGROSAS
-  { nombre:'Amanita phalloides (Cicuta verde)', emoji:'☠️', tipo:'peligrosa', cultivable:false,
-    temporada:'Otoño', habitat:'Bosques de encina, roble y pino',
-    descripcion:'LA SETA MÁS MORTAL DEL MUNDO. Responsable del 90% de las muertes por intoxicación fúngica en España. En Jaén hay varios casos cada otoño.',
-    identificacion:'Sombrero: verde-amarillento 5–15cm. Láminas: BLANCAS siempre. Pie: blanco con anillo y VOLVA en la base (como una copa). Olor: dulzón.',
-    confusiones:'Se confunde con champiñón joven (sin abrir) y con seta de cardo joven. DIFERENCIA CLAVE: volva en la base y láminas SIEMPRE blancas.',
-    usos_culinarios:'NINGUNO. MORTAL. Sin antídoto específico. El veneno (amatoxinas) destruye el hígado en 6–10 días.',
-    cultivo_casa:null,
-    aviso:'☠️ MORTAL. Busca siempre la volva en la base. Si hay volva: NO TOQUES. Llama al 112 si hay ingesta sospechosa.'
+  { nombre:'Champiñón cultivado (Agaricus bisporus)', emoji:'🍄', tipo:'cultivo',
+    temporada:'Todo el año (cultivo interior)', habitat:'Cultivo en sustrato de compost de paja + estiércol de caballo',
+    descripcion:'El champiñón cultivado es el más fácil de producir en casa. Con un kit básico o preparando tu propio sustrato puedes tener champiñones frescos en 3–4 semanas durante todo el año en Jaén.',
+    identificacion:['Sombrero 3–12 cm, blanco o marrón (Portobello)','Láminas rosas en joven, marrón-chocolate en adulto','Pie central corto con anillo','Carne blanca firme','Olor agradable, inconfundible'],
+    confusion:'En cultivo no hay confusión posible. Solo en silvestre puede confundirse con Amanita (láminas blancas). En tu casa con sustrato comprado: 100% seguro.',
+    cocina:'Al ajillo, en tortilla, rellenos al horno, en cremas, rebozados, en pizza. El Portobello grande es perfecto a la plancha como sustituto de la carne.',
+    cultivo: true,
+    kit_cultivo:'Kit completo: 20–30€. También puedes preparar tu propio sustrato: 70% paja de trigo pasteurizada + 30% estiércol de caballo compostado. Temperatura ideal: 16–22°C. Cosecha en 3–4 semanas. Produce 4–6 cosechas del mismo bloque durante 2–3 meses.',
+    consejos:[
+      'Temperatura crítica: por encima de 25°C el micelio muere — en verano en Jaén ponlo en bodega o interior con aire acondicionado',
+      'Humedad alta: pulveriza agua 2 veces al día sobre la capa de tierra de cobertura',
+      'La capa de cobertura (turba + cal) es imprescindible para que fructifique',
+      'Cosecha girando y tirando suavemente, nunca cortando: evita podredumbre',
+      'El estiércol de caballo es el mejor sustrato — si tienes caballos cerca en Jaén, aprovéchalo',
+      'Tras agotar el cultivo, el sustrato es un abono excepcional para el huerto',
+    ]
   },
-  { nombre:'Amanita muscaria (Matamoscas)', emoji:'🔴', tipo:'peligrosa', cultivable:false,
-    temporada:'Otoño', habitat:'Pinares y hayedos de sierra',
-    descripcion:'La seta icónica roja con puntos blancos. Tóxica aunque raramente mortal. Produce alucinaciones y síntomas neurológicos.',
-    identificacion:'Sombrero: rojo vivo con verrugas blancas (que se lavan con lluvia) 8–20cm. Láminas: blancas. Pie: blanco con anillo y volva.',
-    confusiones:'Inconfundible por su color rojo vivo. Las verrugas pueden desaparecer con lluvia.',
-    usos_culinarios:'NINGUNO. TÓXICA.',
-    cultivo_casa:null,
-    aviso:'🚨 TÓXICA. Aunque raramente mortal, produce síntomas graves. No tocar ni acercar a niños.'
+  { nombre:'Gírgola de chopo (Agrocybe aegerita)', emoji:'🍄', tipo:'cultivo',
+    temporada:'Mar–May y Sep–Nov', habitat:'Pie de chopos y álamos — muy común en riberas de ríos jiennenses',
+    descripcion:'La gírgola de chopo es muy popular en Jaén. Crece en los tocones y bases de chopos en las riberas del Guadalquivir y sus afluentes. Fácil de cultivar en troncos de chopo.',
+    identificacion:['Sombrero 3–10 cm, marrón-canela','Láminas blanquecinas que oscurecen con la edad','Pie central con anillo','Carne blanca, firme','Crece en grupos densos en madera de chopo'],
+    confusion:'Galerina marginata (mortal): más pequeña, sin anillo robusto, en madera descompuesta. Diferencia: el anillo de la gírgola es persistente y el pie es robusto.',
+    cocina:'En revuelto con huevos del huerto, salteada con jamón, en tortilla. Sabor delicado y textura firme.',
+    cultivo: true,
+    kit_cultivo:'Inocula troncos de chopo de 30–50 cm de diámetro con tacos de micelio (5–10€). Entierro parcial en zona húmeda y sombreada. Primera cosecha en 6–12 meses. Produce 5–8 años.',
+    consejos:['Los chopos de las riberas jiennenses son el sustrato perfecto','Mantén el tronco en semisombra y con humedad','En años de sequía, riega el tronco cada semana','La cosecha de primavera es la más abundante','Compra los tacos de micelio en tiendas especializadas o internet']
   },
-  { nombre:'Cortinarius orellanus', emoji:'☠️', tipo:'peligrosa', cultivable:false,
-    temporada:'Otoño', habitat:'Bosques mixtos de sierra',
-    descripcion:'Seta de aspecto inofensivo, color canela-naranja. MORTAL por destrucción renal progresiva. Los síntomas aparecen 2–3 SEMANAS después de la ingesta.',
-    identificacion:'Sombrero: pardo-naranja 3–8cm con superficie seca y fibrosa. Láminas: naranja-oxidadas. Pie: similar al sombrero. Sin anillo ni volva.',
-    confusiones:'Se confunde con níscalos o setas comestibles de color naranja. DIFERENCIA: sin látex naranja, láminas oxidadas.',
-    usos_culinarios:'NINGUNO. MORTAL. Daño renal irreversible. Muchos casos requieren trasplante de riñón.',
-    cultivo_casa:null,
-    aviso:'☠️ MORTAL CON SÍNTOMAS TARDÍOS (2–3 semanas). Si sospechas ingesta, ve URGENCIAS aunque estés bien.'
+  { nombre:'Amanita phalloides (Oronja verde)', emoji:'☠️', tipo:'peligrosa',
+    temporada:'Sep–Nov', habitat:'Bajo encinas, robles y pinos',
+    descripcion:'LA SETA MÁS MORTAL DEL MUNDO. Responsable del 90% de las muertes por intoxicación fúngica en España. No tiene antídoto. Una sola seta puede matar a un adulto.',
+    identificacion:['Sombrero 5–15 cm, verde-amarillento o blanco','Láminas SIEMPRE BLANCAS','Pie blanco con falda y volva en la base (¡excava siempre!)','Sin olor característico o agradable','Puede confundirse con champiñón joven'],
+    confusion:'MORTAL. Se confunde con champiñón joven (láminas rosas→marrones), con Oronja (Amanita caesarea, comestible) y con Volvariella.',
+    cocina:'NUNCA. NO RECOJAS. NO TOQUES.',
+    cultivo: false,
+    consejos:['NUNCA comas una seta con láminas blancas sin identificación experta 100% segura','SIEMPRE excava la base: la volva es la señal definitiva','El color verde NO siempre está presente: hay variantes blancas','Los síntomas aparecen 6–24h después: cuando aparecen el daño hepático ya es grave','Ante la duda: NO. Siempre lleva las setas a identificar antes de comer']
+  },
+  { nombre:'Cortinarius orellanus', emoji:'☠️', tipo:'peligrosa',
+    temporada:'Ago–Nov', habitat:'Bajo robles y encinas de sierra',
+    descripcion:'Seta MORTAL de toxicidad retardada. Los síntomas aparecen 2–3 semanas después de comerla, cuando el daño renal ya es irreversible. Muy peligrosa por la confusión con setas comestibles.',
+    identificacion:['Sombrero 3–8 cm, naranja-ocre herrumbroso','Láminas canela-naranja','Pie del mismo color que el sombrero','Cortina (velo) en ejemplares jóvenes','Sin olor o olor de rábano débil'],
+    confusion:'Se confunde con Cantharellus cibarius (rebozuelo, comestible) y con níscalos jóvenes. DIFERENCIA CLAVE: el rebozuelo tiene falsas láminas (pliegues), no láminas reales.',
+    cocina:'NUNCA. MORTAL.',
+    cultivo: false,
+    consejos:['Toxina: orelanina. Destruye los riñones de forma irreversible','Los síntomas (sed, orina escasa) tardan 2–3 semanas en aparecer','Para entonces el trasplante renal puede ser la única solución','Si tienes duda entre níscalo y este hongo: NO lo comas','Aprende a distinguir láminas reales (hojas) de falsas láminas (pliegues) del rebozuelo']
   },
 ];
 
-let filtroSetaActual = 'all';
+// ══════ CEREALES ══════
+const CEREALES = [
+  { nombre:'Trigo blando', emoji:'🌾',
+    variedad:'Trigo candeal (muy adaptado a Jaén), Trigo duro para pasta',
+    siembra:'Nov–Dic (otoño-invierno)', cosecha:'Jun–Jul',
+    agua:'Secano o riego mínimo de apoyo', superficie_min:'100 m² para autoconsumo',
+    rendimiento:'200–400 kg/ha en secano. 500–700 kg/ha con riego',
+    descripcion:'El trigo es el cereal más cultivado en Jaén históricamente. El candeal jiennense es base del pan artesanal. En pequeña escala se puede cultivar para harina casera y paja para el huerto.',
+    calendario:[
+      {mes:'Nov–Dic', t:'Siembra. Labra profundo y siembra a voleo o con sembradora manual. Tapa con rastrillo. 180–220 kg de semilla/ha.'},
+      {mes:'Ene–Mar', t:'Ahijado. El trigo produce varios tallos por planta. Abona con nitrógeno si el suelo es pobre. Escarda si hay muchas malas hierbas.'},
+      {mes:'Abr–May', t:'Encañado y espigado. Crítico para el rendimiento. Riego de apoyo en años secos si es posible. Vigila la roya.'},
+      {mes:'Jun–Jul', t:'Maduración y cosecha. Corta cuando el grano esté duro y la paja amarilla. Trilla con desgranadora manual o golpeando las espigas.'},
+    ],
+    usos:['Harina para pan artesanal casero','Paja: acolchado del huerto y cama de animales','Forraje verde en primavera','Grano para alimentar gallinas y palomas','Cerveza artesanal (malteado)'],
+    consejos:['100 m² producen 3–6 kg de grano: suficiente para hacer pan ocasionalmente','La paja de trigo es más valiosa que el grano para el huerto pequeño','Guarda el 10% de la cosecha como semilla para el año siguiente','El trigo candeal de Jaén hace el mejor pan de miga compacta','Muele con molinillo eléctrico de cereales: harina integral fresca insuperable']
+  },
+  { nombre:'Cebada', emoji:'🌾',
+    variedad:'Cebada de dos carreras (cervecera), Cebada de seis carreras (forrajera)',
+    siembra:'Oct–Dic', cosecha:'May–Jun',
+    agua:'Secano — más resistente a la sequía que el trigo',
+    superficie_min:'50 m² para forraje de animales',
+    rendimiento:'300–500 kg/ha en secano',
+    descripcion:'La cebada es el cereal más fácil y resistente para Jaén. Madura antes que el trigo, aguanta mejor la sequía y el frío. Ideal para producir forraje para gallinas, conejos y cerdos.',
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra temprana. Aguanta mejor el frío que el trigo. Siembra a voleo o en líneas.'},
+      {mes:'Dic–Feb', t:'Crecimiento lento en invierno. No necesita cuidados especiales. Muy resistente a heladas.'},
+      {mes:'Mar–Abr', t:'Crecimiento activo. Espigado en abril. Más rápido que el trigo.'},
+      {mes:'May–Jun', t:'Cosecha, 2–3 semanas antes que el trigo. Trilla y guarda en lugar seco.'},
+    ],
+    usos:['Forraje para gallinas, conejos, cerdos y palomas','Cerveza artesanal (malteado de cebada)','Paja para cama de animales','Harina para pan integral mezclada con trigo','Verde: pasto nutritivo para animales'],
+    consejos:['Más productiva y fácil que el trigo en Jaén','Las gallinas y conejos la adoran: cultiva una parcela solo para tus animales','El verde de cebada (germinado) es el mejor suplemento vitamínico para gallinas','Para cerveza: necesitas malteado (germinar y secar el grano)','Mezcla con avena para pienso más equilibrado']
+  },
+  { nombre:'Avena', emoji:'🌾',
+    variedad:'Avena blanca, Avena negra (más rústica)',
+    siembra:'Oct–Nov', cosecha:'Jun',
+    agua:'Secano — tolera suelos ácidos y húmedos',
+    superficie_min:'50 m² para forraje',
+    rendimiento:'250–400 kg/ha',
+    descripcion:'La avena es perfecta para los suelos más pobres y zonas húmedas de Jaén. Excelente forraje y base de piensos caseros para todos los animales del huerto.',
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra otoñal. Tolera suelos más húmedos y ácidos que otros cereales.'},
+      {mes:'Dic–Mar', t:'Crecimiento lento. Muy resistente al frío. En zonas altas de Jaén es el cereal más seguro.'},
+      {mes:'Abr–May', t:'Espigado y floración. Panoja característica (no espiga compacta como trigo y cebada).'},
+      {mes:'Jun', t:'Cosecha cuando el grano esté maduro pero antes de que caiga. Trilla y seca bien.'},
+    ],
+    usos:['Pienso para gallinas, conejos, caballos y cabras','Copos de avena para consumo humano (molida y aplastada)','Paja blanda: la mejor para cama de conejos y gallinas','Forraje verde de calidad','Cobertura del suelo en invierno (abono verde)'],
+    consejos:['La paja de avena es más blanda y apetecible para los animales que la de trigo','En zonas altas de Jaén (sierra) es el cereal más adaptado','Mezcla avena + cebada + maíz para pienso casero completo','El copo de avena casero (molido y aplastado) es superior al industrial','Cultiva como abono verde si no necesitas el grano: voltea antes de granar']
+  },
+  { nombre:'Maíz', emoji:'🌽',
+    variedad:'Maíz amarillo (pienso), Maíz blanco, Maíz palomero, Maíz morado',
+    siembra:'Abr–May', cosecha:'Sep–Oct',
+    agua:'Riego — necesita agua regular en verano',
+    superficie_min:'20 m² (siembra en bloques de 4 filas mínimo)',
+    rendimiento:'800–1200 kg/ha con riego',
+    descripcion:'El maíz necesita riego pero es el cereal más productivo del huerto jiennense en verano. Base del pienso de gallinas, cerdos y conejos. También para consumo humano (mazorca, harina de maíz).',
+    calendario:[
+      {mes:'Abr–May', t:'Siembra directa cuando el suelo supere los 12°C. En Jaén, a partir del 15 de abril en zonas bajas.'},
+      {mes:'Jun', t:'Aporca: acumula tierra alrededor del pie cuando alcance 30 cm. Abona con nitrógeno.'},
+      {mes:'Jul–Ago', t:'Floración y polinización. Riego crítico: 2–3 veces por semana. El calor de Jaén acelera el crecimiento.'},
+      {mes:'Sep–Oct', t:'Cosecha cuando la bráctea exterior esté seca y el grano duro. Seca las mazorcas 2–3 semanas antes de desgranar.'},
+    ],
+    usos:['Pienso principal para gallinas, patos y cerdos','Harina de maíz para polenta, tacos y repostería','Mazorca fresca en barbacoa o cocida','Palomitas (variedad palomera)','Paja de maíz: cama de animales y compost'],
+    consejos:['Siembra en bloques: mínimo 4 filas para buena polinización cruzada','El calor de julio en Jaén lo hace crecer increíblemente rápido','Una mata bien abonada produce 2–3 mazorcas grandes','El maíz desecado aguarda un año sin problemas','Asocia con judías y calabaza (Las Tres Hermanas) para mejor rendimiento']
+  },
+  { nombre:'Centeno', emoji:'🌾',
+    variedad:'Centeno de invierno (el más común)',
+    siembra:'Oct–Nov', cosecha:'Jun–Jul',
+    agua:'Secano — el más resistente a sequía y frío de todos',
+    superficie_min:'50 m²',
+    rendimiento:'150–300 kg/ha en secano pobre',
+    descripcion:'El centeno es el cereal más rústico. Crece en los suelos más pobres, ácidos y fríos de la sierra jiennense donde otros cereales no prosperan. Muy útil como abono verde.',
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra. Aguanta heladas de -20°C. Crece en suelos muy pobres y ácidos.'},
+      {mes:'Dic–Mar', t:'Crecimiento muy lento pero continuo incluso con nieve. Cubre el suelo y evita la erosión.'},
+      {mes:'Abr–May', t:'Crecimiento rápido en primavera. Espiga larga y estrecha, característica.'},
+      {mes:'Jun–Jul', t:'Cosecha. Si se usa como abono verde, voltear antes de granar.'},
+    ],
+    usos:['Pan de centeno integral (el más nutritivo de todos)','Abono verde invernal: cubre y mejora el suelo','Forraje para animales en invierno','Paja larga: artesanía y techado tradicional','Whisky y vodka artesanal (destilación)'],
+    consejos:['Perfecto para las zonas altas y frías de la sierra jiennense','Como abono verde es insuperable: mejora suelos pobres y arcillosos','El pan de centeno 100% es denso y muy nutritivo','Mezcla 30% centeno + 70% trigo para pan artesanal ligero','La paja de centeno es la más larga y resistente: ideal para manualidades']
+  },
+  { nombre:'Sorgo', emoji:'🌾',
+    variedad:'Sorgo granífero, Sorgo forrajero',
+    siembra:'May–Jun', cosecha:'Sep–Oct',
+    agua:'Muy resistente a la sequía — ideal para Jaén',
+    superficie_min:'50 m²',
+    rendimiento:'400–800 kg/ha',
+    descripcion:'El sorgo es el cereal más resistente al calor y la sequía. Perfecto para el verano extremo de Jaén. Excelente forraje para todos los animales sin necesitar apenas riego.',
+    calendario:[
+      {mes:'May–Jun', t:'Siembra cuando el suelo esté bien caliente (+15°C). Siembra más tarde que el maíz.'},
+      {mes:'Jul–Ago', t:'Crecimiento en pleno calor. El sorgo ama las temperaturas de 35–40°C. Riego mínimo o nulo.'},
+      {mes:'Sep–Oct', t:'Maduración y cosecha. Corta la panoja cuando el grano esté duro y seco.'},
+    ],
+    usos:['Forraje de verano para todos los animales','Pienso para gallinas y cerdos','Escobas artesanales (sorgo escobero)','Bebidas tradicionales en África (uso artesanal)','Cobertura del suelo en verano'],
+    consejos:['Es el cereal que mejor aguanta el verano de Jaén sin riego','Las gallinas adoran el grano de sorgo: sustituto del maíz en verano','El sorgo forrajero produce mucha biomasa: 3–4 cortes por temporada','Cuidado: el sorgo joven contiene dhurrina (tóxico): no dar verde antes de 1 metro de altura','Un cultivo muy infrautilizado en Jaén con enorme potencial']
+  },
+];
+
+// ══════ FITOTERAPIA VETERINARIA ══════
+const FITOVETERINARIA = [
+  { animal:'gallinas', emoji:'🐔', nombre:'Remedios para gallinas',
+    remedios:[
+      { planta:'Ajo', uso:'Antiparasitario y antibiótico natural', prep:'Machaca 2–3 dientes de ajo y añade al agua de bebida. O mezcla ajo picado fino en el pienso (5g/kg). Tratamiento: 7–10 días consecutivos.', beneficio:'Elimina parásitos intestinales, mejora el sistema inmune y reduce bacterias en el tubo digestivo. Mejora la pigmentación de la yema.' },
+      { planta:'Orégano', uso:'Antibiótico natural, preventivo respiratorio', prep:'Añade orégano seco (1 cucharada por litro) al agua de bebida. También puedes dárselo seco mezclado en el pienso. Uso preventivo: 2 veces por semana.', beneficio:'El carvacrol del orégano tiene potente efecto antibacteriano. Usado por granjas ecológicas como alternativa a los antibióticos.' },
+      { planta:'Tomillo', uso:'Infecciones respiratorias, antiséptico', prep:'Infusión fuerte de tomillo (50g/litro), deja enfriar y añade al agua de bebida durante 5–7 días. También útil como desinfectante del gallinero.', beneficio:'El timol combate bacterias y hongos. Eficaz en catarros respiratorios leves y como preventivo en cambios de estación.' },
+      { planta:'Manzanilla', uso:'Digestión, estrés, diarreas leves', prep:'Infusión de manzanilla, deja enfriar completamente y añade al agua de bebida. Especialmente útil en pollitas recién llegadas o tras el transporte.', beneficio:'Calma el sistema digestivo, reduce el estrés del traslado y ayuda en diarreas leves no infecciosas.' },
+      { planta:'Aloe Vera', uso:'Heridas, picoteos, infecciones cutáneas', prep:'Gel fresco de aloe aplicado directamente sobre heridas, picoteos o zonas inflamadas. También se puede añadir al agua (1 cucharada de gel/litro) como inmunoestimulante.', beneficio:'Cicatrizante, antiinflamatorio y antibacteriano. Muy útil en picoteos entre gallinas y heridas del gallinero.' },
+      { planta:'Vinagre de manzana', uso:'Salud general, antiparasitario suave', prep:'1 cucharada de vinagre de manzana crudo (con "madre") por litro de agua de bebida. Uso continuado: 2 semanas sí, 2 semanas no.', beneficio:'Acidifica el agua (dificulta la proliferación de patógenos), mejora la digestión y tiene efecto antiparasitario suave. Muy usado en avicultura ecológica.' },
+    ]
+  },
+  { animal:'cerdos', emoji:'🐷', nombre:'Remedios para cerdos',
+    remedios:[
+      { planta:'Romero', uso:'Estimulante digestivo, antiinflamatorio', prep:'Añade ramas frescas de romero al agua de bebida o al comedero. También útil como aromático ambiental en la pocilga (repele insectos).', beneficio:'Estimula el apetito y la digestión. El aroma del romero en la pocilga repele moscas y reduce el estrés.' },
+      { planta:'Arcilla verde (caolín)', uso:'Diarreas, intoxicaciones digestivas', prep:'Diluye 2–3 cucharadas de arcilla verde en el agua de bebida durante 3–5 días. O mezcla con comida húmeda.', beneficio:'Absorbe toxinas intestinales y regula el tránsito. Muy eficaz en diarreas de lechones por cambio de alimentación.' },
+      { planta:'Hinojo', uso:'Cólicos y gases, digestión', prep:'Infusión de semillas de hinojo (30g/litro), añade al agua de bebida. O deja que el cerdo mastique tallos y hojas frescas.', beneficio:'Carminativo potente: elimina gases y cólicos digestivos. Los cerdos lo comen voluntariamente.' },
+      { planta:'Bardana', uso:'Infecciones cutáneas, limpiar sangre', prep:'Decocción de raíz de bardana (50g/litro durante 20 minutos). Añade al agua o aplica externamente en heridas.', beneficio:'Depurativa y antibacteriana. Útil en infecciones cutáneas y para mejorar el estado general tras enfermedades.' },
+      { planta:'Barro/fango natural', uso:'Termorregulación, antiparasitario externo', prep:'Proporciona zona de barro natural (tierra + agua). El cerdo lo usa instintivamente.', beneficio:'El barro enfría el cuerpo en el calor extremo de Jaén y actúa como barrera física contra parásitos externos (piojos, ácaros). No es medicinal en sentido estricto pero es imprescindible para el bienestar del cerdo.' },
+    ]
+  },
+  { animal:'conejos', emoji:'🐇', nombre:'Remedios para conejos',
+    remedios:[
+      { planta:'Tomillo', uso:'Prevención coccidiosis y problemas respiratorios', prep:'Ramas frescas de tomillo puestas en la jaula para que el conejo las coma libremente. También infusión añadida al agua (30g/litro).', beneficio:'El conejo come tomillo instintivamente cuando lo necesita. Eficaz en la prevención de coccidiosis (enfermedad parasitaria muy común).' },
+      { planta:'Diente de León', uso:'Hígado, digestión, diurético', prep:'Hojas frescas de diente de león (abundante silvestre en Jaén) añadidas al alimento diario. No exceder 20% de la dieta.', beneficio:'Estimula el hígado, mejora la digestión y actúa como diurético suave. Los conejos lo adoran y lo buscan instintivamente.' },
+      { planta:'Milenrama', uso:'Diarreas, heridas, hemostático', prep:'Infusión de milenrama al agua de bebida en diarreas. Hojas frescas machacadas aplicadas en heridas para detener el sangrado.', beneficio:'Astringente y hemostática. Muy útil en diarreas blandas y heridas superficiales. Abundante silvestre en las sierras de Jaén.' },
+      { planta:'Menta fresca', uso:'Digestión, antiparasitario, repelente', prep:'Ramas de menta fresca en la jaula para consumo libre. También útil como repelente de mosquitos cerca de las jaulas.', beneficio:'Mejora la digestión y tiene efecto antiparasitario suave. El aroma de la menta repele insectos cerca de las jaulas.' },
+      { planta:'Arcilla blanca', uso:'Diarreas graves, intoxicaciones', prep:'Arcilla blanca diluida en agua de bebida (1 cucharada/litro) durante 2–3 días. En diarrea grave, es el primer tratamiento antes del veterinario.', beneficio:'Absorbe toxinas intestinales. En gazapos es especialmente eficaz en las diarreas de destete.' },
+      { planta:'Romero seco', uso:'Repelente de parásitos externos', prep:'Coloca ramitas secas de romero bajo la cama de la jaula y entre las mallas. Renueva cada semana.', beneficio:'El aroma del romero repele piojos, pulgas y ácaros. Más eficaz como preventivo que como tratamiento de infestaciones activas.' },
+    ]
+  },
+  { animal:'cabras', emoji:'🐐', nombre:'Remedios para cabras',
+    remedios:[
+      { planta:'Salvia', uso:'Secado del calostro, mastitis leve, regulación hormonal', prep:'Infusión de salvia al agua de bebida durante el destete para reducir la producción de leche. Para mastitis leve: compresas de infusión caliente en la ubre.', beneficio:'La salvia reduce la producción de leche de forma natural. Antiséptica y antiinflamatoria en aplicación tópica en ubres.' },
+      { planta:'Romero', uso:'Estimulante circulatorio, antiinflamatorio articular', prep:'Infusión de romero añadida al agua de bebida. Masaje con aceite de romero en articulaciones hinchadas.', beneficio:'Estimula la circulación y reduce la inflamación articular. Útil en cabras viejas con problemas articulares.' },
+      { planta:'Ajo y cebolla', uso:'Antiparasitario interno, bronquitis', prep:'Ajo machacado en el pienso (10g/animal/día). Cebolla cruda troceada ofrecida libremente.', beneficio:'Efecto antiparasitario demostrado. En bronquitis, el vapor de cebolla tiene efecto expectorante.' },
+      { planta:'Eucalipto', uso:'Infecciones respiratorias, bronquitis', prep:'Infusión de hojas de eucalipto al agua de bebida. También inhalaciones: pon la infusión caliente cerca de la cabra en lugar cerrado.', beneficio:'Expectorante y broncodilatador. Muy eficaz en catarros respiratorios leves. El eucalipto crece bien en las zonas bajas de Jaén.' },
+      { planta:'Arcilla verde', uso:'Mastitis, heridas en ubres, inflamaciones', prep:'Aplica arcilla verde húmeda directamente sobre la ubre inflamada (no en el pezón). Deja actuar 30 minutos, retira con agua tibia.', beneficio:'Antiinflamatoria y absorbente de toxinas. Alivia la mastitis leve y reduce la inflamación rápidamente.' },
+      { planta:'Propóleos (de abejas)', uso:'Antibiótico natural, heridas, infecciones', prep:'Tintura de propóleos (farmacia o apicultor local) diluida en agua de bebida (20 gotas/litro). Aplicación directa en heridas.', beneficio:'Antibiótico y antifúngico natural de amplio espectro. Muy valorado en ganadería ecológica jiennense.' },
+    ]
+  },
+  { animal:'abejas', emoji:'🐝', nombre:'Remedios para abejas',
+    remedios:[
+      { planta:'Ácido oxálico (ruibarbo)', uso:'Tratamiento de Varroa destructor', prep:'Solución acuosa al 3,5%: 35g ácido oxálico en 1 litro de agua con azúcar. Aplica en invierno (sin cría) goteando entre los bastidores. Dosis: 5ml por calle de abejas.', beneficio:'El tratamiento más eficaz y ecológico contra Varroa. En invierno, sin cría operculada, mata hasta el 95% de los ácaros. Autorizado en apicultura ecológica.' },
+      { planta:'Timol (tomillo)', uso:'Varroa y nosemosis', prep:'Timol cristalizado en saquito de gasa colocado sobre los bastidores. O tiras comerciales de timol. Temperatura ideal: 20–30°C (primavera y otoño en Jaén).', beneficio:'El timol del tomillo es eficaz contra Varroa y Nosema apis. Ventaja: sin residuos en la miel. Autorizado en ecológico.' },
+      { planta:'Ácido láctico', uso:'Varroa en cría abierta', prep:'Solución al 15% pulverizada directamente sobre las abejas y panales con cría abierta. Especialmente útil en primavera.', beneficio:'Tratamiento ácido eficaz en cría abierta. Complementa el oxálico (invierno) y el timol (otoño).' },
+      { planta:'Menta y melisa', uso:'Repelente de polillas de cera (Galleria mellonella)', prep:'Coloca ramas de menta o melisa seca entre los panales en el almacén invernal de alzas vacías.', beneficio:'El aroma de la menta repele a la polilla de la cera que destruye los panales vacíos en almacén. Solución ecológica y económica.' },
+      { planta:'Jarabe de azúcar + propóleos', uso:'Fortalecimiento de colonias débiles', prep:'Jarabe 1:1 (azúcar:agua) con 10 gotas de tintura de propóleos por litro. Alimenta en otoño para completar reservas.', beneficio:'El propóleos en el jarabe refuerza el sistema inmune de la colonia y reduce infecciones fúngicas y bacterianas.' },
+    ]
+  },
+  { animal:'garrapatas', emoji:'🕷️', nombre:'Garrapatas y parásitos externos',
+    remedios:[
+      { planta:'Aceite de árbol de té (Melaleuca)', uso:'Repelente y acaricida natural', prep:'Diluye 10 gotas de aceite esencial de árbol de té en 100ml de aceite de oliva. Aplica con un algodón directamente sobre las garrapatas o sobre la piel de los animales antes de salir al campo. Para spray repelente: 20 gotas en 200ml de agua + 1 cucharada de jabón de castilla.', beneficio:'El terpinen-4-ol del árbol de té paraliza las garrapatas y repele nuevas infestaciones. Eficaz también en piojos y ácaros.' },
+      { planta:'Aceite esencial de lavanda', uso:'Repelente de garrapatas y pulgas', prep:'Diluye 15 gotas en 100ml de aceite de almendras. Aplica en el cuello, orejas y patas de los animales antes de salir al campo. Para el gallinero: coloca telas impregnadas en lavanda diluida en las esquinas.', beneficio:'La lavanda es uno de los repelentes naturales más eficaces. Las garrapatas y pulgas odian su aroma. Sin toxicidad para los animales en dilución correcta.' },
+      { planta:'Aceite esencial de tomillo (timol)', uso:'Acaricida directo, mata garrapatas', prep:'Dilución al 2%: 20 gotas en 100ml de aceite base. Aplica directamente sobre la garrapata con un algodón. Mantén el contacto 30 segundos: la garrapata se suelta sola. Para spray de gallinero: 30 gotas en 300ml agua + jabón.', beneficio:'El timol del tomillo tiene efecto acaricida demostrado. Mata garrapatas sin los residuos de los productos químicos. Muy eficaz en el gallinero contra ácaros rojos.' },
+      { planta:'Vinagre blanco de alta graduación', uso:'Repelente preventivo, facilita extracción', prep:'Vinagre puro aplicado con spray sobre el pelaje de perros, cabras y cerdos antes de salir al campo. Para facilitar la extracción: empapa la garrapata con vinagre puro durante 1 minuto, se suelta más fácilmente.', beneficio:'El ácido acético en alta concentración repele garrapatas y facilita su extracción sin dejar la cabeza incrustada. Económico y disponible en cualquier tienda.' },
+      { planta:'Aceite de neem (Azadirachta indica)', uso:'Repelente potente, antiparasitario sistémico', prep:'Para uso externo: 5ml de aceite de neem + 1ml de jabón líquido + 1 litro de agua tibia. Spray sobre el cuerpo del animal. Para uso en gallinero: diluye 30ml de neem en 5 litros de agua y pulveriza toda la instalación.', beneficio:'La azadiractina del neem interfiere en el ciclo reproductivo de los parásitos. Uno de los repelentes más potentes y duraderos (efecto 7–14 días). Muy usado en ganadería ecológica.' },
+      { planta:'Tierra de diatomeas', uso:'Control de ácaros rojos y parásitos en instalaciones', prep:'Espolvorea tierra de diatomeas (grado alimentario) por el suelo del gallinero, conejera y pocilga. Especialmente en grietas y esquinas donde se esconden los ácaros. También se puede aplicar directamente sobre el plumaje de las gallinas (con cuidado de no inhalar).', beneficio:'Las diatomeas destrozan el exoesqueleto de los parásitos por acción mecánica, deshidratándolos. Eficaz contra ácaros rojos, piojos y garrapatas en instalaciones. Sin resistencias posibles: es acción física, no química.' },
+      { planta:'Ajo en polvo + azufre', uso:'Repelente interno y externo de garrapatas', prep:'Mezcla ajo en polvo con azufre sublimado (2:1) y espolvorea sobre el pelaje frotando bien. Para uso interno (prevención): añade ajo en polvo al pienso de cabras y perros (1g/kg peso corporal). El azufre también se puede disolver en el agua de baño.', beneficio:'El olor a azufre que transpira el animal por la piel actúa como repelente natural de garrapatas. El ajo potencia el efecto. Método tradicional usado en los cortijos jiennenses.' },
+      { planta:'Menta + eucalipto (spray combinado)', uso:'Repelente potente de campo', prep:'Infusión muy concentrada de menta y eucalipto (100g de cada uno en 1 litro de agua). Deja enfriar, añade 1 cucharada de jabón de castilla para que se adhiera. Aplica en spray antes de sacar los animales al campo.', beneficio:'Combinación de dos potentes repelentes aromáticos. El mentol y el eucaliptol son intolerables para las garrapatas. Reaplica cada 4–6 horas en zonas de alta infestación.' },
+      { planta:'Ajenjo y ruda', uso:'Repelente ambiental en gallineros, corrales y camas', prep:'Cuelga manojos secos de ajenjo y ruda en las esquinas del gallinero, cabaña o corral. Renueva cada 3–4 semanas. También puedes esparcir hojas secas trituradas en la cama de paja.', beneficio:'Ambas plantas contienen compuestos amargos y aromáticos que repelen garrapatas, pulgas y otros parásitos del entorno. Muy usado tradicionalmente en los cortijos de Jaén.' },
+      { planta:'Aceite de coco', uso:'Repelente en piel y pelaje', prep:'Aplica una fina capa de aceite de coco virgen en el pelaje de cabras y perros, especialmente en patas, orejas y cuello (zonas donde más se agarran las garrapatas). Reaplica semanalmente.', beneficio:'El ácido láurico del coco tiene efecto repelente natural documentado. Además hidrata la piel y el pelo, mejorando la salud general del pelaje.' },
+      { planta:'Extracción manual con gancho', uso:'Garrapata ya adherida al animal', prep:'Revisa a diario zonas de pliegues (orejas, ingles, cuello, bajo las alas). Usa un gancho extractor de garrapatas (no pinzas): agarra lo más cerca posible de la piel y gira suavemente tirando hacia fuera, sin arrancar de golpe para no dejar la cabeza clavada. NUNCA uses fuego, alcohol o vaselina antes de extraer: hace que la garrapata regurgite y aumenta el riesgo de infección.', beneficio:'Es el único método realmente eficaz para eliminar una garrapata ya adherida. Las plantas repelen pero no despegan una garrapata ya enganchada. La revisión diaria en temporada alta (primavera-verano en Jaén) evita la transmisión de enfermedades como la piroplasmosis.' },
+      { planta:'Manzanilla + caléndula (tras picadura)', uso:'Desinfección post-extracción, evitar infección', prep:'Infusión concentrada de manzanilla y caléndula a partes iguales, aplicada con gasa limpia sobre la zona de la picadura tras retirar la garrapata. Repite 2 veces al día durante 3 días.', beneficio:'Ambas plantas son antiinflamatorias y cicatrizantes, reducen el riesgo de infección local y calman el picor tras la picadura.' },
+    ]
+  },
+  { animal:'general', emoji:'🌿', nombre:'Remedios generales para todos los animales',
+    remedios:[
+      { planta:'Carbón vegetal (vegetal activado)', uso:'Intoxicaciones y envenenamientos', prep:'Carbón vegetal pulverizado mezclado con comida o agua (1g/kg peso animal). Administra inmediatamente ante sospecha de intoxicación. SIEMPRE llama al veterinario.', beneficio:'Absorbe toxinas en el tubo digestivo antes de que pasen a la sangre. Tratamiento de emergencia universal. Muy útil en el campo jiennense donde los animales pueden comer plantas tóxicas.' },
+      { planta:'Miel de romero o tomillo', uso:'Heridas, cicatrización, refuerzo inmune', prep:'Aplica miel pura directamente en heridas limpias como apósito natural. Para refuerzo inmune: añade una cucharada a la comida en periodos de estrés o enfermedad.', beneficio:'La miel tiene propiedades antibacterianas, cicatrizantes e higroscópicas (absorbe la humedad de las bacterias). La miel de las sierras jiennenses es especialmente eficaz.' },
+      { planta:'Aceite de oliva virgen extra', uso:'Estreñimiento, heridas, repelente externo', prep:'Para estreñimiento: 1–2 cucharadas mezcladas con la comida. Para heridas: aplicar sobre la zona como protector y cicatrizante. Para parásitos externos: masaje en zonas afectadas.', beneficio:'El AOVE jiennense es el mejor medicamento tópico natural. Lubrica, cicatriza y forma barrera física contra parásitos. Más eficaz que cualquier crema industrial en heridas superficiales.' },
+      { planta:'Sal marina y minerales', uso:'Prevención de carencias, equilibrio electrolítico', prep:'Bloques de sal mineral disponibles ad libitum para todos los animales (excepto aves: polvos de sal en el pienso). El animal toma lo que necesita de forma instintiva.', beneficio:'La sal es el mineral más importante para todos los animales. Previene calambres, regula la presión osmótica y estimula el consumo de agua en el calor de Jaén.' },
+      { planta:'Vinagre de vino de Jaén', uso:'Desinfectante de instalaciones, antiparasitario externo', prep:'Vinagre puro aplicado con spray en gallineros, conejeras y pocilgas. También en zonas afectadas por ácaros en los animales.', beneficio:'Ácido acético: desinfectante eficaz y económico. Mata ácaros, hongos y bacterias. El vinagre de vino de la comarca es perfecto para esto.' },
+    ]
+  },
+];
+
+let filtroSetiActual = 'all';
+let filtroFitoActual = 'all';
 
 function filtrarSeta(tipo, btn){
-  filtroSetaActual = tipo;
+  filtroSetiActual = tipo;
   document.querySelectorAll('#filtros-setas .filtro-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   renderSetas();
 }
 
+function filtrarFito(animal, btn){
+  filtroFitoActual = animal;
+  document.querySelectorAll('#filtros-fito .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderFitoveterinaria();
+}
+
 function renderSetas(){
-  const lista = filtroSetaActual==='all' ? SETAS :
-    filtroSetaActual==='cultivable' ? SETAS.filter(s=>s.cultivable) :
-    SETAS.filter(s=>s.tipo===filtroSetaActual);
-
-  const TIPO_COLOR = {comestible:'#3D6B1A', cultivable:'#4A9FC8', peligrosa:'#CC0A0A'};
-  const TIPO_BG = {comestible:'#EAF5E0', cultivable:'#E8F0F8', peligrosa:'#FDE8E8'};
-
-  let html = `<div style="background:#FFF3CD;border-radius:10px;padding:12px;margin-bottom:14px;border-left:4px solid #C8900A;font-size:0.79rem;line-height:1.5;">
-    <strong>⚠️ AVISO IMPORTANTE:</strong> Nunca consumas una seta si no estás 100% seguro de su identificación. Ante la duda, NO RECOJAS. Consulta siempre con un micólogo experto. En Jaén existe la Sociedad Micológica de Jaén que organiza salidas guiadas cada otoño.
-  </div>`;
-
+  const lista = filtroSetiActual==='all' ? SETAS : SETAS.filter(s=>s.tipo===filtroSetiActual);
+  let html = '';
   lista.forEach(s=>{
-    const color = TIPO_COLOR[s.tipo];
-    const bg = TIPO_BG[s.tipo];
-    html += `<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid ${color};">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-size:2.2rem;">${s.emoji}</span>
+    const esPeligrosa = s.tipo==='peligrosa';
+    const esCultivo = s.cultivo;
+    const borderColor = esPeligrosa ? '#CC0A0A' : esCultivo ? '#3D6B1A' : '#B8860B';
+    const badgeColor = esPeligrosa ? '#CC0A0A' : esCultivo ? '#3D6B1A' : '#B8860B';
+    const badge = esPeligrosa ? '☠️ TÓXICA — NO RECOGER' : esCultivo ? '🏠 Cultivable en casa' : '🌲 Silvestre';
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,${esPeligrosa?'0.15':'0.07'});border-left:5px solid ${borderColor};${esPeligrosa?'border:2px solid #CC0A0A;':''}">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:2rem;">${s.emoji}</span>
         <div style="flex:1;">
-          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;">${s.nombre}</div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">
-            <span style="font-size:0.62rem;font-weight:800;background:${bg};color:${color};padding:2px 8px;border-radius:10px;">${s.tipo==='comestible'?'✅ Comestible':s.tipo==='cultivable'?'🏠 Cultivable en casa':'☠️ PELIGROSA'}</span>
-            <span style="font-size:0.62rem;background:#F0F0F0;padding:2px 8px;border-radius:10px;">⏰ ${s.temporada.split('(')[0].trim()}</span>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:4px;">${s.nombre}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:0.62rem;font-weight:800;background:${badgeColor};color:white;padding:2px 8px;border-radius:10px;">${badge}</span>
+            <span style="font-size:0.62rem;font-weight:700;background:#F0F0F0;color:var(--gris);padding:2px 8px;border-radius:10px;">⏰ ${s.temporada}</span>
           </div>
         </div>
       </div>
-      ${s.aviso ? `<div style="background:#FDE8E8;border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:0.78rem;font-weight:700;color:#8A0000;line-height:1.4;">${s.aviso}</div>` : ''}
-      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${s.descripcion}</p>
-      <div class="modal-seccion"><h4>🔍 Identificación</h4><p style="font-size:0.78rem;line-height:1.5;">${s.identificacion}</p></div>
-      <div class="modal-seccion"><h4>⚠️ Posibles confusiones</h4><p style="font-size:0.78rem;line-height:1.5;color:#8A3A00;">${s.confusiones}</p></div>
-      ${s.usos_culinarios && s.tipo!=='peligrosa' ? `<div class="modal-seccion"><h4>🍳 Usos culinarios</h4><p style="font-size:0.78rem;line-height:1.5;">${s.usos_culinarios}</p></div>` : ''}
-      ${s.cultivo_casa ? `<div style="background:#E8F5E0;border-radius:7px;padding:9px 11px;font-size:0.78rem;line-height:1.5;border-left:3px solid #3D6B1A;"><strong>🏠 Cultivo en casa:</strong> ${s.cultivo_casa}</div>` : ''}
-      <div style="font-size:0.7rem;color:var(--gris);margin-top:8px;">📍 Hábitat: ${s.habitat}</div>
+      ${esPeligrosa ? `<div style="background:#FDE8E8;border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid #CC0A0A;">
+        <div style="font-weight:800;font-size:0.82rem;color:#CC0A0A;margin-bottom:4px;">⚠️ PELIGRO MORTAL</div>
+        <div style="font-size:0.78rem;line-height:1.5;">${s.descripcion}</div>
+      </div>` : `<p style="font-size:0.79rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${s.descripcion}</p>`}
+      <div style="font-size:0.72rem;font-weight:700;color:var(--gris);margin-bottom:4px;">📍 Hábitat: ${s.habitat}</div>
+      <details style="margin-bottom:7px;">
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">🔍 Identificación</summary>
+        <ul style="margin:6px 0 0 16px;font-size:0.77rem;line-height:1.7;">${s.identificacion.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </details>
+      <div style="background:${esPeligrosa?'#FDE8E8':'#FFF8E8'};border-radius:7px;padding:8px 10px;margin-bottom:7px;font-size:0.76rem;border-left:3px solid ${esPeligrosa?'#CC0A0A':'#B8860B'};">
+        <strong>⚡ Confusión:</strong> ${s.confusion}
+      </div>
+      ${!esPeligrosa ? `<div style="font-size:0.77rem;color:var(--gris);margin-bottom:7px;"><strong>🍳 Cocina:</strong> ${s.cocina}</div>` : ''}
+      ${s.kit_cultivo ? `<div style="background:#EAF5E0;border-radius:7px;padding:8px 10px;margin-bottom:7px;font-size:0.76rem;border-left:3px solid #3D6B1A;">
+        <strong>🏠 Cultivo en casa:</strong> ${s.kit_cultivo}
+      </div>` : ''}
+      ${!esPeligrosa ? `<details>
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">💡 Consejos</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${s.consejos.map(c=>`<li>${c}</li>`).join('')}</ul>
+      </details>` : `<ul class="consejo-lista" style="margin-top:7px;">${s.consejos.map(c=>`<li style="border-left-color:#CC0A0A;">${c}</li>`).join('')}</ul>`}
     </div>`;
   });
-  document.getElementById('lista-setas').innerHTML = html;
+  document.getElementById('lista-setas').innerHTML = html || '<p style="color:var(--gris);padding:20px;text-align:center;">Sin resultados.</p>';
 }
 
-// ══════ CEREALES ══════
-const CEREALES = [
-  { nombre:'Trigo blando', emoji:'🌾', tipo:'cereal',
-    variedad:'Trigo blando panadero (Triticum aestivum). Variedades tradicionales: Andalucía, Marius.',
-    siembra:'Noviembre–diciembre (siembra de otoño en Jaén)',
-    cosecha:'Junio–julio cuando la espiga está dorada y el grano duro',
-    marco:'Siembra a voleo: 180–220 kg/ha. En pequeño huerto: 20–25 g/m²',
-    agua:'Secano — aprovecha las lluvias invernales. Riego de apoyo solo en espigazón si hay sequía.',
-    rendimiento:'En secano jiennense: 2.000–4.000 kg/ha. En 10m²: 2–4 kg de grano.',
-    descripcion:'El trigo es el cereal más cultivado históricamente en Jaén. Para autoconsumo, con 50–100m² tienes harina para el año. El trigo de secano jiennense produce poco pero de calidad excepcional.',
-    proceso_post:['Trilla: golpea los tallos secos sobre una lona para separar el grano','Aventado: lanza el grano al aire con viento para separar la paja (aventador o ventilador)','Limpieza: criba con malla fina para quitar restos','Secado: extiende 1–2 días al sol antes de guardar','Molienda: lleva a molino local o usa molino de piedra doméstico'],
-    calendario:[
-      {mes:'Nov–Dic', t:'Siembra directa a voleo o con sembradora. Laboreo previo superficial.'},
-      {mes:'Enero–Feb', t:'Germinación y ahijado. No necesita cuidados. Las lluvias lo riegan.'},
-      {mes:'Mar–Abr', t:'Encañado. Aplicación opcional de abono nitrogenado si el color es amarillento.'},
-      {mes:'Mayo', t:'Espigazón y floración. Crítico: si hay sequía intensa, un riego puede doblar la cosecha.'},
-      {mes:'Jun–Jul', t:'Maduración y cosecha. Siega cuando la paja está seca y el grano duro. Guarda en lugar seco.'},
-    ],
-    consejos:['Con 50m² produces 10–20 kg de grano: harina para varios meses','Guarda siempre un 10% de la cosecha como semilla para el año siguiente','El trigo de Jaén en secano tiene alto contenido proteico','Comparte la trilla con vecinos: es una tarea festiva tradicional','El centeno y la cebada son aún más resistentes a la sequía si tu zona es muy árida']
-  },
-  { nombre:'Cebada', emoji:'🌾', tipo:'cereal',
-    variedad:'Cebada de dos carreras (Hordeum vulgare distichum). Variedades: Albacete, Reinette.',
-    siembra:'Octubre–noviembre (más temprano que el trigo)',
-    cosecha:'Mayo–junio (antes que el trigo)',
-    marco:'Voleo: 150–180 kg/ha. En huerto: 18–22 g/m²',
-    agua:'Muy resistente a la sequía — ideal para zonas áridas de Jaén',
-    rendimiento:'2.500–5.000 kg/ha en secano. En 10m²: 2.5–5 kg.',
-    descripcion:'La cebada es el cereal más resistente a la sequía y el calor. Perfecta para las zonas más áridas de la campiña jiennense. Se usa para alimentar animales del huerto y hacer cerveza artesanal.',
-    proceso_post:['Trilla y aventado igual que el trigo','Para cerveza: malteado (remoja 2 días, germina 5 días, seca al horno a 50°C)','Para animales: puede darse el grano sin moler a gallinas, conejos y palomas','Paja: excelente para cama de animales y acolchado del huerto'],
-    calendario:[
-      {mes:'Oct–Nov', t:'Siembra directa. La cebada necesita más frío que el trigo para ahijar bien.'},
-      {mes:'Dic–Feb', t:'Crecimiento lento en invierno. Muy resistente a las heladas.'},
-      {mes:'Mar–Abr', t:'Crecimiento activo con el calor. Encañado rápido.'},
-      {mes:'May–Jun', t:'Cosecha antes que el trigo. La espiga tiene barbas largas características.'},
-    ],
-    consejos:['Ideal para alimentar las gallinas y conejos del huerto: autoabastecimiento total','La cerveza artesanal de cebada malteada propia es un proyecto muy gratificante','Más tolerante al suelo salino y calizo que el trigo','La paja de cebada es la mejor para cama de animales','Planta antes que el trigo: necesita más horas de frío']
-  },
-  { nombre:'Avena', emoji:'🌾', tipo:'cereal',
-    variedad:'Avena común (Avena sativa). Avena loca silvestre en cunetas de Jaén.',
-    siembra:'Octubre–noviembre',
-    cosecha:'Mayo–junio',
-    marco:'Voleo: 120–150 kg/ha. En huerto: 15–18 g/m²',
-    agua:'Necesita algo más de agua que la cebada. Riegos de apoyo en primavera.',
-    rendimiento:'1.500–3.000 kg/ha en secano. En 10m²: 1.5–3 kg.',
-    descripcion:'La avena se adapta bien a las zonas más húmedas de la sierra jiennense (Cazorla, Segura). Ideal para copos de avena caseros y como forraje de alta calidad para animales.',
-    proceso_post:['Trilla y aventado estándar','Descascarado: necesita descascaradora para consumo humano (copos de avena)','Sin descascarar: excelente forraje para caballos, cabras y gallinas','Copos caseros: aplasta el grano con rodillo tras vaporizarlo 5 minutos'],
-    calendario:[
-      {mes:'Oct–Nov', t:'Siembra. La avena prefiere suelos más frescos y húmedos.'},
-      {mes:'Dic–Mar', t:'Crecimiento vegetativo. Muy resistente al frío.'},
-      {mes:'Abr–May', t:'Espigazón y floración. La panícula (espiga ramificada) es característica.'},
-      {mes:'May–Jun', t:'Cosecha cuando el grano se suelta fácilmente de la espiga.'},
-    ],
-    consejos:['La avena es el mejor cereal para cabras y caballos: muy digestible','Para copos de avena caseros necesitas un aplastador de granos (30€)','En las sierras jiennenses húmedas produce más que el trigo','La paja de avena es más suave que la de cebada: mejor para animales jóvenes','Planta avena como abono verde en otoño si no vas a cosecharla']
-  },
-  { nombre:'Centeno', emoji:'🌾', tipo:'cereal',
-    variedad:'Centeno común (Secale cereale). Muy rústico.',
-    siembra:'Octubre–noviembre',
-    cosecha:'Junio–julio',
-    marco:'Voleo: 120–150 kg/ha. En huerto: 15 g/m²',
-    agua:'El más resistente a la sequía de todos los cereales. Secano total.',
-    rendimiento:'1.500–3.000 kg/ha. Menos que el trigo pero en suelos donde el trigo no crece.',
-    descripcion:'El centeno es el cereal más rústico. Crece en suelos pobres, ácidos y fríos donde el trigo fracasa. Ideal para zonas de sierra alta de Jaén. La harina de centeno da el pan moreno tradicional.',
-    proceso_post:['Trilla y aventado estándar','Harina de centeno: para pan moreno (100% centeno) o mezclado con trigo','Pan de centeno: más denso, ácido y duradero que el de trigo','Ergot: vigilar el cornezuelo del centeno (hongo tóxico negro en la espiga) — descarta espigas negras'],
-    calendario:[
-      {mes:'Oct–Nov', t:'Siembra. El centeno aguanta los inviernos más duros de sierra.'},
-      {mes:'Dic–Mar', t:'Crecimiento muy lento en frío. Muy resistente a la nieve y hielo.'},
-      {mes:'Abr–May', t:'Crecimiento rápido con el calor. Plantas muy altas (1.5–2m).'},
-      {mes:'Jun–Jul', t:'Cosecha tardía. La espiga larga con muchas barbas es característica.'},
-    ],
-    consejos:['Ideal para suelos ácidos de sierra donde el trigo no va bien','El pan de centeno 100% es denso pero dura semanas sin ponerse malo','Como abono verde es el mejor: biomasa enorme en invierno','Vigilar el ergot (cornezuelo): hongo tóxico negro. Descarta espigas negras','La paja de centeno es la más larga: tradicional para cestos y sombreros']
-  },
-  { nombre:'Maíz (ver también Hortalizas)', emoji:'🌽', tipo:'cereal',
-    variedad:'Maíz para harina (Zea mays). Variedades locales: Maíz de Jaén, Cuarenteno.',
-    siembra:'Abril–mayo',
-    cosecha:'Septiembre–octubre (para secar)',
-    marco:'30cm entre plantas × 70cm entre filas',
-    agua:'NECESITA RIEGO en verano jiennense. No es cereal de secano.',
-    rendimiento:'3.000–6.000 kg/ha. En 10m²: 3–6 kg de grano seco.',
-    descripcion:'El maíz es el único cereal de verano. Necesita riego pero produce mucho. Para harina de maíz (gachas jiennenses), polenta, palomitas o alimento de animales.',
-    proceso_post:['Cosecha cuando el grano esté completamente seco en la planta','Desgrana frotando las mazorcas entre sí','Seca el grano 1 semana al sol antes de guardar','Molienda: lleva al molino o usa molinillo de café para pequeñas cantidades','Las gachas de maíz (poleás) son un plato tradicional jiennense'],
-    calendario:[
-      {mes:'Abr–May', t:'Siembra directa cuando el suelo supere 15°C.'},
-      {mes:'Jun–Jul', t:'Crecimiento activo. Riego cada 2–3 días en verano jiennense.'},
-      {mes:'Agosto', t:'Floración y fecundación. Momento crítico de riego.'},
-      {mes:'Sep–Oct', t:'Maduración. Deja secar en la planta. Cosecha cuando la bráctea esté seca.'},
-    ],
-    consejos:['Las gachas (poleás) con aceite de oliva de Jaén son el desayuno tradicional de los jornaleros','El maíz seco es el mejor alimento para gallinas, patos y palomas','Necesita polinización cruzada: planta mínimo 4 filas juntas','La rosquilla de maíz es otro producto tradicional jiennense','Guarda las mejores mazorcas como semilla para el año siguiente']
-  },
-];
-
 function renderCereales(){
-  let html='';
+  let html = '';
   CEREALES.forEach(c=>{
-    const calHtml = c.calendario.map(m=>`
+    const calHtml = c.calendario.map(e=>`
       <div style="background:var(--crema);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:9px;">
-        <div style="min-width:70px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${m.mes}</div>
-        <div style="font-size:0.78rem;line-height:1.4;">${m.t}</div>
+        <div style="min-width:70px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${e.mes}</div>
+        <div style="font-size:0.78rem;line-height:1.4;">${e.t}</div>
       </div>`).join('');
-    const consHtml = c.consejos.map(x=>`<li>${x}</li>`).join('');
-    const postHtml = c.proceso_post.map((p,i)=>`<li style="margin-bottom:3px;">${p}</li>`).join('');
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid #C8900A;">
+    const usosHtml = c.usos.map(u=>`<li>${u}</li>`).join('');
+    const consejosHtml = c.consejos.map(co=>`<li>${co}</li>`).join('');
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid #B8860B;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-size:2rem;background:var(--crema);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;">${c.emoji}</span>
+        <span style="font-size:2rem;">${c.emoji}</span>
         <div>
           <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${c.nombre}</div>
-          <div style="font-size:0.65rem;color:var(--gris);">Siembra: ${c.siembra} · Cosecha: ${c.cosecha}</div>
+          <div style="font-size:0.65rem;color:var(--gris);font-weight:600;">${c.variedad.split(',')[0]} · Cosecha: ${c.cosecha}</div>
         </div>
       </div>
-      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:11px;line-height:1.5;">${c.descripcion}</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px;">
-        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${c.agua}</div><div class="etiq">Agua</div></div>
-        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${c.rendimiento.split('.')[0]}</div><div class="etiq">Rendimiento</div></div>
+      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${c.descripcion}</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:11px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;">${c.siembra}</div><div class="etiq">Siembra</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;">${c.cosecha}</div><div class="etiq">Cosecha</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;">${c.agua}</div><div class="etiq">Agua</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem;">${c.rendimiento.split('.')[0]}</div><div class="etiq">Rendimiento</div></div>
       </div>
       <details style="margin-bottom:8px;">
-        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;cursor:pointer;padding:5px 0;">📅 Calendario</summary>
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">📅 Calendario</summary>
         <div style="margin-top:7px;">${calHtml}</div>
       </details>
       <details style="margin-bottom:8px;">
-        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;cursor:pointer;padding:5px 0;">⚙️ Post-cosecha y elaboración</summary>
-        <ol style="margin:7px 0 0 16px;font-size:0.78rem;line-height:1.7;">${postHtml}</ol>
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">🌾 Usos</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${usosHtml}</ul>
       </details>
-      <div class="modal-seccion"><h4>💡 Consejos</h4><ul class="consejo-lista">${consHtml}</ul></div>
+      <details>
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">💡 Consejos para Jaén</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${consejosHtml}</ul>
+      </details>
     </div>`;
   });
   document.getElementById('lista-cereales').innerHTML = html;
 }
 
-// ══════ FITOTERAPIA VETERINARIA ══════
-const FITO_DATA = [
-  // GALLINAS
-  { animal:'gallinas', emoji:'🐔', problema:'Piojos y ácaros (parásitos externos)',
-    plantas:['Ajenjo (Artemisia absinthium)','Lavanda','Eucalipto','Tomillo'],
-    preparacion:'Cuelga ramas frescas de ajenjo y lavanda dentro del gallinero. Frota las perchas con eucalipto. Espolvorea ceniza de madera mezclada con tierra de diatomeas en los rincones y bajo las perchas.',
-    dosis:'Renueva las hierbas cada semana. La tierra de diatomeas es el remedio más eficaz: aplica mensualmente.',
-    aviso:'La tierra de diatomeas (sílice natural) es inocua para aves y humanos pero mortal para insectos con exoesqueleto.',
-    nivel:'preventivo'
-  },
-  { animal:'gallinas', emoji:'🐔', problema:'Estrés por calor (golpe de calor)',
-    plantas:['Menta/hierbabuena','Melisa','Saúco (flores)'],
-    preparacion:'Añade hojas frescas de menta o melisa al agua de bebida en verano. Prepara una infusión ligera de flores de saúco y añade al bebedero. Coloca ramas de menta fresca en el gallinero.',
-    dosis:'Agua con menta fresca a diario en julio–agosto. También electrolitos caseros: agua + pizca de sal + azúcar.',
-    aviso:'En Jaén el golpe de calor es la principal causa de muerte en aves. Sombra, agua fresca y menta son los tres pilares.',
-    nivel:'urgente'
-  },
-  { animal:'gallinas', emoji:'🐔', problema:'Diarrea y problemas digestivos',
-    plantas:['Tomillo','Orégano','Ajo','Manzanilla'],
-    preparacion:'Añade 1–2 dientes de ajo machacados al bebedero semanalmente (antibacteriano natural). Infusión de manzanilla al 5% en el agua. Orégano seco mezclado con el pienso (1 cucharada por kg de pienso).',
-    dosis:'Ajo en agua: 2 dientes por 4 litros, 2 veces por semana. Manzanilla: 3 días seguidos en caso de diarrea.',
-    aviso:'Si la diarrea persiste más de 3 días o va acompañada de sangre, consulta veterinario urgente.',
-    nivel:'tratamiento'
-  },
-  { animal:'gallinas', emoji:'🐔', problema:'Baja producción de huevos',
-    plantas:['Ortiga','Perejil','Remolacha (hojas)'],
-    preparacion:'Añade hojas de ortiga fresca (escaldadas) al pienso: mejora la producción y el color de la yema. Perejil fresco picado mezclado con la comida 3 veces por semana. Las hojas de remolacha dan color intenso a la yema.',
-    dosis:'Ortiga escaldada: 100g por gallina a la semana. Perejil: puñado por gallina 3 veces/semana.',
-    aviso:'La ortiga es el suplemento más completo para gallinas: hierro, vitaminas y proteínas vegetales.',
-    nivel:'preventivo'
-  },
-  // CONEJOS
-  { animal:'conejos', emoji:'🐇', problema:'Coccidiosis y problemas intestinales',
-    plantas:['Ajenjo','Tomillo','Ajo','Orégano'],
-    preparacion:'Cuelga ramas de ajenjo seco en la jaula (antiparasitario). Añade ajo machacado al agua (1 diente por litro) 2 veces por semana. Orégano seco en el heno: mejora la flora intestinal.',
-    dosis:'Preventivo: ajo en agua 2 veces/semana. Tratamiento: ajenjo fresco a voluntad durante 5 días.',
-    aviso:'La coccidiosis es la principal causa de muerte en conejos jóvenes. Si hay síntomas (diarrea líquida, postración), veterinario urgente.',
-    nivel:'preventivo'
-  },
-  { animal:'conejos', emoji:'🐇', problema:'Estrés por calor',
-    plantas:['Menta','Melisa','Diente de león'],
-    preparacion:'Coloca botellas de agua congelada en la jaula. Añade hojas de menta fresca al bebedero. Diente de león fresco: los conejos lo adoran y tiene efecto refrescante.',
-    dosis:'Menta fresca: puñado diario en julio–agosto. Diente de León: a voluntad (crece silvestre en Jaén).',
-    aviso:'A partir de 30°C los conejos sufren estrés grave. A 35°C pueden morir. Prioritario en Jaén en verano.',
-    nivel:'urgente'
-  },
-  { animal:'conejos', emoji:'🐇', problema:'Sarna y parásitos externos',
-    plantas:['Aloe vera','Lavanda','Aceite de neem'],
-    preparacion:'Gel de aloe vera aplicado sobre las costras de sarna con un algodón. Aceite de neem diluido (5ml en 100ml aceite de oliva): aplica en las zonas afectadas con guante. Lavanda seca en la cama.',
-    dosis:'Aloe vera: aplicación diaria durante 10–14 días. Neem: cada 3 días durante 2 semanas.',
-    aviso:'La sarna auricular (por Psoroptes cuniculi) requiere tratamiento veterinario si es severa. El aloe es solo complementario.',
-    nivel:'tratamiento'
-  },
-  // CABRAS Y CERDOS
-  { animal:'cabras', emoji:'🐐', problema:'Parásitos internos (lombrices)',
-    plantas:['Ajenjo','Tomillo','Calabaza (semillas)','Ajo'],
-    preparacion:'Semillas de calabaza crudas: 30–50g diarios durante 3 días (antihelmíntico natural por su cucurbitacina). Infusión de ajenjo al 10%: 200ml por cabra al día durante 5 días. Ajo fresco: 2–3 dientes diarios en el pienso.',
-    dosis:'Calabaza: tratamiento 3 días al mes en temporada de parásitos (primavera y otoño). No reemplaza la desparasitación química en infestaciones graves.',
-    aviso:'Las cabras con alta carga parasitaria (mucosas pálidas, pérdida de peso) necesitan tratamiento veterinario antiparasitario urgente.',
-    nivel:'preventivo'
-  },
-  { animal:'cabras', emoji:'🐐', problema:'Mastitis leve (inflamación de la ubre)',
-    plantas:['Arcilla verde','Aloe vera','Cola de caballo','Caléndula'],
-    preparacion:'Cataplasma de arcilla verde fría sobre la ubre inflamada: deja actuar 30 minutos, 2 veces al día. Gel de aloe vera aplicado suavemente en la zona. Infusión de cola de caballo para beber: antiinflamatorio.',
-    dosis:'Arcilla: 2 aplicaciones diarias. Aloe: 3 aplicaciones diarias. Si hay fiebre o el animal deja de comer: veterinario urgente.',
-    aviso:'La mastitis bacteriana grave necesita antibióticos. Estos remedios son solo para casos leves y como complemento.',
-    nivel:'tratamiento'
-  },
-  { animal:'cabras', emoji:'🐐', problema:'Heridas y cortes menores',
-    plantas:['Caléndula','Aloe vera','Propóleo (si tienes abejas)','Miel'],
-    preparacion:'Limpia la herida con agua limpia. Aplica gel de aloe vera fresco. Tintura de caléndula diluida (1:5 en agua) como antiséptico. La miel cruda aplicada directamente es un potente cicatrizante y antibacteriano.',
-    dosis:'Aplica 2–3 veces al día hasta cicatrizar. Para heridas profundas o con signos de infección: veterinario.',
-    aviso:'La miel de tomillo de Jaén tiene propiedades antibacterianas excepcionales para uso tópico.',
-    nivel:'tratamiento'
-  },
-  // GENERAL
-  { animal:'general', emoji:'🌿', problema:'Repelente de moscas e insectos para todos los animales',
-    plantas:['Lavanda','Albahaca','Eucalipto','Laurel','Tomillo'],
-    preparacion:'Cuelga ramos de lavanda seca en gallineros, conejeras y establos. Pon matas de albahaca fresca cerca de los comederos. Prepara un spray: hierve eucalipto 15 min, cuela y mete en pulverizador. Aplica en las zonas de descanso.',
-    dosis:'Ramas secas: cambia cada 2–3 semanas. Spray de eucalipto: aplica cada 2–3 días en verano.',
-    aviso:'En Jaén las moscas son un problema grave en verano por el calor. La combinación lavanda + albahaca es muy eficaz.',
-    nivel:'preventivo'
-  },
-  { animal:'general', emoji:'🌿', problema:'Desinfección natural de instalaciones',
-    plantas:['Vinagre blanco','Aceite de árbol de té','Lavanda','Tomillo'],
-    preparacion:'Solución de limpieza: 1 litro de vinagre blanco + 10 gotas de aceite de árbol de té + 5 gotas de lavanda. Usa para fregar comederos, bebederos y superficies. Infusión de tomillo concentrada para desinfectar herramientas.',
-    dosis:'Limpieza semanal de comederos y bebederos. Desinfección profunda mensual.',
-    aviso:'El vinagre blanco es el desinfectante más económico y efectivo para uso ganadero doméstico. pH ácido elimina la mayoría de bacterias.',
-    nivel:'preventivo'
-  },
-  { animal:'general', emoji:'🌿', problema:'Suplemento vitamínico natural',
-    plantas:['Ortiga','Diente de León','Milenrama','Alfalfa'],
-    preparacion:'Ortiga seca: el suplemento más completo (hierro, calcio, vitaminas A, C, K). Añade al pienso de todos los animales. Diente de León fresco: vitaminas y minerales. Alfalfa: la proteína vegetal más completa para herbívoros.',
-    dosis:'Ortiga seca: 5% del peso del pienso diario. Diente de León: a voluntad (crece gratis en cualquier campo de Jaén). Alfalfa: a voluntad para cabras y conejos.',
-    aviso:'La ortiga es el superalimento más barato y accesible. Crece silvestre en zonas húmedas de Jaén. Guántate para recogerla.',
-    nivel:'preventivo'
-  },
-];
-
-let filtroFitoActual = 'all';
-
-function filtrarFito(tipo, btn){
-  filtroFitoActual = tipo;
-  document.querySelectorAll('#filtros-fito .filtro-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  renderFito();
-}
-
-function renderFito(){
-  const lista = filtroFitoActual==='all' ? FITO_DATA : FITO_DATA.filter(f=>f.animal===filtroFitoActual);
-  const NIVEL_COLOR = {preventivo:'#3D6B1A', tratamiento:'#C8900A', urgente:'#CC0A0A'};
-  const NIVEL_LABEL = {preventivo:'🛡️ Preventivo', tratamiento:'💊 Tratamiento', urgente:'🚨 Urgente'};
-
-  let html = `<div style="background:#FFF3CD;border-radius:10px;padding:11px;margin-bottom:14px;border-left:4px solid #C8900A;font-size:0.78rem;line-height:1.5;">
-    <strong>⚠️ AVISO MÉDICO:</strong> Estos remedios son complementarios a la veterinaria convencional, nunca sustitutos. Ante síntomas graves, consulta siempre a tu veterinario.
-  </div>`;
-
-  lista.forEach(f=>{
-    const color = NIVEL_COLOR[f.nivel];
-    html+=`<div style="background:white;border-radius:12px;padding:15px;margin-bottom:10px;box-shadow:0 2px 7px rgba(0,0,0,0.07);border-left:5px solid ${color};">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-        <div>
-          <span style="font-size:1.1rem;">${f.emoji}</span>
-          <strong style="font-size:0.9rem;margin-left:5px;">${f.problema}</strong>
+function renderFitoveterinaria(){
+  const lista = filtroFitoActual==='all' ? FITOVETERINARIA : FITOVETERINARIA.filter(f=>f.animal===filtroFitoActual);
+  let html = '';
+  lista.forEach(grupo=>{
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid #5A3A8A;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.5rem;">${grupo.emoji}</span>${grupo.nombre}
+      </div>`;
+    grupo.remedios.forEach(r=>{
+      html+=`<div style="background:var(--crema);border-radius:9px;padding:12px;margin-bottom:9px;border-left:3px solid #5A3A8A;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+          <div style="font-weight:800;font-size:0.86rem;">${r.planta}</div>
+          <span style="font-size:0.63rem;background:#5A3A8A;color:white;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap;flex-shrink:0;">${r.uso}</span>
         </div>
-        <span style="font-size:0.63rem;font-weight:800;background:${color}22;color:${color};padding:3px 9px;border-radius:10px;white-space:nowrap;">${NIVEL_LABEL[f.nivel]}</span>
-      </div>
-      <div class="modal-seccion">
-        <h4>🌿 Plantas utilizadas</h4>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;">
-          ${f.plantas.map(p=>`<span style="background:var(--crema);border-radius:15px;padding:3px 10px;font-size:0.72rem;font-weight:600;">${p}</span>`).join('')}
-        </div>
-      </div>
-      <div class="modal-seccion"><h4>⚗️ Preparación</h4><p style="font-size:0.79rem;line-height:1.5;">${f.preparacion}</p></div>
-      <div class="modal-seccion"><h4>📏 Dosis y frecuencia</h4><p style="font-size:0.79rem;line-height:1.5;">${f.dosis}</p></div>
-      <div style="background:${f.nivel==='urgente'?'#FDE8E8':f.nivel==='tratamiento'?'#FFF8E8':'#EAF5E0'};border-radius:7px;padding:8px 10px;font-size:0.76rem;color:${color};border-left:3px solid ${color};line-height:1.4;">
-        <strong>💡 Nota:</strong> ${f.aviso}
-      </div>
-    </div>`;
+        <details>
+          <summary style="font-size:0.72rem;font-weight:700;color:var(--oliva);cursor:pointer;margin-bottom:4px;">📋 Ver preparación y beneficios</summary>
+          <div style="margin-top:8px;">
+            <div style="font-size:0.75rem;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Preparación</div>
+            <div style="font-size:0.79rem;line-height:1.5;margin-bottom:8px;">${r.prep}</div>
+            <div style="font-size:0.75rem;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Beneficio</div>
+            <div style="font-size:0.79rem;line-height:1.5;color:var(--gris);">${r.beneficio}</div>
+          </div>
+        </details>
+      </div>`;
+    });
+    html+=`</div>`;
   });
-  document.getElementById('lista-fito').innerHTML = html;
+  document.getElementById('lista-fitoveterinaria').innerHTML = html;
 }
 
 function descargar(){
@@ -3594,7 +3610,7 @@ window.onload=function(){
   setTimeout(inicializarCalculadora, 100);
   renderSetas();
   renderCereales();
-  renderFito();
+  renderFitoveterinaria();
 };
 </script>
 </body>
