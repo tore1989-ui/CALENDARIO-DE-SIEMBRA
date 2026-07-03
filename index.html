@@ -2,7 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#2C1810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Huerto Jaén">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232C1810'/><text y='.9em' font-size='80'>🌱</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2C1810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Huerto Jaén">
+<link rel="manifest" href="manifest.json">
 <title>Huerto Jiennense — Calendario de Siembra</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap');
@@ -16,14 +27,49 @@
     --cielo:     #4A9FC8;
     --blanco:    #FEFCF8;
     --gris:      #6A6258;
-
-    /* COLORES CALENDARIO — MÁXIMO CONTRASTE ENTRE SÍ */
-    --semillero:  #FF7000;   /* naranja vivo */
-    --trasplante: #0A7A3C;   /* verde bosque oscuro */
-    --directa:    #CC0A0A;   /* rojo puro */
-    --cosecha:    #B8860B;   /* ámbar dorado */
+    --semillero:  #FF7000;
+    --trasplante: #0A7A3C;
+    --directa:    #CC0A0A;
+    --cosecha:    #B8860B;
     --vacio:      #D8D2C8;
+    --bg-body:    #F4EFE4;
+    --bg-card:    #FEFCF8;
+    --bg-white:   #FFFFFF;
+    --text-main:  #2C1810;
+    --border:     #D0C9BC;
   }
+
+  body.dark {
+    --tierra:    #F4EFE4;
+    --arcilla:   #E8844A;
+    --oliva:     #7DC84A;
+    --crema:     #1A1A1A;
+    --miel:      #F0B030;
+    --cielo:     #6AB8E8;
+    --blanco:    #242424;
+    --gris:      #A0998E;
+    --vacio:     #3A3A3A;
+    --bg-body:   #141414;
+    --bg-card:   #1E1E1E;
+    --bg-white:  #242424;
+    --text-main: #F0EAE0;
+    --border:    #3A3632;
+  }
+
+  body { background-color: var(--bg-body) !important; color: var(--text-main) !important; }
+  body.dark { background-color: var(--bg-body); color: var(--text-main); }
+  body.dark .cultivo-nombre { background: var(--bg-card); color: var(--text-main); }
+  body.dark .modal { background: var(--bg-card); color: var(--text-main); }
+  body.dark .consejo-card { background: var(--bg-card); color: var(--text-main); }
+  body.dark .plaga-card { background: var(--bg-card); }
+  body.dark .dato-box { background: #2A2A2A; }
+  body.dark .buscador { background: #2A2A2A; color: var(--text-main); border-color: #444; }
+  body.dark table tr { background: var(--bg-card) !important; }
+  body.dark table tr:nth-child(odd) { background: #2A2A2A !important; }
+  body.dark .luna-dia-cell { background: #2A2A2A; }
+  body.dark .info-banner { opacity: 0.92; }
+  body.dark [style*="background:white"] { background: var(--bg-card) !important; }
+  body.dark [style*="background:#"] { }
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -304,10 +350,151 @@
     nav button { font-size:0.67rem; padding:5px 8px; }
   }
   @media print {
-    header { position:static; }
-    .btn-descarga, nav { display:none; }
-    .vista { display:block !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    header { position:static; background:#2C1810 !important; }
+    .btn-descarga, nav, .filtros, .buscador, #buscador-global-wrap, #btn-dark, #btn-buscar-global { display:none !important; }
+    .vista { display:none !important; }
+    .vista.print-show { display:block !important; }
     .modal-overlay { display:none !important; }
+    .cal-wrapper { overflow:visible !important; }
+    .cal-inner { min-width:auto !important; }
+    body { background:white !important; font-size:10px; }
+    .cal-cell { height:18px !important; border-radius:2px !important; }
+    .cultivo-nombre { font-size:9px !important; padding:3px 4px !important; }
+    .mes-label { font-size:8px !important; }
+    @page { margin:1cm; size:A4 landscape; }
+  }
+
+  /* ── MODO OSCURO ── */
+  body.dark {
+    background:#1A1A1A;
+    color:#E8E0D0;
+  }
+  body.dark header { background:#0D0D0D; }
+  body.dark .cultivo-nombre { background:#2A2A2A; color:#E8E0D0; border-left-color:#6B9A3A; }
+  body.dark .cultivo-nombre:hover { background:#3D6B1A; color:white; }
+  body.dark .cal-cell { background:#2A2A2A; }
+  body.dark .modal { background:#222; color:#E8E0D0; }
+  body.dark .dato-box { background:#2A2A2A; }
+  body.dark .consejo-card { background:#2A2A2A; }
+  body.dark .plaga-card { background:#2A2A2A; }
+  body.dark .buscador { background:#2A2A2A; color:#E8E0D0; border-color:#444; }
+  body.dark .filtro-btn { background:#2A2A2A; color:#CCC; border-color:#555; }
+  body.dark .luna-dia-cell { background:#2A2A2A; }
+  body.dark .info-banner { opacity:0.9; }
+  body.dark table tr { background:#2A2A2A !important; }
+  body.dark table tr:nth-child(even) { background:#333 !important; }
+  body.dark .seccion-titulo { color:#E8E0D0; }
+
+  /* ── BARRA BOTTOM MÓVIL ── */
+  .bottom-nav {
+    display:none;
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--tierra); z-index:99;
+    padding:6px 0 8px;
+    box-shadow:0 -2px 10px rgba(0,0,0,0.3);
+  }
+  body.dark .bottom-nav { background:#0D0D0D; }
+  @media (max-width:600px) {
+    .bottom-nav { display:flex; justify-content:space-around; }
+    .vista { padding-bottom:70px; }
+  }
+  .bnav-btn {
+    display:flex; flex-direction:column; align-items:center;
+    background:transparent; border:none; color:rgba(255,255,255,0.5);
+    font-size:0.55rem; gap:2px; cursor:pointer; padding:2px 6px;
+    font-family:'Inter',sans-serif; font-weight:600; letter-spacing:0.3px;
+  }
+  .bnav-btn .bnav-icon { font-size:1.2rem; }
+  .bnav-btn.active { color:#F5C842; }
+
+  /* ── DIARIO ── */
+  .diario-entrada {
+    background:white; border-radius:10px; padding:13px;
+    margin-bottom:9px; border-left:4px solid var(--miel);
+    box-shadow:0 1px 5px rgba(0,0,0,0.06);
+  }
+  body.dark .diario-entrada { background:#2A2A2A; }
+  .diario-fecha { font-size:0.65rem; color:var(--gris); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .diario-texto { font-size:0.83rem; margin-top:4px; line-height:1.5; }
+  .diario-form { background:white; border-radius:10px; padding:14px; margin-bottom:14px; box-shadow:0 1px 6px rgba(0,0,0,0.08); }
+  body.dark .diario-form { background:#2A2A2A; }
+  .diario-textarea {
+    width:100%; min-height:80px; padding:9px; border:1.5px solid #D0C9BC;
+    border-radius:7px; font-family:'Inter',sans-serif; font-size:0.83rem;
+    resize:vertical; background:var(--crema); color:var(--tierra);
+  }
+  body.dark .diario-textarea { background:#333; color:#E8E0D0; border-color:#555; }
+  .btn-primary {
+    background:var(--oliva); color:white; border:none; padding:8px 16px;
+    border-radius:7px; font-size:0.8rem; font-weight:700; cursor:pointer;
+    font-family:'Inter',sans-serif; margin-top:8px;
+  }
+  .btn-danger {
+    background:var(--arcilla); color:white; border:none; padding:4px 10px;
+    border-radius:5px; font-size:0.7rem; font-weight:700; cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+
+  /* ── MI HUERTO ── */
+  .mihuerto-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+  .mihuerto-card {
+    background:white; border-radius:10px; padding:11px;
+    box-shadow:0 1px 5px rgba(0,0,0,0.07); cursor:pointer;
+    border:2px solid transparent; transition:all .15s; text-align:center;
+  }
+  body.dark .mihuerto-card { background:#2A2A2A; }
+  .mihuerto-card.plantado { border-color:var(--trasplante); background:#F0FAF4; }
+  body.dark .mihuerto-card.plantado { background:#1A3A2A; }
+  .mihuerto-card .mc-emoji { font-size:1.5rem; }
+  .mihuerto-card .mc-nombre { font-size:0.72rem; font-weight:700; margin-top:3px; }
+  .mihuerto-card .mc-estado { font-size:0.6rem; color:var(--gris); margin-top:2px; }
+  .mihuerto-card.plantado .mc-estado { color:var(--trasplante); font-weight:700; }
+
+  /* ── CLIMA ── */
+  .clima-card {
+    background:linear-gradient(135deg,#1060A8,#4A9FC8);
+    color:white; border-radius:14px; padding:18px; margin-bottom:14px;
+    box-shadow:0 4px 16px rgba(16,96,168,0.3);
+  }
+  .clima-temp { font-size:2.8rem; font-weight:800; font-family:'Playfair Display',serif; }
+  .clima-ciudad { font-size:0.75rem; opacity:0.8; text-transform:uppercase; letter-spacing:1px; }
+
+  /* ── CALCULADORA ── */
+  .calc-input {
+    width:100%; padding:9px 12px; border:2px solid #C0B8A8; border-radius:8px;
+    font-family:'Inter',sans-serif; font-size:0.9rem; background:white;
+    color:var(--tierra); margin-bottom:9px;
+  }
+  body.dark .calc-input { background:#2A2A2A; color:#E8E0D0; border-color:#555; }
+  .calc-resultado {
+    background:var(--oliva); color:white; border-radius:10px;
+    padding:14px; text-align:center; margin-top:10px;
+  }
+  .calc-resultado .cr-num { font-size:2rem; font-weight:800; font-family:'Playfair Display',serif; }
+  .calc-resultado .cr-txt { font-size:0.75rem; opacity:0.85; }
+
+  /* ── FRUTALES/OLIVAR ── */
+  .frutal-card {
+    background:white; border-radius:12px; padding:15px;
+    margin-bottom:11px; border-left:5px solid var(--miel);
+    box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  }
+  body.dark .frutal-card { background:#2A2A2A; }
+
+  /* ── RECETAS ── */
+  .receta-card {
+    background:white; border-radius:12px; padding:15px;
+    margin-bottom:11px; border-top:4px solid var(--arcilla);
+    box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  }
+  body.dark .receta-card { background:#2A2A2A; }
+
+  /* ── TOGGLE DARK ── */
+  .dark-toggle {
+    background:transparent; border:1px solid rgba(255,255,255,0.3);
+    color:white; border-radius:20px; padding:4px 10px;
+    font-size:0.7rem; cursor:pointer; font-family:'Inter',sans-serif;
   }
 </style>
 </head>
@@ -319,6 +506,14 @@
       Huerto Jiennense
       <span>Provincia de Jaén · Calendario de Siembra</span>
     </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="btn-buscar-global" onclick="toggleBuscadorGlobal()" title="Buscar" style="background:rgba(255,255,255,0.12);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🔍</button>
+      <button id="btn-dark" onclick="toggleDark()" title="Modo oscuro" style="background:rgba(255,255,255,0.12);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">🌙</button>
+    </div>
+  </div>
+  <!-- BUSCADOR GLOBAL -->
+  <div id="buscador-global-wrap" style="display:none;margin-top:10px;">
+    <input type="text" id="input-busqueda-global" class="buscador" placeholder="🔍 Buscar cultivo, planta, animal, plaga..." oninput="busquedaGlobal(this.value)" style="margin-bottom:0;">
   </div>
   <nav>
     <button class="active" onclick="mostrarVista('calendario',this)">📅 Calendario</button>
@@ -330,8 +525,27 @@
     <button onclick="mostrarVista('animales',this)">🐓 Animales</button>
     <button onclick="mostrarVista('aromaticas',this)">🌿 Aromáticas</button>
     <button onclick="mostrarVista('medicinales',this)">💊 Medicinales</button>
+    <button onclick="mostrarVista('mihuerto',this)">🏡 Mi Huerto</button>
+    <button onclick="mostrarVista('alertas',this)">🔔 Alertas</button>
+    <button onclick="mostrarVista('diario',this)">📝 Diario</button>
+    <button onclick="mostrarVista('olivar',this)">🫒 Olivar</button>
+    <button onclick="mostrarVista('frutales',this)">🍇 Frutales</button>
+    <button onclick="mostrarVista('conservas',this)">🥫 Conservas</button>
+    <button onclick="mostrarVista('clima',this)">🌡️ Clima</button>
+    <button onclick="mostrarVista('costes',this)">💰 Costes</button>
+    <button onclick="mostrarVista('calculadora',this)">📏 Bancales</button>
+    <button onclick="imprimirCalendario()" style="background:transparent;border:1px solid rgba(255,255,255,0.22);color:rgba(255,255,255,0.58);padding:6px 12px;border-radius:4px;font-size:0.74rem;cursor:pointer;font-family:Inter,sans-serif;font-weight:500;">🖨️ Imprimir</button>
+    <button onclick="mostrarVista('setas',this)">🍄 Setas</button>
+    <button onclick="mostrarVista('cereales',this)">🌾 Cereales</button>
+    <button onclick="mostrarVista('fito',this)">💉 Fitoterapia</button>
   </nav>
 </header>
+
+<!-- ══════════════ BÚSQUEDA GLOBAL ══════════════ -->
+<div class="vista" id="vista-busqueda">
+  <h2 class="seccion-titulo">🔍 Resultados de búsqueda</h2>
+  <div id="resultados-busqueda"></div>
+</div>
 
 <!-- ══════════════ CALENDARIO ══════════════ -->
 <div class="vista activa" id="vista-calendario">
@@ -512,6 +726,235 @@
   </div>
   <input type="text" class="buscador" placeholder="Buscar planta o uso medicinal..." oninput="buscarMedicinal(this.value)">
   <div id="lista-medicinales"></div>
+</div>
+
+<!-- ══════════════ MI HUERTO ══════════════ -->
+<div class="vista" id="vista-mihuerto">
+  <h2 class="seccion-titulo">🏡 Mi Huerto</h2>
+  <div class="info-banner">
+    <span class="icon">📌</span>
+    <span>Marca los cultivos que tienes plantados. La app te recordará cuándo cosechar y qué hacer con ellos.</span>
+  </div>
+  <div class="filtros" id="filtros-mihuerto">
+    <button class="filtro-btn on" data-mh="all" onclick="filtrarMiHuerto('all',this)">Todos</button>
+    <button class="filtro-btn" data-mh="hortalizas" onclick="filtrarMiHuerto('hortalizas',this)">🥬 Hortalizas</button>
+    <button class="filtro-btn" data-mh="legumbres" onclick="filtrarMiHuerto('legumbres',this)">🫘 Legumbres</button>
+    <button class="filtro-btn" data-mh="hierbas" onclick="filtrarMiHuerto('hierbas',this)">🌿 Aromáticas</button>
+    <button class="filtro-btn" data-mh="frutales" onclick="filtrarMiHuerto('frutales',this)">🍅 Solanáceas</button>
+    <button class="filtro-btn" data-mh="flores" onclick="filtrarMiHuerto('flores',this)">🌻 Flores</button>
+  </div>
+  <div id="mihuerto-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;"></div>
+  <div id="lista-mihuerto"></div>
+</div>
+
+<!-- ══════════════ ALERTAS ══════════════ -->
+<div class="vista" id="vista-alertas">
+  <h2 class="seccion-titulo">🔔 Alertas del Mes</h2>
+  <div id="alertas-contenido"></div>
+</div>
+
+<!-- ══════════════ DIARIO ══════════════ -->
+<div class="vista" id="vista-diario">
+  <h2 class="seccion-titulo">📝 Diario del Huerto</h2>
+  <div class="info-banner">
+    <span class="icon">✍️</span>
+    <span>Anota lo que siembras, cosechas y observas. Tus notas se guardan en el dispositivo.</span>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Fecha</label>
+        <input type="date" id="diario-fecha" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-family:Inter,sans-serif;font-size:0.82rem;background:var(--crema);">
+      </div>
+      <div>
+        <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Tipo</label>
+        <select id="diario-tipo" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-family:Inter,sans-serif;font-size:0.82rem;background:var(--crema);">
+          <option value="siembra">🌱 Siembra</option>
+          <option value="trasplante">🪴 Trasplante</option>
+          <option value="cosecha">🧺 Cosecha</option>
+          <option value="tratamiento">💊 Tratamiento</option>
+          <option value="riego">💧 Riego/Abono</option>
+          <option value="observacion">👁️ Observación</option>
+          <option value="otro">📌 Otro</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Cultivo / Zona</label>
+      <input type="text" id="diario-cultivo" placeholder="Ej: Tomates del bancal 2, Gallinas..." style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-family:Inter,sans-serif;font-size:0.82rem;background:var(--crema);">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Nota</label>
+      <textarea id="diario-nota" rows="3" placeholder="Describe lo que has hecho, observado o cualquier dato de interés..." style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-family:Inter,sans-serif;font-size:0.82rem;resize:vertical;background:var(--crema);"></textarea>
+    </div>
+    <button onclick="guardarEntradaDiario()" style="width:100%;background:var(--oliva);color:white;border:none;border-radius:8px;padding:11px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">✅ Guardar entrada</button>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;">Entradas guardadas</h3>
+    <div style="display:flex;gap:6px;">
+      <select id="diario-filtro-tipo" onchange="renderDiario()" style="padding:5px 8px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.73rem;background:var(--crema);font-family:Inter,sans-serif;">
+        <option value="all">Todos los tipos</option>
+        <option value="siembra">🌱 Siembra</option>
+        <option value="trasplante">🪴 Trasplante</option>
+        <option value="cosecha">🧺 Cosecha</option>
+        <option value="tratamiento">💊 Tratamiento</option>
+        <option value="riego">💧 Riego/Abono</option>
+        <option value="observacion">👁️ Observación</option>
+        <option value="otro">📌 Otro</option>
+      </select>
+      <button onclick="exportarDiario()" style="background:var(--miel);color:white;border:none;border-radius:7px;padding:5px 10px;font-size:0.72rem;font-weight:700;cursor:pointer;">📤 Exportar</button>
+    </div>
+  </div>
+  <div id="lista-diario"></div>
+</div>
+
+<!-- ══════════════ OLIVAR ══════════════ -->
+<div class="vista" id="vista-olivar">
+  <h2 class="seccion-titulo">🫒 El Olivar Jiennense</h2>
+  <div class="info-banner">
+    <span class="icon">🏆</span>
+    <span>Jaén es la provincia que más aceite de oliva produce del mundo. El olivo es el árbol rey de nuestra tierra. Aquí tienes la guía completa del olivar familiar.</span>
+  </div>
+  <div class="filtros" id="filtros-olivar">
+    <button class="filtro-btn on" onclick="mostrarSeccionOlivar('calendario',this)">📅 Calendario</button>
+    <button class="filtro-btn" onclick="mostrarSeccionOlivar('poda',this)">✂️ Poda</button>
+    <button class="filtro-btn" onclick="mostrarSeccionOlivar('plagas',this)">🐛 Plagas</button>
+    <button class="filtro-btn" onclick="mostrarSeccionOlivar('recoleccion',this)">🫒 Recolección</button>
+    <button class="filtro-btn" onclick="mostrarSeccionOlivar('almazara',this)">🏭 Almazara</button>
+  </div>
+  <div id="olivar-contenido"></div>
+</div>
+
+<!-- ══════════════ FRUTALES ══════════════ -->
+<div class="vista" id="vista-frutales">
+  <h2 class="seccion-titulo">🍇 Frutales Típicos de Jaén</h2>
+  <div class="info-banner">
+    <span class="icon">🌳</span>
+    <span>La higuera, el granado, el membrillo, el almendro... árboles que llevan siglos en los cortijos jiennenses. Guía completa de cultivo y cuidados.</span>
+  </div>
+  <div id="lista-frutales"></div>
+</div>
+
+<!-- ══════════════ CONSERVAS ══════════════ -->
+<div class="vista" id="vista-conservas">
+  <h2 class="seccion-titulo">🥫 Conservas y Recetas del Huerto</h2>
+  <div class="info-banner">
+    <span class="icon">👵</span>
+    <span>Aprovecha cada cosecha con las recetas tradicionales de Jaén. Conservas, encurtidos, mermeladas y recetas de temporada.</span>
+  </div>
+  <input type="text" class="buscador" placeholder="Buscar receta o ingrediente..." oninput="buscarConserva(this.value)">
+  <div class="filtros" id="filtros-conservas">
+    <button class="filtro-btn on" data-cons="all" onclick="filtrarConserva('all',this)">Todas</button>
+    <button class="filtro-btn" data-cons="conserva" onclick="filtrarConserva('conserva',this)">🫙 Conservas</button>
+    <button class="filtro-btn" data-cons="encurtido" onclick="filtrarConserva('encurtido',this)">🥒 Encurtidos</button>
+    <button class="filtro-btn" data-cons="mermelada" onclick="filtrarConserva('mermelada',this)">🍓 Mermeladas</button>
+    <button class="filtro-btn" data-cons="receta" onclick="filtrarConserva('receta',this)">🍳 Recetas</button>
+    <button class="filtro-btn" data-cons="licor" onclick="filtrarConserva('licor',this)">🍶 Licores</button>
+  </div>
+  <div id="lista-conservas"></div>
+</div>
+
+<!-- ══════════════ CLIMA ══════════════ -->
+<div class="vista" id="vista-clima">
+  <h2 class="seccion-titulo">🌡️ Clima de Jaén</h2>
+  <div id="clima-actual" style="margin-bottom:14px;"></div>
+  <div id="clima-previsión" style="margin-bottom:18px;"></div>
+  <h3 class="seccion-titulo">📊 Clima típico de Jaén por mes</h3>
+  <div id="clima-historico"></div>
+  <h3 class="seccion-titulo" style="margin-top:18px;">⚠️ Alertas agroclimáticas de Jaén</h3>
+  <div id="alertas-clima"></div>
+</div>
+
+<!-- ══════════════ COSTES ══════════════ -->
+<div class="vista" id="vista-costes">
+  <h2 class="seccion-titulo">💰 Costes y Rentabilidad</h2>
+  <div class="info-banner">
+    <span class="icon">📊</span>
+    <span>Estimaciones para un huerto familiar en Jaén. Los precios son orientativos según mercado local 2024–2025.</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;" id="costes-resumen"></div>
+  <input type="text" class="buscador" placeholder="Buscar cultivo..." oninput="buscarCoste(this.value)" style="margin-bottom:10px;">
+  <div id="lista-costes"></div>
+</div>
+
+<!-- ══════════════ CALCULADORA BANCALES ══════════════ -->
+<div class="vista" id="vista-calculadora">
+  <h2 class="seccion-titulo">📏 Calculadora de Bancales</h2>
+  <div class="info-banner">
+    <span class="icon">🧮</span>
+    <span>Calcula cuántas plantas caben en tu espacio y cuánto puedes cosechar.</span>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:12px;">Dimensiones del bancal</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Largo (metros)</label>
+        <input type="number" id="cal-largo" value="4" min="0.5" max="50" step="0.5" oninput="calcularBancal()" style="width:100%;padding:9px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:1rem;font-family:Inter,sans-serif;background:var(--crema);">
+      </div>
+      <div>
+        <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Ancho (metros)</label>
+        <input type="number" id="cal-ancho" value="1.2" min="0.5" max="10" step="0.1" oninput="calcularBancal()" style="width:100%;padding:9px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:1rem;font-family:Inter,sans-serif;background:var(--crema);">
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Cultivo</label>
+      <select id="cal-cultivo" onchange="calcularBancal()" style="width:100%;padding:9px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.85rem;font-family:Inter,sans-serif;background:var(--crema);">
+      </select>
+    </div>
+    <div id="cal-resultado" style="background:var(--crema);border-radius:10px;padding:14px;margin-top:4px;"></div>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <h3 style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:12px;">🔄 Planificador de rotación</h3>
+    <p style="font-size:0.8rem;color:var(--gris);margin-bottom:12px;line-height:1.5;">La rotación de cultivos es fundamental para evitar el agotamiento del suelo y las plagas. Regla básica: nunca repitas la misma familia en el mismo bancal dos años seguidos.</p>
+    <div id="rotacion-tabla"></div>
+  </div>
+</div>
+
+<!-- ══════════════ SETAS ══════════════ -->
+<div class="vista" id="vista-setas">
+  <h2 class="seccion-titulo">🍄 Setas y Hongos de Jaén</h2>
+  <div class="info-banner">
+    <span class="icon">🌲</span>
+    <span>Las sierras jiennenses (Cazorla, Segura, Mágina) son paraísos micológicos. Guía de recolección silvestre y cultivo en casa.</span>
+  </div>
+  <div class="filtros" id="filtros-setas">
+    <button class="filtro-btn on" data-seta="all" onclick="filtrarSeta('all',this)">Todas</button>
+    <button class="filtro-btn" data-seta="comestible" onclick="filtrarSeta('comestible',this)">✅ Comestibles</button>
+    <button class="filtro-btn" data-seta="cultivable" onclick="filtrarSeta('cultivable',this)">🏠 Cultivables</button>
+    <button class="filtro-btn" data-seta="peligrosa" onclick="filtrarSeta('peligrosa',this)">☠️ Peligrosas</button>
+  </div>
+  <div id="lista-setas"></div>
+</div>
+
+<!-- ══════════════ CEREALES ══════════════ -->
+<div class="vista" id="vista-cereales">
+  <h2 class="seccion-titulo">🌾 Cereales para Autoconsumo</h2>
+  <div class="info-banner">
+    <span class="icon">🏡</span>
+    <span>Cultivar tu propio trigo, cebada o avena en Jaén es posible y muy gratificante. Guía completa para el huerto familiar.</span>
+  </div>
+  <div id="lista-cereales"></div>
+</div>
+
+<!-- ══════════════ FITOTERAPIA VETERINARIA ══════════════ -->
+<div class="vista" id="vista-fito">
+  <h2 class="seccion-titulo">💉 Fitoterapia Veterinaria</h2>
+  <div class="info-banner" style="background:#5A3A8A;color:white;">
+    <span class="icon">🌿</span>
+    <span>Remedios naturales con plantas para los animales del huerto. Complemento a la veterinaria convencional, nunca sustituto.</span>
+  </div>
+  <div class="filtros" id="filtros-fito">
+    <button class="filtro-btn on" data-fito="all" onclick="filtrarFito('all',this)">Todos</button>
+    <button class="filtro-btn" data-fito="gallinas" onclick="filtrarFito('gallinas',this)">🐔 Gallinas</button>
+    <button class="filtro-btn" data-fito="conejos" onclick="filtrarFito('conejos',this)">🐇 Conejos</button>
+    <button class="filtro-btn" data-fito="cabras" onclick="filtrarFito('cabras',this)">🐐 Cabras/Cerdos</button>
+    <button class="filtro-btn" data-fito="general" onclick="filtrarFito('general',this)">🌿 General</button>
+  </div>
+  <div id="lista-fito"></div>
 </div>
 
 <!-- MODAL -->
@@ -1653,7 +2096,7 @@ function renderMedicinalesFiltradas(q){
   document.getElementById('lista-medicinales').innerHTML = html || '<p style="color:var(--gris);font-size:0.85rem;">Sin resultados.</p>';
 }
 
-let filtroAnimalVar = 'all';
+
 
 function renderTareas(){
   let html = '';
@@ -1714,6 +2157,1410 @@ function renderAnimales(){
   document.getElementById('lista-animales').innerHTML=html;
 }
 
+// ══════ MODO OSCURO ══════
+function toggleDark(){
+  const dark = document.body.classList.toggle('dark');
+  localStorage.setItem('hj-dark', dark ? '1' : '0');
+  document.getElementById('btn-dark').textContent = dark ? '☀️' : '🌙';
+}
+
+function initDark(){
+  const saved = localStorage.getItem('hj-dark');
+  if(saved === '1'){
+    document.body.classList.add('dark');
+    const btn = document.getElementById('btn-dark');
+    if(btn) btn.textContent = '☀️';
+  }
+}
+
+// ══════ BUSCADOR GLOBAL ══════
+let busquedaAbierta = false;
+
+function toggleBuscadorGlobal(){
+  busquedaAbierta = !busquedaAbierta;
+  const wrap = document.getElementById('buscador-global-wrap');
+  wrap.style.display = busquedaAbierta ? 'block' : 'none';
+  if(busquedaAbierta){
+    document.getElementById('input-busqueda-global').focus();
+  } else {
+    document.getElementById('input-busqueda-global').value = '';
+    // Volver a calendario si no hay vista activa
+    const hayBusqueda = document.getElementById('vista-busqueda').classList.contains('activa');
+    if(hayBusqueda){
+      document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
+      document.getElementById('vista-calendario').classList.add('activa');
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      document.querySelector('nav button').classList.add('active');
+    }
+  }
+}
+
+function busquedaGlobal(q){
+  if(!q || q.length < 2){
+    if(document.getElementById('vista-busqueda').classList.contains('activa')){
+      document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
+      document.getElementById('vista-calendario').classList.add('activa');
+    }
+    return;
+  }
+  // Activar vista búsqueda
+  document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));
+  document.getElementById('vista-busqueda').classList.add('activa');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+
+  const ql = q.toLowerCase();
+  let resultados = [];
+
+  // Buscar en cultivos
+  CULTIVOS.forEach(c=>{
+    if(c.nombre.toLowerCase().includes(ql) || c.descripcion.toLowerCase().includes(ql) || c.consejos.join(' ').toLowerCase().includes(ql)){
+      resultados.push({tipo:'🥬 Cultivo', nombre:c.nombre, emoji:c.emoji, desc:c.descripcion, accion:`abrirModal('${c.nombre.replace(/'/g,"\'")}')` });
+    }
+  });
+  // Buscar en aromáticas
+  if(typeof AROMATICAS !== 'undefined') AROMATICAS.forEach(a=>{
+    if(a.nombre.toLowerCase().includes(ql) || a.descripcion.toLowerCase().includes(ql) || a.usos.join(' ').toLowerCase().includes(ql)){
+      resultados.push({tipo:'🌿 Aromática', nombre:a.nombre, emoji:a.emoji, desc:a.descripcion, accion:null});
+    }
+  });
+  // Buscar en medicinales
+  if(typeof MEDICINALES !== 'undefined') MEDICINALES.forEach(a=>{
+    if(a.nombre.toLowerCase().includes(ql) || a.descripcion.toLowerCase().includes(ql) || a.propiedades.join(' ').toLowerCase().includes(ql)){
+      resultados.push({tipo:'💊 Medicinal', nombre:a.nombre, emoji:a.emoji, desc:a.descripcion, accion:null});
+    }
+  });
+  // Buscar en plagas
+  PLAGAS.forEach(p=>{
+    if(p.nombre.toLowerCase().includes(ql) || p.cultivos.toLowerCase().includes(ql) || p.descripcion.toLowerCase().includes(ql)){
+      resultados.push({tipo:'🐛 Plaga', nombre:p.nombre, emoji:'🐛', desc:p.descripcion, accion:null});
+    }
+  });
+  // Buscar en animales
+  ANIMALES.forEach(a=>{
+    if(a.nombre.toLowerCase().includes(ql) || a.descripcion.toLowerCase().includes(ql)){
+      resultados.push({tipo:'🐓 Animal', nombre:a.nombre, emoji:a.emoji, desc:a.descripcion, accion:null});
+    }
+  });
+  // Buscar en consejos
+  CONSEJOS_MES.forEach(m=>{
+    m.consejos.forEach(c=>{
+      if(c.titulo.toLowerCase().includes(ql) || c.texto.toLowerCase().includes(ql)){
+        resultados.push({tipo:'💡 Consejo — '+m.mes, nombre:c.titulo, emoji:'💡', desc:c.texto, accion:null});
+      }
+    });
+  });
+
+  const container = document.getElementById('resultados-busqueda');
+  if(!resultados.length){
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--gris);">
+      <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
+      <div>Sin resultados para "<strong>${q}</strong>"</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = `<p style="font-size:0.78rem;color:var(--gris);margin-bottom:12px;">${resultados.length} resultado${resultados.length>1?'s':''} para "<strong>${q}</strong>"</p>` +
+  resultados.map(r=>`
+    <div onclick="${r.accion||''}" style="background:var(--bg-card,white);border-radius:10px;padding:13px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,0.07);border-left:4px solid var(--oliva);${r.accion?'cursor:pointer;':''}" ${r.accion?'':''}> 
+      <div style="font-size:0.62rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${r.tipo}</div>
+      <div style="font-family:'Playfair Display',serif;font-size:0.96rem;margin-bottom:4px;">${r.emoji} ${r.nombre}</div>
+      <div style="font-size:0.77rem;color:var(--gris);line-height:1.4;">${r.desc.substring(0,120)}${r.desc.length>120?'...':''}</div>
+    </div>`).join('');
+}
+
+// ══════ SERVICE WORKER PWA ══════
+function registrarSW(){
+  if('serviceWorker' in navigator){
+    const swCode = `
+const CACHE = 'huerto-jaen-v1';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(()=>caches.match('./index.html'))));
+});`;
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{});
+  }
+}
+
+// ══════ BANNER INSTALAR APP ══════
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  mostrarBannerInstalar();
+});
+
+function mostrarBannerInstalar(){
+  if(document.getElementById('banner-instalar')) return;
+  const banner = document.createElement('div');
+  banner.id = 'banner-instalar';
+  banner.style.cssText = 'position:fixed;bottom:75px;left:50%;transform:translateX(-50%);background:var(--oliva);color:white;padding:10px 16px;border-radius:12px;font-size:0.78rem;font-weight:700;z-index:300;display:flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,0.3);max-width:320px;width:90%;';
+  banner.innerHTML = `<span>📱 ¡Instala la app en tu móvil!</span><button onclick="instalarApp()" style="background:white;color:var(--oliva);border:none;border-radius:8px;padding:5px 12px;font-weight:800;font-size:0.75rem;cursor:pointer;">Instalar</button><button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:white;font-size:1rem;cursor:pointer;padding:0;">✕</button>`;
+  document.body.appendChild(banner);
+}
+
+function instalarApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('banner-instalar')?.remove(); });
+  }
+}
+
+// ══════ MI HUERTO ══════
+let miHuertoCat = 'all';
+let miHuertoData = {};
+
+function cargarMiHuerto(){
+  try { miHuertoData = JSON.parse(localStorage.getItem('hj-mihuerto') || '{}'); } catch(e){ miHuertoData={}; }
+}
+
+function guardarMiHuerto(){
+  localStorage.setItem('hj-mihuerto', JSON.stringify(miHuertoData));
+}
+
+function toggleCultivo(nombre){
+  if(miHuertoData[nombre]){
+    delete miHuertoData[nombre];
+  } else {
+    miHuertoData[nombre] = { fechaSiembra: new Date().toISOString().split('T')[0], nota:'' };
+  }
+  guardarMiHuerto();
+  renderMiHuerto();
+  renderAlertas();
+}
+
+function filtrarMiHuerto(cat, btn){
+  miHuertoCat = cat;
+  document.querySelectorAll('#filtros-mihuerto .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderMiHuerto();
+}
+
+function renderMiHuerto(){
+  cargarMiHuerto();
+  const total = Object.keys(miHuertoData).length;
+  const enCosecha = CULTIVOS.filter(c=>miHuertoData[c.nombre] && c.cosecha && c.cosecha.includes(MES_ACTUAL)).length;
+  const enSiembra = CULTIVOS.filter(c=>miHuertoData[c.nombre] && (c.semillero||[]).concat(c.directa||[]).includes(MES_ACTUAL)).length;
+
+  document.getElementById('mihuerto-stats').innerHTML = `
+    <div class="dato-box"><div class="valor" style="color:var(--oliva);font-size:1.4rem">${total}</div><div class="etiq">Cultivos activos</div></div>
+    <div class="dato-box"><div class="valor" style="color:var(--cosecha);font-size:1.4rem">${enCosecha}</div><div class="etiq">En cosecha ahora</div></div>
+    <div class="dato-box"><div class="valor" style="color:var(--semillero);font-size:1.4rem">${enSiembra}</div><div class="etiq">Para sembrar ya</div></div>`;
+
+  const lista = CULTIVOS.filter(c => miHuertoCat==='all' || c.cat===miHuertoCat);
+  let html = '';
+  for(const c of lista){
+    const activo = !!miHuertoData[c.nombre];
+    const cosechaAhora = activo && c.cosecha && c.cosecha.includes(MES_ACTUAL);
+    const sembrarAhora = !activo && ((c.semillero||[]).concat(c.directa||[]).concat(c.trasplante||[])).includes(MES_ACTUAL);
+    html += `<div style="background:${activo?'#EAF5E0':'white'};border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${activo?'var(--oliva)':'#DDD'};transition:all .2s;">
+      <span style="font-size:1.5rem">${c.emoji}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.86rem;">${c.nombre}</div>
+        ${activo ? `<div style="font-size:0.68rem;color:var(--gris);">Desde: ${miHuertoData[c.nombre].fechaSiembra}</div>` : ''}
+        ${cosechaAhora ? `<div style="font-size:0.68rem;font-weight:800;color:var(--cosecha);">🧺 ¡En cosecha este mes!</div>` : ''}
+        ${sembrarAhora ? `<div style="font-size:0.68rem;font-weight:800;color:var(--semillero);">🌱 ¡Momento de sembrar!</div>` : ''}
+      </div>
+      <button onclick="toggleCultivo('${c.nombre.replace(/'/g,"\'")}')" style="background:${activo?'var(--oliva)':'#EEE'};color:${activo?'white':'#888'};border:none;border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;">
+        ${activo ? '✅ Plantado' : '+ Añadir'}
+      </button>
+    </div>`;
+  }
+  document.getElementById('lista-mihuerto').innerHTML = html;
+}
+
+// ══════ ALERTAS DEL MES ══════
+function renderAlertas(){
+  cargarMiHuerto();
+  const mesNombre = MESES_LARGO[MES_ACTUAL];
+  const misCultivos = CULTIVOS.filter(c=>miHuertoData[c.nombre]);
+  const alertas = [];
+
+  // Alertas de cosecha
+  const cosechaAhora = misCultivos.filter(c=>c.cosecha && c.cosecha.includes(MES_ACTUAL));
+  cosechaAhora.forEach(c=>alertas.push({nivel:'urgente',icon:'🧺',titulo:`Cosecha: ${c.nombre}`,texto:`Es el momento de recolectar ${c.nombre}. No lo dejes pasar o perderás calidad.`,color:'#B8860B'}));
+
+  // Alertas de siembra del mes actual para cultivos NO plantados
+  const paraSembrar = CULTIVOS.filter(c=>!miHuertoData[c.nombre] && ((c.semillero||[]).includes(MES_ACTUAL)));
+  paraSembrar.slice(0,4).forEach(c=>alertas.push({nivel:'info',icon:'🌱',titulo:`Semillero: ${c.nombre}`,texto:`${mesNombre} es buen mes para iniciar el semillero de ${c.nombre}.`,color:'var(--semillero)'}));
+
+  const paraDirecta = CULTIVOS.filter(c=>!miHuertoData[c.nombre] && ((c.directa||[]).includes(MES_ACTUAL)));
+  paraDirecta.slice(0,4).forEach(c=>alertas.push({nivel:'info',icon:'🌾',titulo:`Siembra directa: ${c.nombre}`,texto:`Puedes sembrar directamente ${c.nombre} en ${mesNombre}.`,color:'var(--directa)'}));
+
+  // Alertas de tareas del mes
+  const tareasActuales = TAREAS_MES[MES_ACTUAL].tareas.filter(t=>t.tipo==='urgente');
+  tareasActuales.forEach(t=>alertas.push({nivel:'urgente',icon:'⚠️',titulo:t.titulo,texto:t.texto,color:'#CC0A0A'}));
+
+  // Consejos urgentes del mes
+  const consejosUrgentes = CONSEJOS_MES[MES_ACTUAL].consejos.filter(c=>c.tipo==='urgente');
+  consejosUrgentes.forEach(c=>alertas.push({nivel:'urgente',icon:'🚨',titulo:c.titulo,texto:c.texto,color:'#CC0A0A'}));
+
+  // Fase lunar actual
+  const lunaInfo = getFaseDelDia(HOY.getFullYear(), MES_ACTUAL, DIA_HOY);
+  if(lunaInfo){
+    const fases = ['Luna Nueva — Reposo: laborea y poda','Cuarto Creciente — Siembra plantas de hoja','Luna Llena — Trasplanta y siembra frutos','Cuarto Menguante — Siembra raíces y bulbos'];
+    alertas.unshift({nivel:'luna',icon:FASE_EMOJI[lunaInfo.fase],titulo:'Fase lunar hoy',texto:fases[lunaInfo.fase],color:'#7020A8'});
+  }
+
+  const container = document.getElementById('alertas-contenido');
+  if(!alertas.length){
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--gris);">
+      <div style="font-size:2.5rem;margin-bottom:10px;">✅</div>
+      <div style="font-weight:700;margin-bottom:6px;">Todo en orden este mes</div>
+      <div style="font-size:0.82rem;">Añade cultivos en <strong>Mi Huerto</strong> para recibir alertas personalizadas.</div>
+    </div>`;
+    return;
+  }
+
+  let fechaHTML = `<div style="background:var(--oliva);color:white;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-weight:700;font-size:0.88rem;">
+    📅 ${MESES_LARGO[MES_ACTUAL]} ${HOY.getFullYear()} — ${alertas.length} alerta${alertas.length>1?'s':''}
+  </div>`;
+
+  container.innerHTML = fechaHTML + alertas.map(a=>`
+    <div style="background:white;border-radius:10px;padding:13px;margin-bottom:8px;border-left:4px solid ${a.color};box-shadow:0 1px 5px rgba(0,0,0,0.06);">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:1.2rem">${a.icon}</span>
+        <span style="font-weight:800;font-size:0.86rem;">${a.titulo}</span>
+      </div>
+      <div style="font-size:0.79rem;color:var(--gris);line-height:1.45;padding-left:28px;">${a.texto}</div>
+    </div>`).join('');
+}
+
+// ══════ DIARIO DEL HUERTO ══════
+const TIPO_ICONS = {siembra:'🌱',trasplante:'🪴',cosecha:'🧺',tratamiento:'💊',riego:'💧',observacion:'👁️',otro:'📌'};
+const TIPO_COLORS = {siembra:'#3D6B1A',trasplante:'#0A7A3C',cosecha:'#B8860B',tratamiento:'#5A3A8A',riego:'#4A9FC8',observacion:'#A0390A',otro:'#6A6258'};
+
+function cargarDiario(){
+  try { return JSON.parse(localStorage.getItem('hj-diario') || '[]'); } catch(e){ return []; }
+}
+
+function guardarEntradaDiario(){
+  const fecha = document.getElementById('diario-fecha').value;
+  const tipo = document.getElementById('diario-tipo').value;
+  const cultivo = document.getElementById('diario-cultivo').value.trim();
+  const nota = document.getElementById('diario-nota').value.trim();
+
+  if(!nota && !cultivo){ alert('Escribe algo antes de guardar.'); return; }
+
+  const entradas = cargarDiario();
+  entradas.unshift({
+    id: Date.now(),
+    fecha: fecha || new Date().toISOString().split('T')[0],
+    tipo, cultivo, nota
+  });
+  localStorage.setItem('hj-diario', JSON.stringify(entradas));
+
+  document.getElementById('diario-cultivo').value = '';
+  document.getElementById('diario-nota').value = '';
+  renderDiario();
+
+  // Feedback visual
+  const btn = event.target;
+  btn.textContent = '✅ ¡Guardado!';
+  btn.style.background = '#3D6B1A';
+  setTimeout(()=>{ btn.textContent='✅ Guardar entrada'; btn.style.background='var(--oliva)'; }, 1500);
+}
+
+function borrarEntradaDiario(id){
+  if(!confirm('¿Borrar esta entrada?')) return;
+  const entradas = cargarDiario().filter(e=>e.id!==id);
+  localStorage.setItem('hj-diario', JSON.stringify(entradas));
+  renderDiario();
+}
+
+function renderDiario(){
+  // Fecha por defecto = hoy
+  const fechaInput = document.getElementById('diario-fecha');
+  if(fechaInput && !fechaInput.value) fechaInput.value = new Date().toISOString().split('T')[0];
+
+  const filtroTipo = document.getElementById('diario-filtro-tipo')?.value || 'all';
+  let entradas = cargarDiario();
+  if(filtroTipo !== 'all') entradas = entradas.filter(e=>e.tipo===filtroTipo);
+
+  const container = document.getElementById('lista-diario');
+  if(!entradas.length){
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--gris);">
+      <div style="font-size:2rem;margin-bottom:8px;">📝</div>
+      <div>No hay entradas aún. ¡Empieza a anotar tu huerto!</div>
+    </div>`;
+    return;
+  }
+
+  // Agrupar por mes
+  const grupos = {};
+  entradas.forEach(e=>{
+    const d = new Date(e.fecha);
+    const key = MESES_LARGO[d.getMonth()]+' '+d.getFullYear();
+    if(!grupos[key]) grupos[key]=[];
+    grupos[key].push(e);
+  });
+
+  let html='';
+  for(const [mes, ents] of Object.entries(grupos)){
+    html+=`<div style="font-family:'Playfair Display',serif;font-size:0.95rem;color:var(--gris);margin:12px 0 7px;padding-bottom:4px;border-bottom:1px solid #E0D8CC;">${mes}</div>`;
+    ents.forEach(e=>{
+      const color = TIPO_COLORS[e.tipo]||'#888';
+      const icon = TIPO_ICONS[e.tipo]||'📌';
+      const fechaStr = new Date(e.fecha+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+      html+=`<div style="background:white;border-radius:10px;padding:12px;margin-bottom:7px;border-left:4px solid ${color};box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:1rem;">${icon}</span>
+            <span style="font-size:0.68rem;font-weight:800;text-transform:uppercase;color:${color};">${e.tipo}</span>
+            ${e.cultivo?`<span style="font-size:0.72rem;background:#F0F0F0;padding:1px 7px;border-radius:8px;font-weight:600;">${e.cultivo}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:0.68rem;color:var(--gris);">${fechaStr}</span>
+            <button onclick="borrarEntradaDiario(${e.id})" style="background:transparent;border:none;color:#CCC;font-size:0.85rem;cursor:pointer;padding:0;">✕</button>
+          </div>
+        </div>
+        ${e.nota?`<div style="font-size:0.8rem;line-height:1.45;color:var(--tierra);padding-left:24px;">${e.nota}</div>`:''}
+      </div>`;
+    });
+  }
+  container.innerHTML = html;
+}
+
+function exportarDiario(){
+  const entradas = cargarDiario();
+  if(!entradas.length){ alert('No hay entradas en el diario.'); return; }
+  let csv = 'Fecha,Tipo,Cultivo/Zona,Nota\n';
+  entradas.forEach(e=>{ csv += `"${e.fecha}","${e.tipo}","${e.cultivo||''}","${(e.nota||'').replace(/"/g,"'")}"\n`; });
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'diario-huerto-jaen.csv';
+  a.click();
+}
+
+// ══════ OLIVAR ══════
+const OLIVAR_SECCIONES = {
+  calendario: {
+    titulo: '📅 Calendario del Olivar — Mes a Mes',
+    contenido: [
+      {mes:'Enero–Febrero', icon:'✂️', texto:'Poda de formación y mantenimiento. Es la época tradicional en Jaén. Elimina chupones, ramas secas y las que se cruzan. La poda debe dejar entrar luz al centro del árbol ("copa en vaso"). Los restos de poda se trituran o queman lejos del olivar.'},
+      {mes:'Marzo', icon:'🌸', texto:'Brotación y floración temprana en variedades precoces. Aplica el primer abono nitrogenado del año (urea o abono orgánico). Vigila la humedad del suelo tras las últimas lluvias. Control de malas hierbas bajo el árbol.'},
+      {mes:'Abril–Mayo', icon:'🌼', texto:'Plena floración. Evita tratamientos fitosanitarios durante la floración para no dañar a las abejas polinizadoras. Tiempo seco y cálido favorece la polinización. Heladas tardías pueden dañar la flor: muy crítico en olivares de sierra.'},
+      {mes:'Junio', icon:'🫒', texto:'Cuajado del fruto. Aplicación de boro foliar para mejorar el cuajado. Primera detección de mosca del olivo (Bactrocera oleae): instala trampas cromotrópicas amarillas. Riego de apoyo en olivares con instalación.'},
+      {mes:'Julio–Agosto', icon:'☀️', texto:'Crecimiento del fruto. Calor extremo: los olivares adultos aguantan pero los jóvenes necesitan riego. Tratamientos preventivos contra mosca del olivo si la presión es alta. Laboreo superficial para romper la costra y conservar humedad.'},
+      {mes:'Septiembre', icon:'🍂', texto:'El fruto comienza a enverar (cambio de color verde a morado/negro). Momento crítico para decidir la fecha de recolección. Análisis de madurez: recoge una muestra de 100 aceitunas y observa el color. Prepara la maquinaria de recolección.'},
+      {mes:'Octubre–Noviembre', icon:'🫒', texto:'Recolección en verde (aceite nuevo, más afrutado y picante). La aceituna verde da menos aceite pero de mayor calidad. Variedades tempranas como Arbequina y Frantoio se recogen en octubre. La Picual jiennense, en noviembre–diciembre.'},
+      {mes:'Diciembre', icon:'⚫', texto:'Recolección tardía (aceituna negra madura). Mayor rendimiento graso pero aceite más suave y menos afrutado. En Jaén la campaña puede alargarse hasta enero en zonas altas. Tras la recolección: abonado de fondo con potasio y fósforo.'},
+    ]
+  },
+  poda: {
+    titulo: '✂️ Guía de Poda del Olivo',
+    contenido: [
+      {mes:'Cuándo podar', icon:'📅', texto:'Enero–febrero es la época ideal en Jaén, antes de la brotación. La poda en verde (verano) solo para eliminar chupones. Nunca podar con heladas previstas ni durante la floración.'},
+      {mes:'Poda de formación (1–5 años)', icon:'🌱', texto:'Objetivo: crear la copa en vaso con 3–4 ramas principales bien distribuidas. Elimina todo lo que salga por debajo de 60–80 cm del suelo. Selecciona las ramas guía y elimina las que compiten con ellas. Paciencia: los primeros años son de formación, no de producción.'},
+      {mes:'Poda de mantenimiento (adulto)', icon:'✂️', texto:'Objetivo: renovar la madera productiva y mantener la luz interior. Regla del 20%: nunca elimines más del 20% de la copa en un año. Elimina ramas secas, enfermas, las que se cruzan y los chupones vigorosos. Abre el centro para que entre el sol: mejora la calidad del aceite.'},
+      {mes:'Poda de rejuvenecimiento', icon:'💪', texto:'Para árboles muy viejos o mal podados. Intervención drástica en 2–3 años: primer año se eliminan las ramas más gruesas, siguientes años se forma la nueva copa. El olivo rebrota con fuerza aunque se pode muy fuerte.'},
+      {mes:'Herramientas y desinfección', icon:'🔧', texto:'Tijeras de poda para ramas hasta 2 cm, serrucho para ramas medias, motosierra para ramas gruesas. IMPRESCINDIBLE: desinfecta las herramientas con alcohol o lejía diluida entre árbol y árbol para evitar transmitir la Verticillium.'},
+      {mes:'Triturado de restos', icon:'♻️', texto:'Los restos de poda no deben quemarse cerca de los árboles (transmite enfermedades). Lo ideal es triturarlos con trituradora y dejarlos como mulch bajo el árbol. Si hay infección de Verticillium, los restos deben quemarse lejos del olivar.'},
+    ]
+  },
+  plagas: {
+    titulo: '🐛 Plagas y Enfermedades del Olivar',
+    contenido: [
+      {mes:'Mosca del olivo (Bactrocera oleae)', icon:'🪰', texto:'La plaga más devastadora del olivar jiennense. La larva se desarrolla dentro de la aceituna, haciéndola caer y perdiendo calidad del aceite. Control: trampas con atrayente alimenticio desde junio, tratamientos con kaolín (barrera física) o spinosad en caso de alta presión. Monitoriza semanalmente desde julio.'},
+      {mes:'Repilo (Spilocaea oleagina)', icon:'🍂', texto:'Hongo que causa manchas en hojas y caída prematura. Frecuente en olivares con mucha humedad. Tratamiento: cobre (hidróxido cúprico) preventivo en otoño y primavera. Variedades resistentes: Hojiblanca, Arbequina.'},
+      {mes:'Verticillium (Verticillium dahliae)', icon:'💀', texto:'Hongo de suelo muy grave: seca ramas y puede matar el árbol. Sin cura: solo prevención. No plantes olivos en suelos con historial de jitomate, pimiento o patata. Desinfecta herramientas. Elimina y quema los árboles afectados.'},
+      {mes:'Prays del olivo (Prays oleae)', icon:'🦋', texto:'Mariposa cuya larva ataca flores, frutos y hojas en distintas generaciones. Control con Bacillus thuringiensis en la generación filófaga (primavera). Trampas de feromona para monitoreo.'},
+      {mes:'Tuberculosis (Pseudomonas savastanoi)', icon:'🦠', texto:'Bacteria que causa tumores en ramas y tronco. Favorecida por heridas de poda con lluvia. Tratamiento: cobre tras la poda. Desinfecta herramientas. Poda en tiempo seco.'},
+      {mes:'Cochinilla de la tizne (Saissetia oleae)', icon:'⚫', texto:'Insecto que produce melaza donde crece el hongo de la negrilla (tizne), reduciendo la fotosíntesis. Tratamiento: aceite de parafina en invierno, insecticidas en verano.'},
+    ]
+  },
+  recoleccion: {
+    titulo: '🫒 Recolección de la Aceituna',
+    contenido: [
+      {mes:'Cuándo recolectar', icon:'📊', texto:'El índice de madurez (IM) es clave. IM 2–3: aceituna verde-amarilla, máxima calidad, menos rendimiento. IM 4–5: envero (verde-morado), equilibrio calidad/cantidad. IM 6–7: madurez, máximo rendimiento, aceite más suave. En Jaén, la mayoría recoge entre IM 3–5 para aceite de calidad.'},
+      {mes:'Métodos de recolección', icon:'🔧', texto:'Vareo manual: el más tradicional en Jaén, con varas golpeando las ramas. Vibrador de tronco: el más extendido hoy, muy eficiente. Peines y rastrillos eléctricos: para olivares de montaña con maquinaria grande. Recolección a mano: para aceitunas de mesa de máxima calidad.'},
+      {mes:'Manejo post-recolección', icon:'🚛', texto:'Las aceitunas deben llegar a la almazara en menos de 24 horas tras la recolección. Usa cajas ventiladas, nunca sacos: el calor y la fermentación bajan la calidad. Separa siempre las aceitunas del suelo de las del vuelo. Las aceitunas con mosca, aparte.'},
+      {mes:'Aceitunas de mesa', icon:'🥗', texto:'Para conserva, recoge aceituna verde en octubre (Manzanilla, Gordal, Hojiblanca). Proceso básico: dar un corte, poner en agua con sal y sosa (lejía alimentaria) 24–48h para quitar el amargor, luego salmuera al 10% con hierbas aromáticas. Listas en 2–4 semanas.'},
+      {mes:'Rendimiento esperado', icon:'📈', texto:'Una aceituna contiene 15–25% de aceite según variedad y madurez. En años buenos, un olivo adulto produce 30–80 kg de aceituna. Se necesitan 4–6 kg de aceituna para hacer 1 litro de aceite. La Picual jiennense tiene el mayor rendimiento graso (22–27%).'},
+    ]
+  },
+  almazara: {
+    titulo: '🏭 De la Aceituna al Aceite',
+    contenido: [
+      {mes:'El proceso en la almazara', icon:'⚙️', texto:'1. Limpieza y lavado de la aceituna. 2. Molturación (triturado del fruto). 3. Termobatido de la pasta (20–30 min a 27°C máx en virgen extra). 4. Centrifugación horizontal (separación sólido/líquido). 5. Centrifugación vertical (separación aceite/agua). 6. Almacenamiento en depósitos de acero inox a 15–18°C.'},
+      {mes:'Categorías de aceite', icon:'🏆', texto:'Virgen Extra: acidez ≤0.8%, sin defectos sensoriales. Es la categoría reina. Virgen: acidez ≤2%, defectos sensoriales leves. Lampante: no apto para consumo directo, necesita refinado. El aceite de Jaén (DOP Sierra de Segura, DOP Sierra Mágina, DOP Sierra de Cazorla, DOP Aceite de Jaén) es el mejor del mundo.'},
+      {mes:'Aceite nuevo de Jaén', icon:'✨', texto:'El aceite recién molturado (noviembre–enero) es el más afrutado, picante y con más polifenoles. El picor y amargor son señales de calidad, no defectos. Con el tiempo el aceite se suaviza. Consúmelo en el primer año para máxima calidad.'},
+      {mes:'Conservación del aceite', icon:'🫙', texto:'Enemigos del aceite: luz, calor y oxígeno. Guarda en recipiente oscuro o de acero inox. Temperatura ideal: 14–18°C. Nunca en nevera (se solidifica y pierde aromas). Una vez abierto, consume en 3–6 meses. El aceite de Picual jiennense es el más estable por su alto contenido en polifenoles.'},
+      {mes:'Subproductos del olivar', icon:'♻️', texto:'Orujo: pasta sólida tras la extracción, se usa para obtener aceite de orujo o como combustible. Alpechín: agua de vegetación, problemática medioambiental pero rica en polifenoles. Hueso de aceituna: excelente combustible para calefacción. Leña de poda: madera muy dura y calórica.'},
+    ]
+  }
+};
+
+let seccionOlivarActual = 'calendario';
+
+function mostrarSeccionOlivar(sec, btn){
+  seccionOlivarActual = sec;
+  document.querySelectorAll('#filtros-olivar .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderOlivar();
+}
+
+function renderOlivar(){
+  const sec = OLIVAR_SECCIONES[seccionOlivarActual];
+  let html = `<h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:12px;color:var(--gris);">${sec.titulo}</h3>`;
+  sec.contenido.forEach(item=>{
+    html += `<div style="background:white;border-radius:10px;padding:14px;margin-bottom:9px;box-shadow:0 1px 5px rgba(0,0,0,0.07);border-left:4px solid #6B8E3A;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="font-size:1.3rem;flex-shrink:0;">${item.icon}</span>
+        <div>
+          <div style="font-weight:800;font-size:0.86rem;margin-bottom:4px;color:var(--oliva);">${item.mes}</div>
+          <div style="font-size:0.8rem;line-height:1.55;color:var(--tierra);">${item.texto}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('olivar-contenido').innerHTML = html;
+}
+
+// ══════ FRUTALES ══════
+const FRUTALES = [
+  { nombre:'Higuera', emoji:'🫐', origen:'Mediterráneo',
+    variedades:'Cuello de Dama, Calabacita, Negra de Jaén, Blanca de Jaén (higo largo)',
+    plantacion:'Noviembre–febrero (reposo vegetativo)',
+    marco:'5×5 m mínimo', agua:'Muy escasa — planta de secano total',
+    cosecha:'Brevas: junio–julio. Higos: agosto–octubre',
+    descripcion:'La higuera es el árbol más resistente del campo jiennense. Aguanta sequías extremas, suelos pobres y calores brutales. Produce sin apenas cuidados.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de mantenimiento. Elimina ramas secas y las que se cruzan. La higuera rebrota con fuerza aunque se pode fuerte.'},
+      {mes:'Marzo–Abril', t:'Brotación. Aparecen las brevas (higos del año anterior que hibernan). No necesita abono ni tratamientos.'},
+      {mes:'Mayo–Junio', t:'Cosecha de brevas. Las brevas son los primeros higos, grandes y muy dulces. Recoge cuando cedan fácilmente al tocarllas.'},
+      {mes:'Julio–Agosto', t:'Maduración de los higos. Sin riego aguanta bien. Si puedes echar un poco de agua en julio, los higos serán más grandes.'},
+      {mes:'Agosto–Octubre', t:'Cosecha principal de higos. Recoge cada 2–3 días. Seca el excedente al sol para higos secos o haz mermelada.'},
+    ],
+    consejos:['La higuera produce sola: no necesita otro árbol para polinizarse (la mayoría de variedades)','El látex de la hoja irrita la piel: usa guantes al podar','Planta en el lado sur de la parcela para máximo calor','Los higos secos al sol de Jaén son un manjar: 5–7 días en bandeja','La madera de higuera quema mal pero las hojas secas son buen encendedor']
+  },
+  { nombre:'Granado', emoji:'🍎', origen:'Persia/Mediterráneo',
+    variedades:'Mollar de Elche, Wonderful, Granada Valenciana',
+    plantacion:'Marzo–abril o noviembre',
+    marco:'4×4 m', agua:'Escasa — muy tolerante a la sequía',
+    cosecha:'Septiembre–noviembre',
+    descripcion:'El granado es perfecto para el clima árido de Jaén. Sus flores rojas en junio son espectaculares y sus frutos aguantan meses en el árbol sin caer.',
+    calendario:[
+      {mes:'Marzo–Abril', t:'Brotación y plantación de nuevos árboles. Poda ligera para airear la copa.'},
+      {mes:'Mayo–Junio', t:'Floración espectacular (flores rojo-anaranjadas). Evita tratamientos durante la floración. Cuajado del fruto.'},
+      {mes:'Julio–Agosto', t:'Crecimiento del fruto. Riego ocasional mejora el tamaño. Vigila el barrenador del granado.'},
+      {mes:'Sep–Noviembre', t:'Cosecha escalonada según variedad. Los frutos aguantan en el árbol sin deteriorarse. Recoge antes de las lluvias fuertes (se agrietan).'},
+    ],
+    consejos:['Tolera suelos salinos y calizos como los de muchas zonas de Jaén','El granado en maceta grande da frutos y es ornamental','Los frutos agrietados en el árbol: lluvia en maduración, no es enfermedad','El zumo de granada de Jaén es excepcional','Las flores secas tienen propiedades astringentes: guarda algunas']
+  },
+  { nombre:'Membrillero', emoji:'🍋', origen:'Asia Central',
+    variedades:'Champion, Portugal, Vranja',
+    plantacion:'Noviembre–febrero',
+    marco:'4×4 m', agua:'Moderada',
+    cosecha:'Octubre–noviembre',
+    descripcion:'El membrillo es el fruto del otoño jiennense por excelencia. No se come fresco pero la carne de membrillo casera es un producto artesanal de gran valor.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de mantenimiento. Elimina las ramas más viejas para renovar la madera productiva.'},
+      {mes:'Marzo–Abril', t:'Floración blanco-rosada, muy ornamental. Sensible a heladas tardías.'},
+      {mes:'Mayo–Agosto', t:'Crecimiento del fruto. Riego regular para frutos grandes. Vigila el fuego bacteriano.'},
+      {mes:'Oct–Noviembre', t:'Cosecha cuando el fruto esté amarillo y aromático. No esperes a que ablande: el membrillo siempre es duro.'},
+    ],
+    consejos:['Un solo árbol produce 20–50 kg de membrillos','La carne de membrillo casera dura 1 año en nevera','Los membrillos asados al horno con miel son un postre tradicional de Jaén','Sensible al fuego bacteriano: usa cobre preventivo en primavera','Las flores son muy bonitas: planta en lugar visible del huerto']
+  },
+  { nombre:'Almendro', emoji:'🌰', origen:'Asia Central/Mediterráneo',
+    variedades:'Marcona (la más valiosa), Largueta, Desmayo Rojo, Ferragnès',
+    plantacion:'Noviembre–febrero',
+    marco:'6×6 m', agua:'Muy escasa — planta de secano',
+    cosecha:'Agosto–septiembre',
+    descripcion:'El almendro es junto al olivo el árbol más representativo de Jaén. Su floración en febrero-marzo, antes de tener hojas, es uno de los espectáculos más bellos del campo jiennense.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de mantenimiento. Cuidado: el almendro florece muy pronto, poda antes de que abran las yemas florales.'},
+      {mes:'Feb–Marzo', t:'Floración (antes que las hojas). Sensible a heladas tardías. La variedad Marcona florece tarde y aguanta mejor el frío.'},
+      {mes:'Abril–Mayo', t:'Cuajado y crecimiento del fruto. Vigila la mancha ocre y el cribado.'},
+      {mes:'Agosto–Sep', t:'Cosecha cuando la cáscara externa (borraja) empiece a abrirse. Vareo o vibrador. Seca al sol 3–5 días.'},
+    ],
+    consejos:['Necesita otro árbol para polinizarse (excepto variedades autofértiles como Ferragnès)','La almendra Marcona de Jaén es la más cotizada del mercado','El aceite de almendra dulce es uno de los mejores cosméticos naturales','Las hojas de almendro son tóxicas para el ganado: vigila','Un árbol adulto produce 5–20 kg de almendra pelada']
+  },
+  { nombre:'Níspero', emoji:'🟠', origen:'China/Japón',
+    variedades:'Algerie, Tanaka, Magdal',
+    plantacion:'Otoño o primavera',
+    marco:'4×5 m', agua:'Moderada',
+    cosecha:'Abril–junio',
+    descripcion:'El níspero es uno de los pocos frutales que madura en primavera. En Jaén se da muy bien en zonas bajas y abrigadas.',
+    calendario:[
+      {mes:'Oct–Diciembre', t:'Floración otoñal (flores blancas muy aromáticas). Protege de heladas fuertes.'},
+      {mes:'Enero–Marzo', t:'Desarrollo del fruto. El frío suave de Jaén le va bien pero teme las heladas tardías.'},
+      {mes:'Abril–Junio', t:'Cosecha escalonada. Recoge cuando los frutos cedan al tacto y tengan color naranja intenso.'},
+    ],
+    consejos:['Las pepitas de níspero son tóxicas: no ingerir','El níspero agradece el calor de las zonas bajas de Jaén','Mermelada de níspero: uno de los mejores productos artesanales del huerto','Puede ocupar un lugar protegido junto a una pared sur','La flor de otoño es muy aromática: planta cerca de la casa']
+  },
+  { nombre:'Caqui', emoji:'🟠', origen:'China/Japón',
+    variedades:'Rojo Brillante (sin taninos, se come duro), Hachiya (astringente)',
+    plantacion:'Noviembre–febrero',
+    marco:'5×5 m', agua:'Moderada',
+    cosecha:'Octubre–noviembre',
+    descripcion:'El caqui se adapta perfectamente al clima de Jaén y da frutos espectaculares en otoño. Muy productivo y sin apenas plagas.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda en reposo vegetativo total (sin hojas). El caqui acepta podas fuertes.'},
+      {mes:'Marzo–Mayo', t:'Brotación tardía. Floración discreta. No necesita cuidados especiales.'},
+      {mes:'Oct–Noviembre', t:'Cosecha cuando tengan color naranja-rojo intenso. La variedad Rojo Brillante se come duro. Las astringentes: esperar a que ablanden o acelera con etileno.'},
+    ],
+    consejos:['Sin plagas ni enfermedades relevantes: cultivo muy fácil','La producción puede ser de 50–100 kg por árbol adulto','El caqui seco (hoshigaki) es un producto artesanal japonés que se puede hacer en Jaén','En otoño el árbol pierde las hojas dejando los frutos: muy ornamental','El caqui Rojo Brillante de Ribera del Júcar es el más comercial']
+  },
+  { nombre:'Moral/Morera', emoji:'🫐', origen:'China',
+    variedades:'Morus nigra (mora negra, más sabrosa), Morus alba (mora blanca)',
+    plantacion:'Noviembre–febrero',
+    marco:'6×6 m', agua:'Escasa',
+    cosecha:'Mayo–julio',
+    descripcion:'La morera es un árbol histórico en Jaén, ligado a la cría del gusano de seda. Sus moras son deliciosas y productivísimas. Perfecta para zonas con espacio.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda fuerte si es necesario. La morera rebrota con mucha energía.'},
+      {mes:'Abril–Mayo', t:'Brotación. Las flores son imperceptibles. Empieza a formarse el fruto.'},
+      {mes:'Mayo–Julio', t:'Cosecha: las moras caen solas cuando maduran. Pon una lona bajo el árbol y sacude las ramas.'},
+    ],
+    consejos:['Las moras manchan permanentemente: cuidado con la ropa','Un árbol adulto produce tantas moras que no se pueden consumir todas: mermelada, licor, congelado','Muy rústica: tolera podas brutales y cualquier tipo de suelo','La mora negra (Morus nigra) tiene más sabor que la blanca','Perfecta para dar sombra en el huerto en verano']
+  },
+];
+
+// ══════ CONSERVAS Y RECETAS ══════
+const CONSERVAS = [
+  { nombre:'Aceitunas aliñadas de Jaén', tipo:'encurtido', emoji:'🫒', temporada:'Oct–Dic', dificultad:'Media',
+    ingredientes:['1 kg aceitunas verdes (Manzanilla o Hojiblanca)','Agua','Sal gruesa (100g/litro)','Ajo (1 cabeza)','Orégano seco','Tomillo','Hinojo','Comino','Pimiento rojo seco','Limón'],
+    pasos:['Lava las aceitunas y dale un corte o aplástelas ligeramente','Ponlas en agua fría durante 7 días, cambiando el agua cada día (para quitar el amargor)','Prepara la salmuera: 100g de sal por litro de agua fría','Añade todos los aliños: ajo machacado, orégano, tomillo, hinojo, comino, tiras de pimiento y rodajas de limón','Mete las aceitunas en tarros esterilizados y cúbrelas con la salmuera','Cierra y deja reposar mínimo 2 semanas en lugar fresco','Listas cuando estén al gusto. Duran 6 meses en nevera tras abrir.'],
+    consejo:'El truco de Jaén: añade un chorrito de vinagre de vino blanco a la salmuera para más sabor.'
+  },
+  { nombre:'Tomates en conserva', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+    ingredientes:['2 kg tomates maduros de pera','Sal','Hojas de albahaca fresca','Aceite de oliva virgen extra de Jaén'],
+    pasos:['Esteriliza los tarros hirviéndolos 10 minutos','Escálda los tomates 30 segundos en agua hirviendo y pélalos','Córtalos en cuartos o déjalos enteros si son pequeños','Mete en los tarros con una pizca de sal y hojas de albahaca','Cúbrelos con aceite de oliva (sin dejar burbujas de aire)','Cierra herméticamente y pasteuriza: baño maría 30 minutos','Comprueba el vacío al enfriar: la tapa no debe ceder al presionar'],
+    consejo:'Con aceite de oliva virgen extra de Jaén duran 2 años y el aceite queda impregnado del sabor del tomate.'
+  },
+  { nombre:'Mermelada de higos', tipo:'mermelada', emoji:'🫐', temporada:'Ago–Oct', dificultad:'Fácil',
+    ingredientes:['1 kg higos maduros (sin la piel si quieres más fina)','600g azúcar','Zumo de 1 limón','1 rama de canela (opcional)'],
+    pasos:['Pela y trocea los higos','Mezcla con el azúcar y el zumo de limón en una cazuela','Deja macerar 1 hora para que suelten el jugo','Cocina a fuego medio-bajo removiendo constantemente','Cuando espese (30–40 min) y la mermelada no se extienda al poner en un plato frío, está lista','Mete en tarros esterilizados en caliente y cierra boca abajo hasta enfriar'],
+    consejo:'Los higos de la variedad Negra de Jaén hacen la mermelada más oscura y aromática. Con queso de cabra jiennense es un manjar.'
+  },
+  { nombre:'Mermelada de membrillos', tipo:'mermelada', emoji:'🍋', temporada:'Oct–Nov', dificultad:'Media',
+    ingredientes:['1 kg membrillos (peso limpio, sin corazón)','800g azúcar','Zumo de 1 limón','1 vaso de agua'],
+    pasos:['Pela, descorazona y trocea los membrillos','Cocina en el agua hasta que estén muy blandos (20–25 min)','Tritura con batidora hasta obtener un puré fino','Añade el azúcar y el limón y cocina removiendo sin parar','Está lista cuando al poner en un plato frío solidifica rápido (puede tardar 30–50 min)','Mete en tarros calientes y cierra boca abajo'],
+    consejo:'Si la dejas más tiempo se convierte en carne de membrillo sólida que se puede cortar. Añade azafrán de La Mancha para un toque especial.'
+  },
+  { nombre:'Pimientos del piquillo asados en conserva', tipo:'conserva', emoji:'🫑', temporada:'Ago–Oct', dificultad:'Media',
+    ingredientes:['2 kg pimientos rojos de piquillo o italianos','Sal','Aceite de oliva virgen extra','Ajo (opcional)'],
+    pasos:['Asa los pimientos directamente en el fuego o al horno a 200°C hasta que la piel esté negra y arrugada','Mete en una bolsa cerrada 15 minutos: el vapor facilita pelarlos','Pélalos con cuidado, quita las semillas y córtalos en tiras','Coloca en tarros esterilizados con sal y ajo laminado','Cubre completamente con aceite de oliva virgen extra','Pasteuriza en baño maría 20 minutos','Duran 1 año y el aceite queda para aliñar ensaladas'],
+    consejo:'El aceite resultante es liquid oro para aliñar. En Jaén es tradición hacerlos con pimientos del campo propio.'
+  },
+  { nombre:'Cebolla caramelizada en conserva', tipo:'conserva', emoji:'🧅', temporada:'Jun–Ago', dificultad:'Fácil',
+    ingredientes:['2 kg cebollas de Jaén','100g azúcar moreno','50ml aceite de oliva','1 cucharadita de sal','50ml vinagre de vino'],
+    pasos:['Pela y corta las cebollas en juliana fina','Pochea en aceite a fuego muy bajo durante 45–60 minutos removiendo frecuentemente','Cuando estén muy blandas y doradas, añade el azúcar y el vinagre','Cocina 15 minutos más hasta que caramelicen','Mete en tarros esterilizados y pasteuriza 15 minutos en baño maría'],
+    consejo:'Con cebollas de Fuentes de Cesna (Jaén) el resultado es excepcional. Ideal para acompañar quesos y carnes.'
+  },
+  { nombre:'Licor de hierbas jiennense', tipo:'licor', emoji:'🍶', temporada:'Todo el año', dificultad:'Fácil',
+    ingredientes:['1 litro de aguardiente o anís (29–40°)','Romero fresco (2 ramas)','Tomillo (2 ramas)','Lavanda (1 cucharada de flores)','Menta (5 hojas)','Cáscara de limón','200g azúcar','100ml agua'],
+    pasos:['Mete todas las hierbas y la cáscara de limón en el aguardiente','Cierra el tarro y deja macerar 3 semanas en lugar oscuro','Agita cada 3 días','Prepara un almíbar: azúcar + agua caliente hasta disolver','Filtra el licor con gasa y mezcla con el almíbar','Embotella y deja reposar 1 mes más antes de consumir'],
+    consejo:'Con hierbas silvestres de la Sierra de Cazorla el licor tiene un aroma incomparable. Sírvelo muy frío.'
+  },
+  { nombre:'Gazpacho de Jaén (en conserva)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+    ingredientes:['2 kg tomates maduros de pera','1 pepino','1 pimiento verde','1 diente de ajo','100ml aceite de oliva virgen extra de Jaén','30ml vinagre de Jerez','Sal al gusto','Pan duro (opcional para espesar)'],
+    pasos:['Tritura todos los vegetales crudos','Añade el aceite, vinagre y sal','Pasa por el chino o colador para una textura fina','Prueba y ajusta de sal y vinagre','Para conservar: pasteuriza en tarros herméticos 25 minutos en baño maría a 85°C','Enfría rápidamente y guarda en nevera hasta 6 meses'],
+    consejo:'El aceite de oliva virgen extra de Jaén es insustituible en el gazpacho. Marca totalmente la diferencia.'
+  },
+  { nombre:'Alcaparras en sal', tipo:'encurtido', emoji:'🟢', temporada:'May–Jul', dificultad:'Fácil',
+    ingredientes:['500g alcaparras (capullos sin abrir, del tamaño de un guisante)','Sal gruesa marina (el mismo peso que las alcaparras)'],
+    pasos:['Recoge los capullos de la alcaparra antes de que abran','Ponlos en un tarro en capas alternando alcaparras y sal gruesa','La proporción es 1:1 en peso','Cierra el tarro y deja curar en lugar fresco 1 mes','Se conservan así más de 2 años','Para usar: enjuaga bien con agua para quitar el exceso de sal'],
+    consejo:'La alcaparra crece silvestre en los muros de piedra de los cortijos jiennenses. Recolecta a mano por la mañana temprano.'
+  },
+  { nombre:'Habas a la jiennense (conserva)', tipo:'conserva', emoji:'🫘', temporada:'Abr–Jun', dificultad:'Media',
+    ingredientes:['2 kg habas frescas (desgranadas)','100g jamón serrano en tacos','1 cebolla','4 dientes de ajo','Aceite de oliva virgen extra','Sal, pimienta, comino','Pimentón dulce de la Vera'],
+    pasos:['Sofríe la cebolla y el ajo en abundante aceite de oliva','Añade el jamón y sofríe 2 minutos','Incorpora las habas y el pimentón','Cubre con agua y cocina 20–30 minutos según el tamaño','Sazona con sal, pimienta y comino','Mete en tarros esterilizados y pasteuriza 30 minutos en olla a presión o 45 en baño maría'],
+    consejo:'Las habas de Jaén de siembra otoñal son las más tiernas. Este guiso en conserva sabe igual o mejor que recién hecho.'
+  },
+];
+
+let filtroConservaActual = 'all';
+
+function filtrarConserva(tipo, btn){
+  filtroConservaActual = tipo;
+  document.querySelectorAll('#filtros-conservas .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderConservasFiltradas(document.querySelector('#vista-conservas .buscador')?.value||'');
+}
+
+function buscarConserva(q){
+  renderConservasFiltradas(q);
+}
+
+function renderConservasFiltradas(q){
+  const ql = (q||'').toLowerCase();
+  let lista = filtroConservaActual==='all' ? CONSERVAS : CONSERVAS.filter(c=>c.tipo===filtroConservaActual);
+  if(ql.length>1) lista = lista.filter(c=>c.nombre.toLowerCase().includes(ql)||c.ingredientes.join(' ').toLowerCase().includes(ql));
+
+  const DIFICULTAD_COLOR = {Fácil:'#3D6B1A',Media:'#C8900A',Difícil:'#CC0A0A'};
+  let html = '';
+  lista.forEach(r=>{
+    const color = DIFICULTAD_COLOR[r.dificultad]||'#888';
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid ${color};">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:1.8rem">${r.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;">${r.nombre}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+            <span style="font-size:0.63rem;font-weight:800;background:#F0F0F0;padding:2px 8px;border-radius:10px;">⏰ ${r.temporada}</span>
+            <span style="font-size:0.63rem;font-weight:800;background:${color}22;color:${color};padding:2px 8px;border-radius:10px;">${r.dificultad}</span>
+          </div>
+        </div>
+      </div>
+      <details style="margin-bottom:6px;">
+        <summary style="font-size:0.75rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:6px 0;">🛒 Ingredientes</summary>
+        <ul style="margin:6px 0 0 16px;font-size:0.78rem;line-height:1.7;">${r.ingredientes.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </details>
+      <details open style="margin-bottom:6px;">
+        <summary style="font-size:0.75rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:6px 0;">👩‍🍳 Elaboración</summary>
+        <ol style="margin:6px 0 0 16px;font-size:0.78rem;line-height:1.7;">${r.pasos.map(p=>`<li style="margin-bottom:3px;">${p}</li>`).join('')}</ol>
+      </details>
+      <div style="background:#FFF8E8;border-radius:7px;padding:8px 10px;font-size:0.76rem;color:#6A4A00;border-left:3px solid var(--miel);">
+        <strong>💡 Truco:</strong> ${r.consejo}
+      </div>
+    </div>`;
+  });
+  document.getElementById('lista-conservas').innerHTML = html || '<p style="color:var(--gris);padding:20px;text-align:center;">Sin resultados.</p>';
+}
+
+function renderFrutales(){
+  let html='';
+  FRUTALES.forEach(f=>{
+    const calHtml = f.calendario.map(c=>`
+      <div style="background:var(--crema);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:9px;">
+        <div style="min-width:80px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${c.mes}</div>
+        <div style="font-size:0.78rem;line-height:1.4;">${c.t}</div>
+      </div>`).join('');
+    const consHtml = f.consejos.map(c=>`<li>${c}</li>`).join('');
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid #6B8E3A;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:2rem;background:var(--crema);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;">${f.emoji}</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${f.nombre}</div>
+          <div style="font-size:0.65rem;color:var(--gris);font-weight:600;">${f.variedades.split(',')[0]} y más · Cosecha: ${f.cosecha}</div>
+        </div>
+      </div>
+      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:11px;line-height:1.5;">${f.descripcion}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${f.plantacion}</div><div class="etiq">Plantación</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${f.agua}</div><div class="etiq">Agua</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${f.marco}</div><div class="etiq">Marco</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${f.cosecha}</div><div class="etiq">Cosecha</div></div>
+      </div>
+      <details style="margin-bottom:8px;">
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">📅 Calendario</summary>
+        <div style="margin-top:7px;">${calHtml}</div>
+      </details>
+      <div class="modal-seccion"><h4>💡 Consejos para Jaén</h4><ul class="consejo-lista">${consHtml}</ul></div>
+    </div>`;
+  });
+  document.getElementById('lista-frutales').innerHTML = html;
+}
+
+// ══════ CLIMA ══════
+const CLIMA_HISTORICO = [
+  {mes:'Enero',   tmin:3,  tmax:12, lluvia:58,  sol:5,  riesgo:'Heladas frecuentes en sierra. Protege cultivos tiernos.'},
+  {mes:'Febrero', tmin:4,  tmax:15, lluvia:52,  sol:6,  riesgo:'Heladas tardías posibles. Floración del almendro en riesgo.'},
+  {mes:'Marzo',   tmin:6,  tmax:18, lluvia:45,  sol:7,  riesgo:'Heladas tardías hasta mediados de mes en zonas altas.'},
+  {mes:'Abril',   tmin:9,  tmax:22, lluvia:42,  sol:8,  riesgo:'Helada de Abril: riesgo real hasta el 23 de abril.'},
+  {mes:'Mayo',    tmin:12, tmax:27, lluvia:30,  sol:9,  riesgo:'Calor en aumento. Últimas lluvias primaverales.'},
+  {mes:'Junio',   tmin:17, tmax:34, lluvia:14,  sol:11, riesgo:'Inicio del calor extremo. Riego crítico.'},
+  {mes:'Julio',   tmin:21, tmax:38, lluvia:4,   sol:12, riesgo:'🔥 Pico de calor. Hasta 45°C. Riego diario imprescindible.'},
+  {mes:'Agosto',  tmin:21, tmax:37, lluvia:5,   sol:11, riesgo:'Calor extremo continúa. Golpe de calor en animales.'},
+  {mes:'Sep',     tmin:17, tmax:31, lluvia:22,  sol:9,  riesgo:'Primeras tormentas otoñales. Mosca del olivo en pico.'},
+  {mes:'Octubre', tmin:12, tmax:23, lluvia:48,  sol:7,  riesgo:'Primeras heladas en sierra. Lluvias irregulares.'},
+  {mes:'Nov',     tmin:7,  tmax:16, lluvia:65,  sol:5,  riesgo:'Heladas posibles en zonas altas. Lluvias abundantes.'},
+  {mes:'Dic',     tmin:4,  tmax:12, lluvia:70,  sol:4,  riesgo:'Frío intenso. Heladas frecuentes. Protege instalaciones.'},
+];
+
+const ALERTAS_CLIMA_JAEN = [
+  {icon:'🔥', titulo:'Verano extremo (Jun–Ago)', texto:'Jaén es una de las provincias más calurosas de España. Temperaturas habituales de 38–42°C. Pico histórico: 47.4°C (Córdoba 2021). El riego diario y el acolchado son imprescindibles.', nivel:'urgente'},
+  {icon:'🌨️', titulo:'Heladas de invierno (Nov–Mar)', texto:'Las zonas altas (Sierra Mágina, Cazorla, Segura) pueden tener hasta -10°C. La capital y la campiña tienen heladas moderadas (-3 a -5°C). Protege con geotextil.', nivel:'info'},
+  {icon:'❄️', titulo:'Helada de Abril', texto:'Fenómeno típico jiennense: una helada tardía entre el 20–25 de abril puede arruinar los trasplantes recientes. Nunca trasplantes solanáceas sin protección antes del 25 de abril.', nivel:'urgente'},
+  {icon:'💧', titulo:'Sequía estival (Jun–Sep)', texto:'Prácticamente sin lluvia durante 4 meses. El huerto depende 100% del riego. El sistema de goteo no es un lujo: es una necesidad básica en Jaén.', nivel:'urgente'},
+  {icon:'⛈️', titulo:'Tormentas de otoño', texto:'Las primeras lluvias de septiembre-octubre son violentas. Pueden llegar 60–80 mm en pocas horas. Asegura los tutores y verifica el drenaje de los bancales.', nivel:'info'},
+  {icon:'🌬️', titulo:'Viento de Levante', texto:'El viento del este seco y caliente acelera la evapotranspiración en verano. En días de Levante, riega el doble y protege las plantas más sensibles.', nivel:'info'},
+];
+
+function renderClima(){
+  // Clima actual con API Open-Meteo (gratuita, sin clave)
+  const container = document.getElementById('clima-actual');
+  container.innerHTML = `<div style="background:var(--cielo);color:white;border-radius:12px;padding:14px;text-align:center;">
+    <div style="font-size:0.75rem;font-weight:700;margin-bottom:4px;opacity:0.8;">CARGANDO DATOS DE JAÉN...</div>
+    <div style="font-size:2rem;">🌡️</div>
+  </div>`;
+
+  // Coordenadas de Jaén capital
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-3.79&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Europe%2FMadrid&forecast_days=7&language=es')
+    .then(r=>r.json())
+    .then(data=>{
+      const c = data.current;
+      const d = data.daily;
+      const wicons = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',80:'🌦️',81:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
+      const wicon = wicons[c.weather_code] || '🌡️';
+
+      container.innerHTML = `<div style="background:linear-gradient(135deg,#1060A8,#4A9FC8);color:white;border-radius:14px;padding:18px;margin-bottom:10px;">
+        <div style="font-size:0.65rem;font-weight:800;letter-spacing:2px;opacity:0.8;margin-bottom:6px;">JAÉN CAPITAL — AHORA</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:3rem;font-weight:300;line-height:1;">${Math.round(c.temperature_2m)}°C</div>
+            <div style="font-size:0.8rem;opacity:0.85;margin-top:4px;">💧 Humedad: ${c.relative_humidity_2m}% · 💨 Viento: ${Math.round(c.wind_speed_10m)} km/h</div>
+          </div>
+          <div style="font-size:3.5rem;">${wicon}</div>
+        </div>
+      </div>`;
+
+      // Previsión 7 días
+      let prev = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;">';
+      const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+      for(let i=0;i<7;i++){
+        const fecha = new Date(d.time[i]+'T12:00:00');
+        const diaSem = dias[fecha.getDay()];
+        const icon = wicons[d.weather_code[i]] || '🌡️';
+        const esHoy = i===0;
+        prev += `<div style="background:${esHoy?'var(--oliva)':'white'};color:${esHoy?'white':'var(--tierra)'};border-radius:8px;padding:7px 3px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+          <div style="font-size:0.6rem;font-weight:800;opacity:${esHoy?'1':'0.7'};">${esHoy?'HOY':diaSem}</div>
+          <div style="font-size:1.2rem;margin:3px 0;">${icon}</div>
+          <div style="font-size:0.72rem;font-weight:700;">${Math.round(d.temperature_2m_max[i])}°</div>
+          <div style="font-size:0.63rem;opacity:0.7;">${Math.round(d.temperature_2m_min[i])}°</div>
+          ${d.precipitation_sum[i]>0.5?`<div style="font-size:0.58rem;color:${esHoy?'#AEF':'#4A9FC8'};font-weight:700;">${Math.round(d.precipitation_sum[i])}mm</div>`:''}
+        </div>`;
+      }
+      prev += '</div>';
+      document.getElementById('clima-previsión').innerHTML = prev;
+    })
+    .catch(()=>{
+      container.innerHTML = `<div style="background:var(--crema);border-radius:10px;padding:14px;text-align:center;color:var(--gris);">
+        <div style="font-size:1.5rem;margin-bottom:6px;">📡</div>
+        <div style="font-size:0.82rem;">Sin conexión — mostrando datos históricos de Jaén</div>
+      </div>`;
+    });
+
+  // Tabla histórica
+  let tablaHtml = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.76rem;">';
+  tablaHtml += '<thead><tr style="background:var(--tierra);color:white;"><th style="padding:8px;text-align:left;">Mes</th><th style="padding:8px;">Mín</th><th style="padding:8px;">Máx</th><th style="padding:8px;">Lluvia</th><th style="padding:8px;">Sol</th></tr></thead><tbody>';
+  CLIMA_HISTORICO.forEach((m,i)=>{
+    const esActual = i===MES_ACTUAL;
+    tablaHtml += `<tr style="background:${esActual?'#EAF5E0':i%2?'white':'var(--crema)'};${esActual?'font-weight:700;':''}" >
+      <td style="padding:7px 8px;">${esActual?'▶ ':''}${m.mes}</td>
+      <td style="padding:7px 8px;text-align:center;color:#4A9FC8;">${m.tmin}°</td>
+      <td style="padding:7px 8px;text-align:center;color:#CC0A0A;">${m.tmax}°</td>
+      <td style="padding:7px 8px;text-align:center;">${m.lluvia}mm</td>
+      <td style="padding:7px 8px;text-align:center;">${m.sol}h</td>
+    </tr>`;
+  });
+  tablaHtml += '</tbody></table></div>';
+  document.getElementById('clima-historico').innerHTML = tablaHtml;
+
+  // Alertas agroclimáticas
+  const alertasHtml = ALERTAS_CLIMA_JAEN.map(a=>`
+    <div style="background:white;border-radius:10px;padding:13px;margin-bottom:8px;border-left:4px solid ${a.nivel==='urgente'?'#CC0A0A':'#4A9FC8'};box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <div style="font-weight:800;font-size:0.86rem;margin-bottom:4px;">${a.icon} ${a.titulo}</div>
+      <div style="font-size:0.79rem;color:var(--gris);line-height:1.45;">${a.texto}</div>
+    </div>`).join('');
+  document.getElementById('alertas-clima').innerHTML = alertasHtml;
+}
+
+// ══════ COSTES Y RENTABILIDAD ══════
+const COSTES_CULTIVOS = [
+  {nombre:'Tomate',emoji:'🍅',coste_semilla:2,coste_plantas:8,coste_riego:12,coste_abono:5,coste_total:27,produccion_kg:25,precio_kg:2.5,meses:5},
+  {nombre:'Pimiento',emoji:'🫑',coste_semilla:2,coste_plantas:8,coste_riego:8,coste_abono:4,coste_total:22,produccion_kg:10,precio_kg:3.0,meses:5},
+  {nombre:'Berenjena',emoji:'🍆',coste_semilla:1.5,coste_plantas:6,coste_riego:8,coste_abono:4,coste_total:19.5,produccion_kg:12,precio_kg:2.0,meses:4},
+  {nombre:'Pepino',emoji:'🥒',coste_semilla:1.5,coste_plantas:5,coste_riego:10,coste_abono:3,coste_total:19.5,produccion_kg:15,precio_kg:1.5,meses:4},
+  {nombre:'Calabacín',emoji:'🥬',coste_semilla:1,coste_plantas:4,coste_riego:7,coste_abono:3,coste_total:15,produccion_kg:20,precio_kg:1.2,meses:5},
+  {nombre:'Lechuga',emoji:'🥬',coste_semilla:0.8,coste_plantas:3,coste_riego:3,coste_abono:2,coste_total:8.8,produccion_kg:4,precio_kg:1.8,meses:2},
+  {nombre:'Judía verde',emoji:'🫛',coste_semilla:2,coste_plantas:0,coste_riego:8,coste_abono:2,coste_total:12,produccion_kg:8,precio_kg:2.5,meses:3},
+  {nombre:'Habas',emoji:'🫘',coste_semilla:2.5,coste_plantas:0,coste_riego:2,coste_abono:0,coste_total:4.5,produccion_kg:6,precio_kg:2.0,meses:5},
+  {nombre:'Garbanzo',emoji:'🫘',coste_semilla:1.5,coste_plantas:0,coste_riego:0,coste_abono:0,coste_total:1.5,produccion_kg:1.5,precio_kg:4.0,meses:4},
+  {nombre:'Patata',emoji:'🥔',coste_semilla:4,coste_plantas:0,coste_riego:6,coste_abono:4,coste_total:14,produccion_kg:20,precio_kg:1.0,meses:4},
+  {nombre:'Cebolla',emoji:'🧅',coste_semilla:1.5,coste_plantas:0,coste_riego:3,coste_abono:2,coste_total:6.5,produccion_kg:8,precio_kg:1.2,meses:7},
+  {nombre:'Ajo',emoji:'🧄',coste_semilla:3,coste_plantas:0,coste_riego:1,coste_abono:1,coste_total:5,produccion_kg:2,precio_kg:6.0,meses:8},
+  {nombre:'Zanahoria',emoji:'🥕',coste_semilla:1,coste_plantas:0,coste_riego:4,coste_abono:2,coste_total:7,produccion_kg:5,precio_kg:1.5,meses:4},
+  {nombre:'Brócoli',emoji:'🥦',coste_semilla:1,coste_plantas:4,coste_riego:4,coste_abono:3,coste_total:12,produccion_kg:3,precio_kg:2.5,meses:4},
+  {nombre:'Acelga',emoji:'🥬',coste_semilla:0.8,coste_plantas:2,coste_riego:4,coste_abono:2,coste_total:8.8,produccion_kg:8,precio_kg:1.5,meses:8},
+  {nombre:'Maíz',emoji:'🌽',coste_semilla:1.5,coste_plantas:0,coste_riego:10,coste_abono:4,coste_total:15.5,produccion_kg:6,precio_kg:2.0,meses:4},
+];
+
+const COSTES_INICIALES = [
+  {concepto:'Sistema de goteo básico (50m²)',coste:85},
+  {concepto:'Semillas temporada completa',coste:45},
+  {concepto:'Compost/estiércol (500 kg)',coste:35},
+  {concepto:'Herramientas básicas',coste:60},
+  {concepto:'Malla sombra 30% (20m²)',coste:25},
+  {concepto:'Tutores y mallas (temporada)',coste:20},
+];
+
+let filtroCostesQ = '';
+function buscarCoste(q){ filtroCostesQ=q.toLowerCase(); renderCostes(); }
+
+function renderCostes(){
+  // Resumen
+  const totalProd = COSTES_CULTIVOS.reduce((s,c)=>s+c.produccion_kg*c.precio_kg,0);
+  const totalCost = COSTES_CULTIVOS.reduce((s,c)=>s+c.coste_total,0);
+  const ahorro = totalProd - totalCost;
+  document.getElementById('costes-resumen').innerHTML = `
+    <div class="dato-box"><div class="valor" style="color:var(--directa);font-size:1.3rem">${totalCost.toFixed(0)}€</div><div class="etiq">Coste cultivos/año</div></div>
+    <div class="dato-box"><div class="valor" style="color:var(--cosecha);font-size:1.3rem">${totalProd.toFixed(0)}€</div><div class="etiq">Valor producción</div></div>
+    <div class="dato-box" style="grid-column:1/-1"><div class="valor" style="color:var(--oliva);font-size:1.5rem">+${ahorro.toFixed(0)}€</div><div class="etiq">Ahorro estimado anual (huerto completo, 50m²)</div></div>`;
+
+  const lista = filtroCostesQ ? COSTES_CULTIVOS.filter(c=>c.nombre.toLowerCase().includes(filtroCostesQ)) : COSTES_CULTIVOS;
+  let html = '';
+  lista.forEach(c=>{
+    const valor = c.produccion_kg * c.precio_kg;
+    const beneficio = valor - c.coste_total;
+    const roi = Math.round((beneficio/c.coste_total)*100);
+    const color = beneficio>0?'var(--oliva)':'var(--directa)';
+    html+=`<div style="background:white;border-radius:10px;padding:13px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${color};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-weight:700;font-size:0.9rem;">${c.emoji} ${c.nombre}</div>
+        <div style="font-size:0.72rem;font-weight:800;background:${beneficio>0?'#EAF5E0':'#FDE8E8'};color:${color};padding:3px 9px;border-radius:10px;">
+          ${beneficio>0?'+':''}${beneficio.toFixed(1)}€ (ROI ${roi}%)
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.8rem">${c.coste_total}€</div><div class="etiq">Coste</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.8rem">${c.produccion_kg}kg</div><div class="etiq">Producción</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.8rem">${c.precio_kg}€/kg</div><div class="etiq">Precio merc.</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.8rem">${c.meses}m</div><div class="etiq">Duración</div></div>
+      </div>
+    </div>`;
+  });
+
+  // Inversión inicial
+  html += `<h3 style="font-family:'Playfair Display',serif;font-size:1rem;margin:16px 0 10px;padding-top:8px;border-top:1px solid #E0D8CC;">🏗️ Inversión inicial del huerto</h3>`;
+  COSTES_INICIALES.forEach(i=>{
+    html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:white;border-radius:8px;margin-bottom:5px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <span style="font-size:0.8rem;">${i.concepto}</span>
+      <span style="font-weight:800;font-size:0.85rem;color:var(--arcilla);">${i.coste}€</span>
+    </div>`;
+  });
+  const totalInicial = COSTES_INICIALES.reduce((s,i)=>s+i.coste,0);
+  html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--tierra);color:white;border-radius:8px;margin-bottom:5px;font-weight:800;">
+    <span>Total inversión inicial</span><span>${totalInicial}€</span>
+  </div>
+  <div style="background:var(--crema);border-radius:8px;padding:11px;font-size:0.79rem;line-height:1.5;color:var(--gris);">
+    💡 Con un ahorro anual de <strong>${ahorro.toFixed(0)}€</strong> en alimentación, la inversión inicial de <strong>${totalInicial}€</strong> se recupera en aproximadamente <strong>${Math.ceil(totalInicial/ahorro*12)} meses</strong>.
+  </div>`;
+
+  document.getElementById('lista-costes').innerHTML = html;
+}
+
+// ══════ CALCULADORA DE BANCALES ══════
+const MARCOS_CULTIVO = {
+  'Tomate':{fila:0.8,columna:0.5,prod_planta:4,unidad:'kg'},
+  'Pimiento':{fila:0.6,columna:0.4,prod_planta:1.5,unidad:'kg'},
+  'Berenjena':{fila:0.7,columna:0.5,prod_planta:2,unidad:'kg'},
+  'Pepino':{fila:1.0,columna:0.4,prod_planta:3,unidad:'kg'},
+  'Calabacín':{fila:0.8,columna:0.8,prod_planta:5,unidad:'kg'},
+  'Calabaza':{fila:2.0,columna:1.5,prod_planta:8,unidad:'kg'},
+  'Lechuga':{fila:0.3,columna:0.25,prod_planta:0.3,unidad:'kg'},
+  'Espinaca':{fila:0.25,columna:0.2,prod_planta:0.15,unidad:'kg'},
+  'Acelga':{fila:0.4,columna:0.3,prod_planta:0.5,unidad:'kg'},
+  'Zanahoria':{fila:0.2,columna:0.05,prod_planta:0.15,unidad:'kg'},
+  'Remolacha':{fila:0.25,columna:0.1,prod_planta:0.2,unidad:'kg'},
+  'Cebolla':{fila:0.3,columna:0.1,prod_planta:0.2,unidad:'kg'},
+  'Ajo':{fila:0.3,columna:0.1,prod_planta:0.05,unidad:'kg'},
+  'Puerro':{fila:0.3,columna:0.1,prod_planta:0.15,unidad:'kg'},
+  'Col/Repollo':{fila:0.5,columna:0.5,prod_planta:1.5,unidad:'kg'},
+  'Brócoli':{fila:0.5,columna:0.5,prod_planta:0.5,unidad:'kg'},
+  'Coliflor':{fila:0.6,columna:0.5,prod_planta:0.8,unidad:'kg'},
+  'Judía verde':{fila:0.6,columna:0.2,prod_planta:0.3,unidad:'kg'},
+  'Habas':{fila:0.6,columna:0.2,prod_planta:0.4,unidad:'kg'},
+  'Guisante':{fila:0.5,columna:0.1,prod_planta:0.1,unidad:'kg'},
+  'Patata':{fila:0.6,columna:0.3,prod_planta:0.8,unidad:'kg'},
+  'Maíz':{fila:0.7,columna:0.3,prod_planta:1,unidad:'mazorca'},
+  'Pepino':{fila:1.0,columna:0.4,prod_planta:3,unidad:'kg'},
+  'Rábano':{fila:0.15,columna:0.05,prod_planta:0.03,unidad:'kg'},
+  'Nabo':{fila:0.25,columna:0.15,prod_planta:0.2,unidad:'kg'},
+};
+
+const FAMILIAS_ROTACION = [
+  {familia:'Solanáceas 🍅',cultivos:'Tomate, pimiento, berenjena, patata',color:'#FF7000'},
+  {familia:'Cucurbitáceas 🥒',cultivos:'Pepino, calabacín, calabaza, melón',color:'#3D6B1A'},
+  {familia:'Crucíferas 🥦',cultivos:'Col, brócoli, coliflor, rábano, nabo',color:'#4A9FC8'},
+  {familia:'Leguminosas 🫘',cultivos:'Judía, haba, guisante, garbanzo',color:'#CC0A0A'},
+  {familia:'Quenopodiáceas 🥬',cultivos:'Acelga, espinaca, remolacha',color:'#7020A8'},
+  {familia:'Liliáceas 🧅',cultivos:'Cebolla, ajo, puerro',color:'#C8900A'},
+  {familia:'Umbelíferas 🥕',cultivos:'Zanahoria, perejil, hinojo',color:'#A0390A'},
+];
+
+function inicializarCalculadora(){
+  const sel = document.getElementById('cal-cultivo');
+  if(!sel) return;
+  sel.innerHTML = Object.keys(MARCOS_CULTIVO).map(k=>`<option value="${k}">${k}</option>`).join('');
+  calcularBancal();
+
+  // Tabla de rotación
+  let rot = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.75rem;">';
+  rot += '<thead><tr style="background:var(--tierra);color:white;"><th style="padding:8px;text-align:left;">Familia</th><th style="padding:8px;text-align:left;">Cultivos</th><th style="padding:8px;text-align:center;">Año 1</th><th style="padding:8px;text-align:center;">Año 2</th><th style="padding:8px;text-align:center;">Año 3</th></tr></thead><tbody>';
+  FAMILIAS_ROTACION.forEach((f,i)=>{
+    const sig1=(i+1)%FAMILIAS_ROTACION.length;
+    const sig2=(i+2)%FAMILIAS_ROTACION.length;
+    rot+=`<tr style="background:${i%2?'white':'var(--crema)'}">
+      <td style="padding:7px 8px;"><span style="display:inline-block;width:10px;height:10px;background:${f.color};border-radius:2px;margin-right:5px;"></span><strong>${f.familia}</strong></td>
+      <td style="padding:7px 8px;color:var(--gris);">${f.cultivos}</td>
+      <td style="padding:7px 8px;text-align:center;font-weight:700;">Bancal A</td>
+      <td style="padding:7px 8px;text-align:center;color:var(--gris);">→ Bancal B</td>
+      <td style="padding:7px 8px;text-align:center;color:var(--gris);">→ Bancal C</td>
+    </tr>`;
+  });
+  rot+='</tbody></table></div>';
+  rot+=`<div style="background:var(--crema);border-radius:8px;padding:11px;font-size:0.78rem;color:var(--gris);margin-top:10px;line-height:1.5;">
+    <strong>Regla de oro:</strong> Nunca plantes la misma familia en el mismo bancal dos años seguidos. Las leguminosas son ideales para intercalar: fijan nitrógeno en el suelo y mejoran la cosecha siguiente.
+  </div>`;
+  document.getElementById('rotacion-tabla').innerHTML = rot;
+}
+
+function calcularBancal(){
+  const largo = parseFloat(document.getElementById('cal-largo')?.value)||4;
+  const ancho = parseFloat(document.getElementById('cal-ancho')?.value)||1.2;
+  const cultivo = document.getElementById('cal-cultivo')?.value;
+  if(!cultivo||!MARCOS_CULTIVO[cultivo]) return;
+
+  const m = MARCOS_CULTIVO[cultivo];
+  const area = largo * ancho;
+  const filasN = Math.floor(largo / m.fila);
+  const columnasN = Math.floor(ancho / m.columna);
+  const plantas = filasN * columnasN;
+  const produccion = (plantas * m.prod_planta).toFixed(1);
+  const c = COSTES_CULTIVOS.find(x=>x.nombre===cultivo);
+  const valorEst = c ? (plantas * m.prod_planta * c.precio_kg).toFixed(1) : '—';
+
+  document.getElementById('cal-resultado').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;">
+      <div class="dato-box"><div class="valor" style="font-size:1.4rem;color:var(--oliva);">${area.toFixed(1)} m²</div><div class="etiq">Superficie total</div></div>
+      <div class="dato-box"><div class="valor" style="font-size:1.4rem;color:var(--semillero);">${plantas}</div><div class="etiq">Plantas que caben</div></div>
+      <div class="dato-box"><div class="valor" style="font-size:1.4rem;color:var(--cosecha);">${produccion} ${m.unidad}</div><div class="etiq">Producción estimada</div></div>
+      <div class="dato-box"><div class="valor" style="font-size:1.4rem;color:var(--trasplante);">${valorEst}€</div><div class="etiq">Valor en tienda</div></div>
+    </div>
+    <div style="font-size:0.77rem;color:var(--gris);line-height:1.5;">
+      <strong>Marco de plantación:</strong> ${m.fila*100}cm entre filas × ${m.columna*100}cm entre plantas<br>
+      <strong>Filas:</strong> ${filasN} · <strong>Columnas:</strong> ${columnasN}
+    </div>`;
+}
+
+// ══════ IMPRIMIR ══════
+function imprimirCalendario(){
+  document.querySelectorAll('.vista').forEach(v=>v.classList.remove('print-show'));
+  document.getElementById('vista-calendario').classList.add('print-show');
+  window.print();
+  setTimeout(()=>document.getElementById('vista-calendario').classList.remove('print-show'),1000);
+}
+
+// ══════ SETAS ══════
+const SETAS = [
+  // COMESTIBLES SILVESTRES
+  { nombre:'Boletus edulis (Calabaza)', emoji:'🍄', tipo:'comestible', cultivable:false,
+    temporada:'Otoño (oct–dic) tras primeras lluvias', habitat:'Pinares y robledales de Cazorla y Segura',
+    descripcion:'El rey de las setas. Sombrero pardo, pie robusto con retículo blanco. Carne blanca, firme y aromática. Muy apreciado en Jaén.',
+    identificacion:'Sombrero: pardo rojizo 5–25cm. Pie: grueso con red blanca. Carne: blanca, no cambia de color al corte. Sin falda ni volva.',
+    confusiones:'Boletus erythropus (pie rojo, se azulea al corte — tóxico). Boletus satanas (sombrero gris claro, pie rojo — muy tóxico).',
+    usos_culinarios:'Revueltos, arroces, guisos, secado para conserva. El más valorado gastronómicamente.',
+    cultivo_casa:null,
+    aviso:''
+  },
+  { nombre:'Níscalo (Lactarius deliciosus)', emoji:'🍄', tipo:'comestible', cultivable:false,
+    temporada:'Otoño (oct–nov)', habitat:'Pinares de repoblación de toda la sierra jiennense',
+    descripcion:'La seta más abundante en los pinares de Jaén. Sombrero naranja-zanahoria con círculos concéntricos. Látex naranja al corte.',
+    identificacion:'Sombrero: naranja con anillos 5–15cm. Látex: naranja que no cambia. Láminas: naranja. Pie: naranja con hoyuelos.',
+    confusiones:'Lactarius torminosus (láminas rosas, sin látex naranja — tóxico). Distinguibles por el látex naranja característico.',
+    usos_culinarios:'A la plancha con ajo y perejil, en escabeche, guisos. Tradicional en Jaén.',
+    cultivo_casa:null,
+    aviso:''
+  },
+  { nombre:'Seta de cardo (Pleurotus eryngii)', emoji:'🍄', tipo:'comestible', cultivable:true,
+    temporada:'Primavera y otoño', habitat:'Praderas y matorrales con cardos (muy abundante en campiña jiennense)',
+    descripcion:'La seta más típica de la campiña jiennense. Crece en las raíces del cardo corredor. Carne firme y sabrosa. Se puede cultivar en casa.',
+    identificacion:'Sombrero: pardo claro 5–12cm, excéntrico. Pie: blanco, grueso y corto. Láminas: blancas, decurrentes. Sin olores extraños.',
+    confusiones:'Prácticamente inconfundible en su hábitat. El pie excéntrico y las láminas decurrentes son distintivos.',
+    usos_culinarios:'A la plancha, en arroces, guisos, revueltos. Textura carnosa ideal para cocina.',
+    cultivo_casa:'Kits disponibles en tiendas especializadas. También en paja de cereal inoculada con micelio. Producción en 3–4 semanas.',
+    aviso:''
+  },
+  { nombre:'Champiñón silvestre (Agaricus campestris)', emoji:'🍄', tipo:'comestible', cultivable:false,
+    temporada:'Primavera y otoño tras lluvias', habitat:'Prados y pastizales, zonas con estiércol',
+    descripcion:'El champiñón silvestre abunda en los prados jiennenses tras las lluvias. Más aromático que el cultivado.',
+    identificacion:'Sombrero: blanco 5–12cm. Láminas: rosas en joven, marrones en adulto. Pie: blanco con anillo. Olor: anisado agradable.',
+    confusiones:'¡PELIGRO! Amanita phalloides (láminas blancas siempre, volva en la base — mortal). Comprueba SIEMPRE que las láminas sean rosas/marrones NUNCA blancas.',
+    usos_culinarios:'Como el champiñón cultivado pero con más sabor. Salteados, rellenos, sopas.',
+    cultivo_casa:null,
+    aviso:'⚠️ Confirma siempre el color de las láminas: ROSAS o MARRONES. Nunca blancas.'
+  },
+  { nombre:'Seta de chopo (Agrocybe aegerita)', emoji:'🍄', tipo:'comestible', cultivable:true,
+    temporada:'Primavera y otoño', habitat:'Troncos de chopo y álamo — riberas de ríos jiennenses',
+    descripcion:'Muy común en las choperas de las riberas del Guadalquivir y sus afluentes. Excelente comestible y muy fácil de cultivar en casa.',
+    identificacion:'Sombrero: pardo claro a oscuro 3–10cm. Pie: fibroso, con anillo. Láminas: blanquecinas a pardas. Crece en racimos en madera.',
+    confusiones:'Galerina marginata (también en madera, sombrero similar — MORTAL). Diferencia clave: Galerina tiene esporas marrones oxidadas.',
+    usos_culinarios:'Salteadas, en pasta, arroces. Sabor suave y textura firme.',
+    cultivo_casa:'Inocula un tronco de chopo con tacos de micelio (taladra agujeros de 10mm, introduce tacos, sella con cera). Producción al año.',
+    aviso:''
+  },
+  { nombre:'Gírgola / Ostra (Pleurotus ostreatus)', emoji:'🍄', tipo:'comestible', cultivable:true,
+    temporada:'Otoño–invierno', habitat:'Madera de frondosas muertas',
+    descripcion:'Una de las setas más fáciles de cultivar en casa. Crece en paja, cartón o madera. Muy productiva y nutritiva.',
+    identificacion:'Sombrero: gris azulado a pardo, en forma de ostra 5–20cm. Pie: lateral o ausente. Láminas: blancas decurrentes. Crece en racimos.',
+    confusiones:'Crepidotus spp (mucho más pequeñas, láminas marrones). La gírgola es inconfundible por su tamaño.',
+    usos_culinarios:'Salteadas con ajo, en cremas, arroces, wok. Textura carnosa.',
+    cultivo_casa:'El cultivo más fácil: inocula paja de trigo pasteurizada con micelio. En bolsas con agujeros. Producción en 2–3 semanas. Temperatura ideal 15–20°C.',
+    aviso:''
+  },
+  { nombre:'Shiitake (Lentinula edodes)', emoji:'🍄', tipo:'comestible', cultivable:true,
+    temporada:'Todo el año (cultivado)', habitat:'Madera de roble y encina',
+    descripcion:'El shiitake crece en los robles y encinas de la sierra jiennense. Muy valorado por sus propiedades medicinales y gastronómicas.',
+    identificacion:'Sombrero: pardo con escamas blancas 5–20cm. Pie: fibroso, con restos de velo. Láminas: blancas. Olor: a hongos intenso.',
+    confusiones:'Poco probable en madera de roble con estas características.',
+    usos_culinarios:'Salteados, sopas asiáticas, seco para caldo, té medicinal.',
+    cultivo_casa:'Inocula troncos de encina o roble de 30–40cm de diámetro. Mantén húmedo en semisombra. Primera cosecha en 6–12 meses pero produce 5–7 años.',
+    aviso:''
+  },
+  // PELIGROSAS
+  { nombre:'Amanita phalloides (Cicuta verde)', emoji:'☠️', tipo:'peligrosa', cultivable:false,
+    temporada:'Otoño', habitat:'Bosques de encina, roble y pino',
+    descripcion:'LA SETA MÁS MORTAL DEL MUNDO. Responsable del 90% de las muertes por intoxicación fúngica en España. En Jaén hay varios casos cada otoño.',
+    identificacion:'Sombrero: verde-amarillento 5–15cm. Láminas: BLANCAS siempre. Pie: blanco con anillo y VOLVA en la base (como una copa). Olor: dulzón.',
+    confusiones:'Se confunde con champiñón joven (sin abrir) y con seta de cardo joven. DIFERENCIA CLAVE: volva en la base y láminas SIEMPRE blancas.',
+    usos_culinarios:'NINGUNO. MORTAL. Sin antídoto específico. El veneno (amatoxinas) destruye el hígado en 6–10 días.',
+    cultivo_casa:null,
+    aviso:'☠️ MORTAL. Busca siempre la volva en la base. Si hay volva: NO TOQUES. Llama al 112 si hay ingesta sospechosa.'
+  },
+  { nombre:'Amanita muscaria (Matamoscas)', emoji:'🔴', tipo:'peligrosa', cultivable:false,
+    temporada:'Otoño', habitat:'Pinares y hayedos de sierra',
+    descripcion:'La seta icónica roja con puntos blancos. Tóxica aunque raramente mortal. Produce alucinaciones y síntomas neurológicos.',
+    identificacion:'Sombrero: rojo vivo con verrugas blancas (que se lavan con lluvia) 8–20cm. Láminas: blancas. Pie: blanco con anillo y volva.',
+    confusiones:'Inconfundible por su color rojo vivo. Las verrugas pueden desaparecer con lluvia.',
+    usos_culinarios:'NINGUNO. TÓXICA.',
+    cultivo_casa:null,
+    aviso:'🚨 TÓXICA. Aunque raramente mortal, produce síntomas graves. No tocar ni acercar a niños.'
+  },
+  { nombre:'Cortinarius orellanus', emoji:'☠️', tipo:'peligrosa', cultivable:false,
+    temporada:'Otoño', habitat:'Bosques mixtos de sierra',
+    descripcion:'Seta de aspecto inofensivo, color canela-naranja. MORTAL por destrucción renal progresiva. Los síntomas aparecen 2–3 SEMANAS después de la ingesta.',
+    identificacion:'Sombrero: pardo-naranja 3–8cm con superficie seca y fibrosa. Láminas: naranja-oxidadas. Pie: similar al sombrero. Sin anillo ni volva.',
+    confusiones:'Se confunde con níscalos o setas comestibles de color naranja. DIFERENCIA: sin látex naranja, láminas oxidadas.',
+    usos_culinarios:'NINGUNO. MORTAL. Daño renal irreversible. Muchos casos requieren trasplante de riñón.',
+    cultivo_casa:null,
+    aviso:'☠️ MORTAL CON SÍNTOMAS TARDÍOS (2–3 semanas). Si sospechas ingesta, ve URGENCIAS aunque estés bien.'
+  },
+];
+
+let filtroSetaActual = 'all';
+
+function filtrarSeta(tipo, btn){
+  filtroSetaActual = tipo;
+  document.querySelectorAll('#filtros-setas .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderSetas();
+}
+
+function renderSetas(){
+  const lista = filtroSetaActual==='all' ? SETAS :
+    filtroSetaActual==='cultivable' ? SETAS.filter(s=>s.cultivable) :
+    SETAS.filter(s=>s.tipo===filtroSetaActual);
+
+  const TIPO_COLOR = {comestible:'#3D6B1A', cultivable:'#4A9FC8', peligrosa:'#CC0A0A'};
+  const TIPO_BG = {comestible:'#EAF5E0', cultivable:'#E8F0F8', peligrosa:'#FDE8E8'};
+
+  let html = `<div style="background:#FFF3CD;border-radius:10px;padding:12px;margin-bottom:14px;border-left:4px solid #C8900A;font-size:0.79rem;line-height:1.5;">
+    <strong>⚠️ AVISO IMPORTANTE:</strong> Nunca consumas una seta si no estás 100% seguro de su identificación. Ante la duda, NO RECOJAS. Consulta siempre con un micólogo experto. En Jaén existe la Sociedad Micológica de Jaén que organiza salidas guiadas cada otoño.
+  </div>`;
+
+  lista.forEach(s=>{
+    const color = TIPO_COLOR[s.tipo];
+    const bg = TIPO_BG[s.tipo];
+    html += `<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid ${color};">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:2.2rem;">${s.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;">${s.nombre}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">
+            <span style="font-size:0.62rem;font-weight:800;background:${bg};color:${color};padding:2px 8px;border-radius:10px;">${s.tipo==='comestible'?'✅ Comestible':s.tipo==='cultivable'?'🏠 Cultivable en casa':'☠️ PELIGROSA'}</span>
+            <span style="font-size:0.62rem;background:#F0F0F0;padding:2px 8px;border-radius:10px;">⏰ ${s.temporada.split('(')[0].trim()}</span>
+          </div>
+        </div>
+      </div>
+      ${s.aviso ? `<div style="background:#FDE8E8;border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:0.78rem;font-weight:700;color:#8A0000;line-height:1.4;">${s.aviso}</div>` : ''}
+      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${s.descripcion}</p>
+      <div class="modal-seccion"><h4>🔍 Identificación</h4><p style="font-size:0.78rem;line-height:1.5;">${s.identificacion}</p></div>
+      <div class="modal-seccion"><h4>⚠️ Posibles confusiones</h4><p style="font-size:0.78rem;line-height:1.5;color:#8A3A00;">${s.confusiones}</p></div>
+      ${s.usos_culinarios && s.tipo!=='peligrosa' ? `<div class="modal-seccion"><h4>🍳 Usos culinarios</h4><p style="font-size:0.78rem;line-height:1.5;">${s.usos_culinarios}</p></div>` : ''}
+      ${s.cultivo_casa ? `<div style="background:#E8F5E0;border-radius:7px;padding:9px 11px;font-size:0.78rem;line-height:1.5;border-left:3px solid #3D6B1A;"><strong>🏠 Cultivo en casa:</strong> ${s.cultivo_casa}</div>` : ''}
+      <div style="font-size:0.7rem;color:var(--gris);margin-top:8px;">📍 Hábitat: ${s.habitat}</div>
+    </div>`;
+  });
+  document.getElementById('lista-setas').innerHTML = html;
+}
+
+// ══════ CEREALES ══════
+const CEREALES = [
+  { nombre:'Trigo blando', emoji:'🌾', tipo:'cereal',
+    variedad:'Trigo blando panadero (Triticum aestivum). Variedades tradicionales: Andalucía, Marius.',
+    siembra:'Noviembre–diciembre (siembra de otoño en Jaén)',
+    cosecha:'Junio–julio cuando la espiga está dorada y el grano duro',
+    marco:'Siembra a voleo: 180–220 kg/ha. En pequeño huerto: 20–25 g/m²',
+    agua:'Secano — aprovecha las lluvias invernales. Riego de apoyo solo en espigazón si hay sequía.',
+    rendimiento:'En secano jiennense: 2.000–4.000 kg/ha. En 10m²: 2–4 kg de grano.',
+    descripcion:'El trigo es el cereal más cultivado históricamente en Jaén. Para autoconsumo, con 50–100m² tienes harina para el año. El trigo de secano jiennense produce poco pero de calidad excepcional.',
+    proceso_post:['Trilla: golpea los tallos secos sobre una lona para separar el grano','Aventado: lanza el grano al aire con viento para separar la paja (aventador o ventilador)','Limpieza: criba con malla fina para quitar restos','Secado: extiende 1–2 días al sol antes de guardar','Molienda: lleva a molino local o usa molino de piedra doméstico'],
+    calendario:[
+      {mes:'Nov–Dic', t:'Siembra directa a voleo o con sembradora. Laboreo previo superficial.'},
+      {mes:'Enero–Feb', t:'Germinación y ahijado. No necesita cuidados. Las lluvias lo riegan.'},
+      {mes:'Mar–Abr', t:'Encañado. Aplicación opcional de abono nitrogenado si el color es amarillento.'},
+      {mes:'Mayo', t:'Espigazón y floración. Crítico: si hay sequía intensa, un riego puede doblar la cosecha.'},
+      {mes:'Jun–Jul', t:'Maduración y cosecha. Siega cuando la paja está seca y el grano duro. Guarda en lugar seco.'},
+    ],
+    consejos:['Con 50m² produces 10–20 kg de grano: harina para varios meses','Guarda siempre un 10% de la cosecha como semilla para el año siguiente','El trigo de Jaén en secano tiene alto contenido proteico','Comparte la trilla con vecinos: es una tarea festiva tradicional','El centeno y la cebada son aún más resistentes a la sequía si tu zona es muy árida']
+  },
+  { nombre:'Cebada', emoji:'🌾', tipo:'cereal',
+    variedad:'Cebada de dos carreras (Hordeum vulgare distichum). Variedades: Albacete, Reinette.',
+    siembra:'Octubre–noviembre (más temprano que el trigo)',
+    cosecha:'Mayo–junio (antes que el trigo)',
+    marco:'Voleo: 150–180 kg/ha. En huerto: 18–22 g/m²',
+    agua:'Muy resistente a la sequía — ideal para zonas áridas de Jaén',
+    rendimiento:'2.500–5.000 kg/ha en secano. En 10m²: 2.5–5 kg.',
+    descripcion:'La cebada es el cereal más resistente a la sequía y el calor. Perfecta para las zonas más áridas de la campiña jiennense. Se usa para alimentar animales del huerto y hacer cerveza artesanal.',
+    proceso_post:['Trilla y aventado igual que el trigo','Para cerveza: malteado (remoja 2 días, germina 5 días, seca al horno a 50°C)','Para animales: puede darse el grano sin moler a gallinas, conejos y palomas','Paja: excelente para cama de animales y acolchado del huerto'],
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra directa. La cebada necesita más frío que el trigo para ahijar bien.'},
+      {mes:'Dic–Feb', t:'Crecimiento lento en invierno. Muy resistente a las heladas.'},
+      {mes:'Mar–Abr', t:'Crecimiento activo con el calor. Encañado rápido.'},
+      {mes:'May–Jun', t:'Cosecha antes que el trigo. La espiga tiene barbas largas características.'},
+    ],
+    consejos:['Ideal para alimentar las gallinas y conejos del huerto: autoabastecimiento total','La cerveza artesanal de cebada malteada propia es un proyecto muy gratificante','Más tolerante al suelo salino y calizo que el trigo','La paja de cebada es la mejor para cama de animales','Planta antes que el trigo: necesita más horas de frío']
+  },
+  { nombre:'Avena', emoji:'🌾', tipo:'cereal',
+    variedad:'Avena común (Avena sativa). Avena loca silvestre en cunetas de Jaén.',
+    siembra:'Octubre–noviembre',
+    cosecha:'Mayo–junio',
+    marco:'Voleo: 120–150 kg/ha. En huerto: 15–18 g/m²',
+    agua:'Necesita algo más de agua que la cebada. Riegos de apoyo en primavera.',
+    rendimiento:'1.500–3.000 kg/ha en secano. En 10m²: 1.5–3 kg.',
+    descripcion:'La avena se adapta bien a las zonas más húmedas de la sierra jiennense (Cazorla, Segura). Ideal para copos de avena caseros y como forraje de alta calidad para animales.',
+    proceso_post:['Trilla y aventado estándar','Descascarado: necesita descascaradora para consumo humano (copos de avena)','Sin descascarar: excelente forraje para caballos, cabras y gallinas','Copos caseros: aplasta el grano con rodillo tras vaporizarlo 5 minutos'],
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra. La avena prefiere suelos más frescos y húmedos.'},
+      {mes:'Dic–Mar', t:'Crecimiento vegetativo. Muy resistente al frío.'},
+      {mes:'Abr–May', t:'Espigazón y floración. La panícula (espiga ramificada) es característica.'},
+      {mes:'May–Jun', t:'Cosecha cuando el grano se suelta fácilmente de la espiga.'},
+    ],
+    consejos:['La avena es el mejor cereal para cabras y caballos: muy digestible','Para copos de avena caseros necesitas un aplastador de granos (30€)','En las sierras jiennenses húmedas produce más que el trigo','La paja de avena es más suave que la de cebada: mejor para animales jóvenes','Planta avena como abono verde en otoño si no vas a cosecharla']
+  },
+  { nombre:'Centeno', emoji:'🌾', tipo:'cereal',
+    variedad:'Centeno común (Secale cereale). Muy rústico.',
+    siembra:'Octubre–noviembre',
+    cosecha:'Junio–julio',
+    marco:'Voleo: 120–150 kg/ha. En huerto: 15 g/m²',
+    agua:'El más resistente a la sequía de todos los cereales. Secano total.',
+    rendimiento:'1.500–3.000 kg/ha. Menos que el trigo pero en suelos donde el trigo no crece.',
+    descripcion:'El centeno es el cereal más rústico. Crece en suelos pobres, ácidos y fríos donde el trigo fracasa. Ideal para zonas de sierra alta de Jaén. La harina de centeno da el pan moreno tradicional.',
+    proceso_post:['Trilla y aventado estándar','Harina de centeno: para pan moreno (100% centeno) o mezclado con trigo','Pan de centeno: más denso, ácido y duradero que el de trigo','Ergot: vigilar el cornezuelo del centeno (hongo tóxico negro en la espiga) — descarta espigas negras'],
+    calendario:[
+      {mes:'Oct–Nov', t:'Siembra. El centeno aguanta los inviernos más duros de sierra.'},
+      {mes:'Dic–Mar', t:'Crecimiento muy lento en frío. Muy resistente a la nieve y hielo.'},
+      {mes:'Abr–May', t:'Crecimiento rápido con el calor. Plantas muy altas (1.5–2m).'},
+      {mes:'Jun–Jul', t:'Cosecha tardía. La espiga larga con muchas barbas es característica.'},
+    ],
+    consejos:['Ideal para suelos ácidos de sierra donde el trigo no va bien','El pan de centeno 100% es denso pero dura semanas sin ponerse malo','Como abono verde es el mejor: biomasa enorme en invierno','Vigilar el ergot (cornezuelo): hongo tóxico negro. Descarta espigas negras','La paja de centeno es la más larga: tradicional para cestos y sombreros']
+  },
+  { nombre:'Maíz (ver también Hortalizas)', emoji:'🌽', tipo:'cereal',
+    variedad:'Maíz para harina (Zea mays). Variedades locales: Maíz de Jaén, Cuarenteno.',
+    siembra:'Abril–mayo',
+    cosecha:'Septiembre–octubre (para secar)',
+    marco:'30cm entre plantas × 70cm entre filas',
+    agua:'NECESITA RIEGO en verano jiennense. No es cereal de secano.',
+    rendimiento:'3.000–6.000 kg/ha. En 10m²: 3–6 kg de grano seco.',
+    descripcion:'El maíz es el único cereal de verano. Necesita riego pero produce mucho. Para harina de maíz (gachas jiennenses), polenta, palomitas o alimento de animales.',
+    proceso_post:['Cosecha cuando el grano esté completamente seco en la planta','Desgrana frotando las mazorcas entre sí','Seca el grano 1 semana al sol antes de guardar','Molienda: lleva al molino o usa molinillo de café para pequeñas cantidades','Las gachas de maíz (poleás) son un plato tradicional jiennense'],
+    calendario:[
+      {mes:'Abr–May', t:'Siembra directa cuando el suelo supere 15°C.'},
+      {mes:'Jun–Jul', t:'Crecimiento activo. Riego cada 2–3 días en verano jiennense.'},
+      {mes:'Agosto', t:'Floración y fecundación. Momento crítico de riego.'},
+      {mes:'Sep–Oct', t:'Maduración. Deja secar en la planta. Cosecha cuando la bráctea esté seca.'},
+    ],
+    consejos:['Las gachas (poleás) con aceite de oliva de Jaén son el desayuno tradicional de los jornaleros','El maíz seco es el mejor alimento para gallinas, patos y palomas','Necesita polinización cruzada: planta mínimo 4 filas juntas','La rosquilla de maíz es otro producto tradicional jiennense','Guarda las mejores mazorcas como semilla para el año siguiente']
+  },
+];
+
+function renderCereales(){
+  let html='';
+  CEREALES.forEach(c=>{
+    const calHtml = c.calendario.map(m=>`
+      <div style="background:var(--crema);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:9px;">
+        <div style="min-width:70px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${m.mes}</div>
+        <div style="font-size:0.78rem;line-height:1.4;">${m.t}</div>
+      </div>`).join('');
+    const consHtml = c.consejos.map(x=>`<li>${x}</li>`).join('');
+    const postHtml = c.proceso_post.map((p,i)=>`<li style="margin-bottom:3px;">${p}</li>`).join('');
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid #C8900A;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:2rem;background:var(--crema);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;">${c.emoji}</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${c.nombre}</div>
+          <div style="font-size:0.65rem;color:var(--gris);">Siembra: ${c.siembra} · Cosecha: ${c.cosecha}</div>
+        </div>
+      </div>
+      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:11px;line-height:1.5;">${c.descripcion}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px;">
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${c.agua}</div><div class="etiq">Agua</div></div>
+        <div class="dato-box"><div class="valor" style="font-size:0.68rem">${c.rendimiento.split('.')[0]}</div><div class="etiq">Rendimiento</div></div>
+      </div>
+      <details style="margin-bottom:8px;">
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;cursor:pointer;padding:5px 0;">📅 Calendario</summary>
+        <div style="margin-top:7px;">${calHtml}</div>
+      </details>
+      <details style="margin-bottom:8px;">
+        <summary style="font-size:0.72rem;font-weight:800;color:var(--gris);text-transform:uppercase;cursor:pointer;padding:5px 0;">⚙️ Post-cosecha y elaboración</summary>
+        <ol style="margin:7px 0 0 16px;font-size:0.78rem;line-height:1.7;">${postHtml}</ol>
+      </details>
+      <div class="modal-seccion"><h4>💡 Consejos</h4><ul class="consejo-lista">${consHtml}</ul></div>
+    </div>`;
+  });
+  document.getElementById('lista-cereales').innerHTML = html;
+}
+
+// ══════ FITOTERAPIA VETERINARIA ══════
+const FITO_DATA = [
+  // GALLINAS
+  { animal:'gallinas', emoji:'🐔', problema:'Piojos y ácaros (parásitos externos)',
+    plantas:['Ajenjo (Artemisia absinthium)','Lavanda','Eucalipto','Tomillo'],
+    preparacion:'Cuelga ramas frescas de ajenjo y lavanda dentro del gallinero. Frota las perchas con eucalipto. Espolvorea ceniza de madera mezclada con tierra de diatomeas en los rincones y bajo las perchas.',
+    dosis:'Renueva las hierbas cada semana. La tierra de diatomeas es el remedio más eficaz: aplica mensualmente.',
+    aviso:'La tierra de diatomeas (sílice natural) es inocua para aves y humanos pero mortal para insectos con exoesqueleto.',
+    nivel:'preventivo'
+  },
+  { animal:'gallinas', emoji:'🐔', problema:'Estrés por calor (golpe de calor)',
+    plantas:['Menta/hierbabuena','Melisa','Saúco (flores)'],
+    preparacion:'Añade hojas frescas de menta o melisa al agua de bebida en verano. Prepara una infusión ligera de flores de saúco y añade al bebedero. Coloca ramas de menta fresca en el gallinero.',
+    dosis:'Agua con menta fresca a diario en julio–agosto. También electrolitos caseros: agua + pizca de sal + azúcar.',
+    aviso:'En Jaén el golpe de calor es la principal causa de muerte en aves. Sombra, agua fresca y menta son los tres pilares.',
+    nivel:'urgente'
+  },
+  { animal:'gallinas', emoji:'🐔', problema:'Diarrea y problemas digestivos',
+    plantas:['Tomillo','Orégano','Ajo','Manzanilla'],
+    preparacion:'Añade 1–2 dientes de ajo machacados al bebedero semanalmente (antibacteriano natural). Infusión de manzanilla al 5% en el agua. Orégano seco mezclado con el pienso (1 cucharada por kg de pienso).',
+    dosis:'Ajo en agua: 2 dientes por 4 litros, 2 veces por semana. Manzanilla: 3 días seguidos en caso de diarrea.',
+    aviso:'Si la diarrea persiste más de 3 días o va acompañada de sangre, consulta veterinario urgente.',
+    nivel:'tratamiento'
+  },
+  { animal:'gallinas', emoji:'🐔', problema:'Baja producción de huevos',
+    plantas:['Ortiga','Perejil','Remolacha (hojas)'],
+    preparacion:'Añade hojas de ortiga fresca (escaldadas) al pienso: mejora la producción y el color de la yema. Perejil fresco picado mezclado con la comida 3 veces por semana. Las hojas de remolacha dan color intenso a la yema.',
+    dosis:'Ortiga escaldada: 100g por gallina a la semana. Perejil: puñado por gallina 3 veces/semana.',
+    aviso:'La ortiga es el suplemento más completo para gallinas: hierro, vitaminas y proteínas vegetales.',
+    nivel:'preventivo'
+  },
+  // CONEJOS
+  { animal:'conejos', emoji:'🐇', problema:'Coccidiosis y problemas intestinales',
+    plantas:['Ajenjo','Tomillo','Ajo','Orégano'],
+    preparacion:'Cuelga ramas de ajenjo seco en la jaula (antiparasitario). Añade ajo machacado al agua (1 diente por litro) 2 veces por semana. Orégano seco en el heno: mejora la flora intestinal.',
+    dosis:'Preventivo: ajo en agua 2 veces/semana. Tratamiento: ajenjo fresco a voluntad durante 5 días.',
+    aviso:'La coccidiosis es la principal causa de muerte en conejos jóvenes. Si hay síntomas (diarrea líquida, postración), veterinario urgente.',
+    nivel:'preventivo'
+  },
+  { animal:'conejos', emoji:'🐇', problema:'Estrés por calor',
+    plantas:['Menta','Melisa','Diente de león'],
+    preparacion:'Coloca botellas de agua congelada en la jaula. Añade hojas de menta fresca al bebedero. Diente de león fresco: los conejos lo adoran y tiene efecto refrescante.',
+    dosis:'Menta fresca: puñado diario en julio–agosto. Diente de León: a voluntad (crece silvestre en Jaén).',
+    aviso:'A partir de 30°C los conejos sufren estrés grave. A 35°C pueden morir. Prioritario en Jaén en verano.',
+    nivel:'urgente'
+  },
+  { animal:'conejos', emoji:'🐇', problema:'Sarna y parásitos externos',
+    plantas:['Aloe vera','Lavanda','Aceite de neem'],
+    preparacion:'Gel de aloe vera aplicado sobre las costras de sarna con un algodón. Aceite de neem diluido (5ml en 100ml aceite de oliva): aplica en las zonas afectadas con guante. Lavanda seca en la cama.',
+    dosis:'Aloe vera: aplicación diaria durante 10–14 días. Neem: cada 3 días durante 2 semanas.',
+    aviso:'La sarna auricular (por Psoroptes cuniculi) requiere tratamiento veterinario si es severa. El aloe es solo complementario.',
+    nivel:'tratamiento'
+  },
+  // CABRAS Y CERDOS
+  { animal:'cabras', emoji:'🐐', problema:'Parásitos internos (lombrices)',
+    plantas:['Ajenjo','Tomillo','Calabaza (semillas)','Ajo'],
+    preparacion:'Semillas de calabaza crudas: 30–50g diarios durante 3 días (antihelmíntico natural por su cucurbitacina). Infusión de ajenjo al 10%: 200ml por cabra al día durante 5 días. Ajo fresco: 2–3 dientes diarios en el pienso.',
+    dosis:'Calabaza: tratamiento 3 días al mes en temporada de parásitos (primavera y otoño). No reemplaza la desparasitación química en infestaciones graves.',
+    aviso:'Las cabras con alta carga parasitaria (mucosas pálidas, pérdida de peso) necesitan tratamiento veterinario antiparasitario urgente.',
+    nivel:'preventivo'
+  },
+  { animal:'cabras', emoji:'🐐', problema:'Mastitis leve (inflamación de la ubre)',
+    plantas:['Arcilla verde','Aloe vera','Cola de caballo','Caléndula'],
+    preparacion:'Cataplasma de arcilla verde fría sobre la ubre inflamada: deja actuar 30 minutos, 2 veces al día. Gel de aloe vera aplicado suavemente en la zona. Infusión de cola de caballo para beber: antiinflamatorio.',
+    dosis:'Arcilla: 2 aplicaciones diarias. Aloe: 3 aplicaciones diarias. Si hay fiebre o el animal deja de comer: veterinario urgente.',
+    aviso:'La mastitis bacteriana grave necesita antibióticos. Estos remedios son solo para casos leves y como complemento.',
+    nivel:'tratamiento'
+  },
+  { animal:'cabras', emoji:'🐐', problema:'Heridas y cortes menores',
+    plantas:['Caléndula','Aloe vera','Propóleo (si tienes abejas)','Miel'],
+    preparacion:'Limpia la herida con agua limpia. Aplica gel de aloe vera fresco. Tintura de caléndula diluida (1:5 en agua) como antiséptico. La miel cruda aplicada directamente es un potente cicatrizante y antibacteriano.',
+    dosis:'Aplica 2–3 veces al día hasta cicatrizar. Para heridas profundas o con signos de infección: veterinario.',
+    aviso:'La miel de tomillo de Jaén tiene propiedades antibacterianas excepcionales para uso tópico.',
+    nivel:'tratamiento'
+  },
+  // GENERAL
+  { animal:'general', emoji:'🌿', problema:'Repelente de moscas e insectos para todos los animales',
+    plantas:['Lavanda','Albahaca','Eucalipto','Laurel','Tomillo'],
+    preparacion:'Cuelga ramos de lavanda seca en gallineros, conejeras y establos. Pon matas de albahaca fresca cerca de los comederos. Prepara un spray: hierve eucalipto 15 min, cuela y mete en pulverizador. Aplica en las zonas de descanso.',
+    dosis:'Ramas secas: cambia cada 2–3 semanas. Spray de eucalipto: aplica cada 2–3 días en verano.',
+    aviso:'En Jaén las moscas son un problema grave en verano por el calor. La combinación lavanda + albahaca es muy eficaz.',
+    nivel:'preventivo'
+  },
+  { animal:'general', emoji:'🌿', problema:'Desinfección natural de instalaciones',
+    plantas:['Vinagre blanco','Aceite de árbol de té','Lavanda','Tomillo'],
+    preparacion:'Solución de limpieza: 1 litro de vinagre blanco + 10 gotas de aceite de árbol de té + 5 gotas de lavanda. Usa para fregar comederos, bebederos y superficies. Infusión de tomillo concentrada para desinfectar herramientas.',
+    dosis:'Limpieza semanal de comederos y bebederos. Desinfección profunda mensual.',
+    aviso:'El vinagre blanco es el desinfectante más económico y efectivo para uso ganadero doméstico. pH ácido elimina la mayoría de bacterias.',
+    nivel:'preventivo'
+  },
+  { animal:'general', emoji:'🌿', problema:'Suplemento vitamínico natural',
+    plantas:['Ortiga','Diente de León','Milenrama','Alfalfa'],
+    preparacion:'Ortiga seca: el suplemento más completo (hierro, calcio, vitaminas A, C, K). Añade al pienso de todos los animales. Diente de León fresco: vitaminas y minerales. Alfalfa: la proteína vegetal más completa para herbívoros.',
+    dosis:'Ortiga seca: 5% del peso del pienso diario. Diente de León: a voluntad (crece gratis en cualquier campo de Jaén). Alfalfa: a voluntad para cabras y conejos.',
+    aviso:'La ortiga es el superalimento más barato y accesible. Crece silvestre en zonas húmedas de Jaén. Guántate para recogerla.',
+    nivel:'preventivo'
+  },
+];
+
+let filtroFitoActual = 'all';
+
+function filtrarFito(tipo, btn){
+  filtroFitoActual = tipo;
+  document.querySelectorAll('#filtros-fito .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderFito();
+}
+
+function renderFito(){
+  const lista = filtroFitoActual==='all' ? FITO_DATA : FITO_DATA.filter(f=>f.animal===filtroFitoActual);
+  const NIVEL_COLOR = {preventivo:'#3D6B1A', tratamiento:'#C8900A', urgente:'#CC0A0A'};
+  const NIVEL_LABEL = {preventivo:'🛡️ Preventivo', tratamiento:'💊 Tratamiento', urgente:'🚨 Urgente'};
+
+  let html = `<div style="background:#FFF3CD;border-radius:10px;padding:11px;margin-bottom:14px;border-left:4px solid #C8900A;font-size:0.78rem;line-height:1.5;">
+    <strong>⚠️ AVISO MÉDICO:</strong> Estos remedios son complementarios a la veterinaria convencional, nunca sustitutos. Ante síntomas graves, consulta siempre a tu veterinario.
+  </div>`;
+
+  lista.forEach(f=>{
+    const color = NIVEL_COLOR[f.nivel];
+    html+=`<div style="background:white;border-radius:12px;padding:15px;margin-bottom:10px;box-shadow:0 2px 7px rgba(0,0,0,0.07);border-left:5px solid ${color};">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <div>
+          <span style="font-size:1.1rem;">${f.emoji}</span>
+          <strong style="font-size:0.9rem;margin-left:5px;">${f.problema}</strong>
+        </div>
+        <span style="font-size:0.63rem;font-weight:800;background:${color}22;color:${color};padding:3px 9px;border-radius:10px;white-space:nowrap;">${NIVEL_LABEL[f.nivel]}</span>
+      </div>
+      <div class="modal-seccion">
+        <h4>🌿 Plantas utilizadas</h4>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${f.plantas.map(p=>`<span style="background:var(--crema);border-radius:15px;padding:3px 10px;font-size:0.72rem;font-weight:600;">${p}</span>`).join('')}
+        </div>
+      </div>
+      <div class="modal-seccion"><h4>⚗️ Preparación</h4><p style="font-size:0.79rem;line-height:1.5;">${f.preparacion}</p></div>
+      <div class="modal-seccion"><h4>📏 Dosis y frecuencia</h4><p style="font-size:0.79rem;line-height:1.5;">${f.dosis}</p></div>
+      <div style="background:${f.nivel==='urgente'?'#FDE8E8':f.nivel==='tratamiento'?'#FFF8E8':'#EAF5E0'};border-radius:7px;padding:8px 10px;font-size:0.76rem;color:${color};border-left:3px solid ${color};line-height:1.4;">
+        <strong>💡 Nota:</strong> ${f.aviso}
+      </div>
+    </div>`;
+  });
+  document.getElementById('lista-fito').innerHTML = html;
+}
+
 function descargar(){
   const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -1733,6 +3580,21 @@ window.onload=function(){
   renderAnimales();
   renderAromaticas();
   renderMedicinales();
+  initDark();
+  registrarSW();
+  cargarMiHuerto();
+  renderMiHuerto();
+  renderAlertas();
+  renderDiario();
+  renderOlivar();
+  renderFrutales();
+  renderConservasFiltradas('');
+  renderClima();
+  renderCostes();
+  setTimeout(inicializarCalculadora, 100);
+  renderSetas();
+  renderCereales();
+  renderFito();
 };
 </script>
 </body>
