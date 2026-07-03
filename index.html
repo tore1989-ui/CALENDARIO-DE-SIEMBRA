@@ -538,6 +538,7 @@
     <button onclick="mostrarVista('setas',this)">🍄 Setas</button>
     <button onclick="mostrarVista('cereales',this)">🌾 Cereales</button>
     <button onclick="mostrarVista('fitoveterinaria',this)">💉 Fitoveterinaria</button>
+    <button onclick="mostrarVista('plano',this)">🗺️ Plano del Huerto</button>
   </nav>
 </header>
 
@@ -552,7 +553,7 @@
   <div style="padding:13px 0 0">
     <div class="info-banner">
       <span class="icon">📍</span>
-      <span>Adaptado al <strong>clima mediterráneo continental de Jaén</strong> — veranos secos y calurosos, inviernos fríos. Altitud media 575 m. Pulsa el nombre del cultivo para ver su ficha completa.</span>
+      <span>Adaptado a la <strong>vega del Guadalquivir, entre Mengíbar y Espeluy</strong> — clima mediterráneo continental con veranos secos y muy calurosos, inviernos suaves. Altitud ~280 m, zona de regadío junto al río. Pulsa el nombre del cultivo para ver su ficha completa.</span>
     </div>
 
     <div class="filtros">
@@ -669,7 +670,7 @@
   <h2 class="seccion-titulo">💧 Guía de Riego para Jaén</h2>
   <div class="info-banner" style="background:var(--cielo);">
     <span class="icon">☀️</span>
-    <span>Jaén tiene veranos extremos (+40 °C). El riego es crítico de <strong>junio a septiembre</strong>. Riega siempre al atardecer o al amanecer.</span>
+    <span>La vega junto al Guadalquivir tiene veranos extremos (+40 °C). El riego es crítico de <strong>junio a septiembre</strong>. Riega siempre al atardecer o al amanecer.</span>
   </div>
   <h3 class="seccion-titulo">Frecuencia de riego por época</h3>
   <div class="tabla-riego-wrap" id="tabla-riego"></div>
@@ -858,7 +859,7 @@
 
 <!-- ══════════════ CLIMA ══════════════ -->
 <div class="vista" id="vista-clima">
-  <h2 class="seccion-titulo">🌡️ Clima de Jaén</h2>
+  <h2 class="seccion-titulo">🌡️ Clima en Espeluy (Jaén)</h2>
   <div id="clima-actual" style="margin-bottom:14px;"></div>
   <div id="clima-previsión" style="margin-bottom:18px;"></div>
   <h3 class="seccion-titulo">📊 Clima típico de Jaén por mes</h3>
@@ -958,6 +959,45 @@
     <button class="filtro-btn" data-fito="general" onclick="filtrarFito('general',this)">🌿 General</button>
   </div>
   <div id="lista-fitoveterinaria"></div>
+</div>
+
+<!-- ══════════════ PLANO DEL HUERTO ══════════════ -->
+<div class="vista" id="vista-plano">
+  <h2 class="seccion-titulo">🗺️ Plano de tu Huerto</h2>
+  <div class="info-banner">
+    <span class="icon">✏️</span>
+    <span>Dibuja tus bancales a mano o con cuadrícula. Toca uno para asignarle un cultivo y la app te dirá qué hacer, cuándo regar y qué vigilar.</span>
+  </div>
+
+  <!-- Selector de modo -->
+  <div class="filtros" style="margin-bottom:10px;">
+    <button class="filtro-btn on" id="modo-libre-btn" onclick="cambiarModoPlano('libre')">✋ Dibujo libre</button>
+    <button class="filtro-btn" id="modo-cuadricula-btn" onclick="cambiarModoPlano('cuadricula')">▦ Cuadrícula</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+    <button id="btn-anadir-bancal" onclick="activarDibujoBancal()" style="background:var(--oliva);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;">+ Añadir bancal</button>
+    <button onclick="borrarTodoPlano()" style="background:transparent;border:1.5px solid #CC0A0A;color:#CC0A0A;border-radius:8px;padding:7px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">🗑️ Borrar todo</button>
+    <span id="plano-hint" style="font-size:0.72rem;color:var(--gris);margin-left:auto;"></span>
+  </div>
+
+  <!-- Lienzo -->
+  <div id="plano-canvas-wrap" style="background:#EDE7D8;border-radius:12px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,0.08);margin-bottom:14px;overflow:auto;">
+    <canvas id="plano-canvas" width="600" height="420" style="display:block;touch-action:none;border-radius:8px;background:#F7F3E8;width:100%;max-width:600px;"></canvas>
+  </div>
+
+  <!-- Leyenda de colores por familia -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;font-size:0.66rem;font-weight:700;" id="leyenda-familias-plano"></div>
+
+  <!-- Lista de bancales -->
+  <h3 class="seccion-titulo">📋 Tus bancales</h3>
+  <div id="lista-bancales-plano"></div>
+</div>
+
+<!-- ══════════════ MODAL BANCAL (asignar cultivo) ══════════════ -->
+<div class="modal-overlay" id="modal-bancal-overlay" onclick="cerrarModalBancal(event)">
+  <div class="modal" id="modal-bancal-contenido"></div>
 </div>
 
 <!-- MODAL -->
@@ -2863,27 +2903,27 @@ function renderFrutales(){
 
 // ══════ CLIMA ══════
 const CLIMA_HISTORICO = [
-  {mes:'Enero',   tmin:3,  tmax:12, lluvia:58,  sol:5,  riesgo:'Heladas frecuentes en sierra. Protege cultivos tiernos.'},
-  {mes:'Febrero', tmin:4,  tmax:15, lluvia:52,  sol:6,  riesgo:'Heladas tardías posibles. Floración del almendro en riesgo.'},
-  {mes:'Marzo',   tmin:6,  tmax:18, lluvia:45,  sol:7,  riesgo:'Heladas tardías hasta mediados de mes en zonas altas.'},
-  {mes:'Abril',   tmin:9,  tmax:22, lluvia:42,  sol:8,  riesgo:'Helada de Abril: riesgo real hasta el 23 de abril.'},
-  {mes:'Mayo',    tmin:12, tmax:27, lluvia:30,  sol:9,  riesgo:'Calor en aumento. Últimas lluvias primaverales.'},
-  {mes:'Junio',   tmin:17, tmax:34, lluvia:14,  sol:11, riesgo:'Inicio del calor extremo. Riego crítico.'},
-  {mes:'Julio',   tmin:21, tmax:38, lluvia:4,   sol:12, riesgo:'🔥 Pico de calor. Hasta 45°C. Riego diario imprescindible.'},
-  {mes:'Agosto',  tmin:21, tmax:37, lluvia:5,   sol:11, riesgo:'Calor extremo continúa. Golpe de calor en animales.'},
-  {mes:'Sep',     tmin:17, tmax:31, lluvia:22,  sol:9,  riesgo:'Primeras tormentas otoñales. Mosca del olivo en pico.'},
-  {mes:'Octubre', tmin:12, tmax:23, lluvia:48,  sol:7,  riesgo:'Primeras heladas en sierra. Lluvias irregulares.'},
-  {mes:'Nov',     tmin:7,  tmax:16, lluvia:65,  sol:5,  riesgo:'Heladas posibles en zonas altas. Lluvias abundantes.'},
-  {mes:'Dic',     tmin:4,  tmax:12, lluvia:70,  sol:4,  riesgo:'Frío intenso. Heladas frecuentes. Protege instalaciones.'},
+  {mes:'Enero',   tmin:4,  tmax:13, lluvia:58,  sol:5,  riesgo:'Heladas ocasionales al amanecer en la vega. Menos intensas que en la sierra o la capital.'},
+  {mes:'Febrero', tmin:5,  tmax:16, lluvia:52,  sol:6,  riesgo:'Heladas tardías posibles en noches despejadas. Floración del almendro en riesgo.'},
+  {mes:'Marzo',   tmin:7,  tmax:19, lluvia:45,  sol:7,  riesgo:'Riesgo de helada bajando rápido. La vega se libra antes que la sierra.'},
+  {mes:'Abril',   tmin:10, tmax:23, lluvia:42,  sol:8,  riesgo:'Helada de Abril: riesgo puntual hasta el 23 de abril, más leve que en zonas altas.'},
+  {mes:'Mayo',    tmin:13, tmax:28, lluvia:30,  sol:9,  riesgo:'Calor en aumento, ya notable por la cercanía al Guadalquivir.'},
+  {mes:'Junio',   tmin:18, tmax:36, lluvia:14,  sol:11, riesgo:'Calor fuerte desde primeros de mes. Riego crítico en la vega.'},
+  {mes:'Julio',   tmin:22, tmax:40, lluvia:4,   sol:12, riesgo:'🔥 Pico de calor. Habituales 40–44°C en el valle. Riego diario imprescindible.'},
+  {mes:'Agosto',  tmin:22, tmax:39, lluvia:5,   sol:11, riesgo:'Calor extremo continúa, muy húmedo por el río. Golpe de calor en animales.'},
+  {mes:'Sep',     tmin:18, tmax:33, lluvia:22,  sol:9,  riesgo:'Primeras tormentas otoñales. Mosca del olivo en pico.'},
+  {mes:'Octubre', tmin:13, tmax:24, lluvia:48,  sol:7,  riesgo:'Heladas aún improbables en la vega. Lluvias irregulares.'},
+  {mes:'Nov',     tmin:8,  tmax:17, lluvia:65,  sol:5,  riesgo:'Primeras heladas suaves de madrugada junto al río. Lluvias abundantes.'},
+  {mes:'Dic',     tmin:5,  tmax:13, lluvia:70,  sol:4,  riesgo:'Frío con nieblas del Guadalquivir. Heladas moderadas. Protege instalaciones.'},
 ];
 
 const ALERTAS_CLIMA_JAEN = [
-  {icon:'🔥', titulo:'Verano extremo (Jun–Ago)', texto:'Jaén es una de las provincias más calurosas de España. Temperaturas habituales de 38–42°C. Pico histórico: 47.4°C (Córdoba 2021). El riego diario y el acolchado son imprescindibles.', nivel:'urgente'},
-  {icon:'🌨️', titulo:'Heladas de invierno (Nov–Mar)', texto:'Las zonas altas (Sierra Mágina, Cazorla, Segura) pueden tener hasta -10°C. La capital y la campiña tienen heladas moderadas (-3 a -5°C). Protege con geotextil.', nivel:'info'},
-  {icon:'❄️', titulo:'Helada de Abril', texto:'Fenómeno típico jiennense: una helada tardía entre el 20–25 de abril puede arruinar los trasplantes recientes. Nunca trasplantes solanáceas sin protección antes del 25 de abril.', nivel:'urgente'},
-  {icon:'💧', titulo:'Sequía estival (Jun–Sep)', texto:'Prácticamente sin lluvia durante 4 meses. El huerto depende 100% del riego. El sistema de goteo no es un lujo: es una necesidad básica en Jaén.', nivel:'urgente'},
-  {icon:'⛈️', titulo:'Tormentas de otoño', texto:'Las primeras lluvias de septiembre-octubre son violentas. Pueden llegar 60–80 mm en pocas horas. Asegura los tutores y verifica el drenaje de los bancales.', nivel:'info'},
-  {icon:'🌬️', titulo:'Viento de Levante', texto:'El viento del este seco y caliente acelera la evapotranspiración en verano. En días de Levante, riega el doble y protege las plantas más sensibles.', nivel:'info'},
+  {icon:'🔥', titulo:'Verano extremo en la vega (Jun–Ago)', texto:'La zona entre Mengíbar y Espeluy, junto al Guadalquivir, es de las más calurosas de la provincia: 40–44°C habituales en julio-agosto, con noches que apenas bajan de 22–24°C. El riego diario y el acolchado son imprescindibles.', nivel:'urgente'},
+  {icon:'🌫️', titulo:'Nieblas y heladas de valle (Nov–Feb)', texto:'Al estar junto al río, son típicas las nieblas matinales y las heladas de irradiación en noches despejadas de invierno (-2 a -4°C). Menos frecuentes y menos intensas que en la sierra o la capital, pero vigila los brotes tiernos al amanecer.', nivel:'info'},
+  {icon:'❄️', titulo:'Helada de Abril', texto:'Fenómeno típico jiennense: una helada tardía entre el 20–25 de abril puede dañar trasplantes recientes, aunque en la vega baja el riesgo es menor que en zonas altas. Por precaución, protege las solanáceas hasta pasado el 25 de abril.', nivel:'urgente'},
+  {icon:'💧', titulo:'Sequía estival (Jun–Sep)', texto:'Prácticamente sin lluvia durante 4 meses. Estar junto al Guadalquivir facilita el acceso a agua de riego, pero el huerto depende igualmente del sistema de goteo: con el calor del valle, no es un lujo, es una necesidad diaria.', nivel:'urgente'},
+  {icon:'⛈️', titulo:'Tormentas de otoño', texto:'Las primeras lluvias de septiembre-octubre pueden ser intensas. Vigila el desagüe de los bancales cerca del río, ya que la vega retiene más humedad que zonas más elevadas.', nivel:'info'},
+  {icon:'🌬️', titulo:'Viento de Levante', texto:'El viento del este seco y caliente se nota con fuerza en el valle y acelera la evapotranspiración en verano. En días de Levante, riega el doble y protege las plantas más sensibles.', nivel:'info'},
 ];
 
 function renderClima(){
@@ -2894,8 +2934,8 @@ function renderClima(){
     <div style="font-size:2rem;">🌡️</div>
   </div>`;
 
-  // Coordenadas de Jaén capital
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-3.79&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Europe%2FMadrid&forecast_days=7&language=es')
+  // Coordenadas de Espeluy (Jaén) — vega del Guadalquivir, entre Mengíbar y Espeluy
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=38.033&longitude=-3.862&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Europe%2FMadrid&forecast_days=7&language=es')
     .then(r=>r.json())
     .then(data=>{
       const c = data.current;
@@ -2904,7 +2944,7 @@ function renderClima(){
       const wicon = wicons[c.weather_code] || '🌡️';
 
       container.innerHTML = `<div style="background:linear-gradient(135deg,#1060A8,#4A9FC8);color:white;border-radius:14px;padding:18px;margin-bottom:10px;">
-        <div style="font-size:0.65rem;font-weight:800;letter-spacing:2px;opacity:0.8;margin-bottom:6px;">JAÉN CAPITAL — AHORA</div>
+        <div style="font-size:0.65rem;font-weight:800;letter-spacing:2px;opacity:0.8;margin-bottom:6px;">ESPELUY (JAÉN) — AHORA</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div>
             <div style="font-size:3rem;font-weight:300;line-height:1;">${Math.round(c.temperature_2m)}°C</div>
@@ -3577,6 +3617,498 @@ function renderFitoveterinaria(){
   document.getElementById('lista-fitoveterinaria').innerHTML = html;
 }
 
+// ══════════════════════════════════════════
+// PLANO DEL HUERTO
+// ══════════════════════════════════════════
+
+// Familias botánicas para rotación (reutiliza colores de FAMILIAS_ROTACION si existe)
+const FAMILIA_DE_CULTIVO = {
+  'Tomate':'Solanáceas','Pimiento':'Solanáceas','Berenjena':'Solanáceas','Patata':'Solanáceas',
+  'Pepino':'Cucurbitáceas','Calabacín':'Cucurbitáceas','Calabaza':'Cucurbitáceas',
+  'Col/Repollo':'Crucíferas','Brócoli':'Crucíferas','Coliflor':'Crucíferas','Rábano':'Crucíferas','Nabo':'Crucíferas',
+  'Judía verde':'Leguminosas','Habas':'Leguminosas','Guisante':'Leguminosas','Garbanzo':'Leguminosas','Lenteja':'Leguminosas',
+  'Acelga':'Quenopodiáceas','Espinaca':'Quenopodiáceas','Remolacha':'Quenopodiáceas',
+  'Cebolla':'Liliáceas','Ajo':'Liliáceas','Puerro':'Liliáceas',
+  'Zanahoria':'Umbelíferas','Perejil':'Umbelíferas','Cilantro':'Umbelíferas','Eneldo':'Umbelíferas','Hinojo':'Umbelíferas',
+  'Lechuga':'Asteráceas','Maíz':'Gramíneas',
+  'Albahaca':'Aromáticas','Romero':'Aromáticas','Menta/Hierbabuena':'Aromáticas','Salvia':'Aromáticas','Estragón':'Aromáticas',
+  'Caléndula':'Flores','Tagetes/Clavelón':'Flores','Girasol':'Flores','Mostaza (abono verde)':'Flores',
+};
+
+const COLOR_FAMILIA = {
+  'Solanáceas':'#FF7000','Cucurbitáceas':'#3D6B1A','Crucíferas':'#4A9FC8','Leguminosas':'#CC0A0A',
+  'Quenopodiáceas':'#7020A8','Liliáceas':'#C8900A','Umbelíferas':'#A0390A','Asteráceas':'#2E8B57',
+  'Gramíneas':'#B8860B','Aromáticas':'#6B8E3A','Flores':'#D4477A','Sin asignar':'#B0A899'
+};
+
+let planoState = {
+  modo: 'libre',          // 'libre' | 'cuadricula'
+  bancales: [],           // {id, tipo:'rect'|'celda', x,y,w,h (metros o celdas), cultivo, historial:[{cultivo,anyo}]}
+  dibujando: false,
+  dibujoActual: null,
+  cellSize: 40,           // px por celda en modo cuadrícula
+  pxPorMetro: 60,          // escala en modo libre
+  siguienteId: 1
+};
+
+function cargarPlano(){
+  try {
+    const data = JSON.parse(localStorage.getItem('hj-plano') || 'null');
+    if(data){
+      planoState.bancales = data.bancales || [];
+      planoState.siguienteId = data.siguienteId || 1;
+      planoState.modo = data.modo || 'libre';
+    }
+  } catch(e){ planoState.bancales = []; }
+}
+
+function guardarPlano(){
+  localStorage.setItem('hj-plano', JSON.stringify({
+    bancales: planoState.bancales,
+    siguienteId: planoState.siguienteId,
+    modo: planoState.modo
+  }));
+}
+
+function cambiarModoPlano(modo){
+  planoState.modo = modo;
+  document.getElementById('modo-libre-btn').classList.toggle('on', modo==='libre');
+  document.getElementById('modo-cuadricula-btn').classList.toggle('on', modo==='cuadricula');
+  guardarPlano();
+  dibujarPlano();
+}
+
+function activarDibujoBancal(){
+  planoState.dibujando = 'esperando';
+  document.getElementById('plano-hint').textContent = planoState.modo==='cuadricula'
+    ? '👆 Toca y arrastra para pintar celdas'
+    : '👆 Toca y arrastra para dibujar un bancal';
+  document.getElementById('btn-anadir-bancal').style.background = 'var(--arcilla)';
+  document.getElementById('btn-anadir-bancal').textContent = '✏️ Dibujando...';
+}
+
+function borrarTodoPlano(){
+  if(!confirm('¿Borrar todos los bancales del plano? Esta acción no se puede deshacer.')) return;
+  planoState.bancales = [];
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+}
+
+// ══════ CANVAS DRAWING ══════
+let planoCanvas, planoCtx;
+let dragStart = null;
+let dragCurrent = null;
+
+function initPlanoCanvas(){
+  planoCanvas = document.getElementById('plano-canvas');
+  if(!planoCanvas) return;
+  planoCtx = planoCanvas.getContext('2d');
+
+  const getPos = (e)=>{
+    const rect = planoCanvas.getBoundingClientRect();
+    const scaleX = planoCanvas.width / rect.width;
+    const scaleY = planoCanvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
+  };
+
+  const onStart = (e)=>{
+    e.preventDefault();
+    const pos = getPos(e);
+
+    if(planoState.dibujando === 'esperando'){
+      planoState.dibujando = true;
+      dragStart = pos;
+      dragCurrent = pos;
+    } else {
+      // Comprobar si tocó un bancal existente
+      const b = bancalEnPosicion(pos.x, pos.y);
+      if(b) abrirModalBancal(b.id);
+    }
+  };
+
+  const onMove = (e)=>{
+    if(!planoState.dibujando || planoState.dibujando==='esperando') return;
+    e.preventDefault();
+    dragCurrent = getPos(e);
+    dibujarPlano();
+    dibujarSeleccionActual();
+  };
+
+  const onEnd = (e)=>{
+    if(planoState.dibujando===true && dragStart && dragCurrent){
+      finalizarBancal();
+    }
+    planoState.dibujando = false;
+    dragStart = null;
+    dragCurrent = null;
+    document.getElementById('plano-hint').textContent = '';
+    document.getElementById('btn-anadir-bancal').style.background = 'var(--oliva)';
+    document.getElementById('btn-anadir-bancal').textContent = '+ Añadir bancal';
+  };
+
+  planoCanvas.addEventListener('mousedown', onStart);
+  planoCanvas.addEventListener('mousemove', onMove);
+  planoCanvas.addEventListener('mouseup', onEnd);
+  planoCanvas.addEventListener('touchstart', onStart, {passive:false});
+  planoCanvas.addEventListener('touchmove', onMove, {passive:false});
+  planoCanvas.addEventListener('touchend', onEnd, {passive:false});
+}
+
+function finalizarBancal(){
+  const px = planoState.pxPorMetro;
+  const cs = planoState.cellSize;
+
+  if(planoState.modo === 'cuadricula'){
+    const c1 = Math.floor(Math.min(dragStart.x,dragCurrent.x)/cs);
+    const r1 = Math.floor(Math.min(dragStart.y,dragCurrent.y)/cs);
+    const c2 = Math.floor(Math.max(dragStart.x,dragCurrent.x)/cs);
+    const r2 = Math.floor(Math.max(dragStart.y,dragCurrent.y)/cs);
+    const wCells = Math.max(1, c2-c1+1);
+    const hCells = Math.max(1, r2-r1+1);
+    if(wCells*hCells < 1) return;
+
+    planoState.bancales.push({
+      id: planoState.siguienteId++,
+      tipo:'celda', col:c1, fila:r1, wCells, hCells,
+      cultivo:null, historial:[]
+    });
+  } else {
+    const x = Math.min(dragStart.x, dragCurrent.x)/px;
+    const y = Math.min(dragStart.y, dragCurrent.y)/px;
+    const w = Math.abs(dragCurrent.x-dragStart.x)/px;
+    const h = Math.abs(dragCurrent.y-dragStart.y)/px;
+    if(w<0.3 || h<0.3) return;
+
+    planoState.bancales.push({
+      id: planoState.siguienteId++,
+      tipo:'rect', x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)),
+      w: parseFloat(w.toFixed(2)), h: parseFloat(h.toFixed(2)),
+      cultivo:null, historial:[]
+    });
+  }
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+
+  // Abrir modal del bancal recién creado para asignar cultivo
+  const nuevo = planoState.bancales[planoState.bancales.length-1];
+  setTimeout(()=>abrirModalBancal(nuevo.id), 200);
+}
+
+function bancalEnPosicion(px, py){
+  const scale = planoState.pxPorMetro;
+  const cs = planoState.cellSize;
+  for(let i=planoState.bancales.length-1;i>=0;i--){
+    const b = planoState.bancales[i];
+    if(b.tipo==='rect'){
+      if(px>=b.x*scale && px<=(b.x+b.w)*scale && py>=b.y*scale && py<=(b.y+b.h)*scale) return b;
+    } else {
+      const bx=b.col*cs, by=b.fila*cs, bw=b.wCells*cs, bh=b.hCells*cs;
+      if(px>=bx && px<=bx+bw && py>=by && py<=by+bh) return b;
+    }
+  }
+  return null;
+}
+
+function dibujarPlano(){
+  if(!planoCtx) return;
+  const ctx = planoCtx;
+  const W = planoCanvas.width, H = planoCanvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Cuadrícula de fondo
+  ctx.strokeStyle = '#DDD5C0';
+  ctx.lineWidth = 1;
+  const step = planoState.modo==='cuadricula' ? planoState.cellSize : planoState.pxPorMetro;
+  for(let x=0;x<=W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<=H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Bancales
+  planoState.bancales.forEach(b=>{
+    const familia = b.cultivo ? (FAMILIA_DE_CULTIVO[b.cultivo]||'Sin asignar') : 'Sin asignar';
+    const color = COLOR_FAMILIA[familia];
+    let bx,by,bw,bh;
+    if(b.tipo==='rect'){
+      bx=b.x*planoState.pxPorMetro; by=b.y*planoState.pxPorMetro;
+      bw=b.w*planoState.pxPorMetro; bh=b.h*planoState.pxPorMetro;
+    } else {
+      bx=b.col*planoState.cellSize; by=b.fila*planoState.cellSize;
+      bw=b.wCells*planoState.cellSize; bh=b.hCells*planoState.cellSize;
+    }
+    ctx.fillStyle = color+'CC';
+    ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx,by,bw,bh);
+
+    // Emoji/texto del cultivo
+    const c = CULTIVOS.find(x=>x.nombre===b.cultivo);
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if(c){
+      ctx.font = '20px sans-serif';
+      ctx.fillText(c.emoji, bx+bw/2, by+bh/2-8);
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(b.cultivo.length>12?b.cultivo.substring(0,11)+'…':b.cultivo, bx+bw/2, by+bh/2+10);
+    } else {
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = '#6A6258';
+      ctx.fillText('+ Toca', bx+bw/2, by+bh/2);
+    }
+  });
+}
+
+function dibujarSeleccionActual(){
+  if(!dragStart || !dragCurrent) return;
+  const ctx = planoCtx;
+  ctx.strokeStyle = 'var(--oliva)';
+  ctx.strokeStyle = '#3D6B1A';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,4]);
+  const x = Math.min(dragStart.x,dragCurrent.x);
+  const y = Math.min(dragStart.y,dragCurrent.y);
+  const w = Math.abs(dragCurrent.x-dragStart.x);
+  const h = Math.abs(dragCurrent.y-dragStart.y);
+  ctx.strokeRect(x,y,w,h);
+  ctx.setLineDash([]);
+}
+
+// ══════ MODAL BANCAL ══════
+function abrirModalBancal(id){
+  const b = planoState.bancales.find(x=>x.id===id);
+  if(!b) return;
+
+  const dims = b.tipo==='rect'
+    ? `${b.w.toFixed(1)}m × ${b.h.toFixed(1)}m (${(b.w*b.h).toFixed(1)} m²)`
+    : `${b.wCells}×${b.hCells} celdas`;
+
+  const opcionesCultivo = CULTIVOS.map(c=>`<option value="${c.nombre}" ${b.cultivo===c.nombre?'selected':''}>${c.emoji} ${c.nombre}</option>`).join('');
+
+  let consejosHtml = '';
+  if(b.cultivo){
+    consejosHtml = generarConsejosBancal(b);
+  }
+
+  document.getElementById('modal-bancal-contenido').innerHTML = `
+    <div class="modal-titulo">
+      <span style="font-size:1.5rem">🗺️</span> Bancal #${b.id}
+      <button class="modal-close" onclick="cerrarModalBancal()">✕</button>
+    </div>
+    <div style="font-size:0.78rem;color:var(--gris);margin-bottom:14px;">📐 ${dims}</div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:0.72rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:5px;">Cultivo actual</label>
+      <select id="select-cultivo-bancal" onchange="cambiarCultivoBancal(${b.id}, this.value)" style="width:100%;padding:10px;border:1.5px solid #D0C9BC;border-radius:8px;font-size:0.85rem;background:var(--crema);font-family:Inter,sans-serif;">
+        <option value="">— Sin asignar —</option>
+        ${opcionesCultivo}
+      </select>
+    </div>
+
+    <div id="consejos-bancal-container">${consejosHtml}</div>
+
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="marcarCosechadoBancal(${b.id})" style="flex:1;background:var(--miel);color:white;border:none;border-radius:8px;padding:10px;font-size:0.8rem;font-weight:700;cursor:pointer;">🧺 Marcar cosechado</button>
+      <button onclick="eliminarBancal(${b.id})" style="background:transparent;border:1.5px solid #CC0A0A;color:#CC0A0A;border-radius:8px;padding:10px 14px;font-size:0.8rem;font-weight:700;cursor:pointer;">🗑️</button>
+    </div>
+  `;
+  document.getElementById('modal-bancal-overlay').classList.add('abierto');
+}
+
+function cerrarModalBancal(e){
+  if(!e || e.target===document.getElementById('modal-bancal-overlay')){
+    document.getElementById('modal-bancal-overlay').classList.remove('abierto');
+  }
+}
+
+function cambiarCultivoBancal(id, cultivoNombre){
+  const b = planoState.bancales.find(x=>x.id===id);
+  if(!b) return;
+  b.cultivo = cultivoNombre || null;
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+  renderLeyendaFamiliasPlano();
+  document.getElementById('consejos-bancal-container').innerHTML = cultivoNombre ? generarConsejosBancal(b) : '';
+}
+
+function marcarCosechadoBancal(id){
+  const b = planoState.bancales.find(x=>x.id===id);
+  if(!b || !b.cultivo) return;
+  b.historial = b.historial || [];
+  b.historial.unshift({cultivo:b.cultivo, anyo: HOY.getFullYear(), mes: MES_ACTUAL});
+  b.cultivo = null;
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+  renderLeyendaFamiliasPlano();
+  cerrarModalBancal();
+}
+
+function eliminarBancal(id){
+  if(!confirm('¿Eliminar este bancal del plano?')) return;
+  planoState.bancales = planoState.bancales.filter(x=>x.id!==id);
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+  renderLeyendaFamiliasPlano();
+  cerrarModalBancal();
+}
+
+// ══════ GENERADOR DE CONSEJOS POR BANCAL ══════
+function generarConsejosBancal(b){
+  const c = CULTIVOS.find(x=>x.nombre===b.cultivo);
+  if(!c) return '';
+
+  const familiaActual = FAMILIA_DE_CULTIVO[b.cultivo] || 'Sin clasificar';
+  const area = b.tipo==='rect' ? (b.w*b.h) : (b.wCells*b.hCells*0.25); // estimación 0.5x0.5m por celda
+
+  // 1. Siembra/cosecha según mes actual
+  let estadoSiembra = '';
+  if(c.cosecha && c.cosecha.includes(MES_ACTUAL)) estadoSiembra = `<div style="background:#FFF4D8;border-left:3px solid var(--cosecha);border-radius:7px;padding:9px 11px;margin-bottom:8px;"><strong>🧺 ¡Toca cosechar!</strong><br><span style="font-size:0.78rem;">${c.nombre} está en temporada de cosecha este mes.</span></div>`;
+  else if(c.trasplante && c.trasplante.includes(MES_ACTUAL)) estadoSiembra = `<div style="background:#E8F5E8;border-left:3px solid var(--trasplante);border-radius:7px;padding:9px 11px;margin-bottom:8px;"><strong>🪴 Momento de trasplantar</strong></div>`;
+  else if(c.directa && c.directa.includes(MES_ACTUAL)) estadoSiembra = `<div style="background:#FDE8E8;border-left:3px solid var(--directa);border-radius:7px;padding:9px 11px;margin-bottom:8px;"><strong>🌾 Puedes sembrar directo ahora</strong></div>`;
+  else estadoSiembra = `<div style="background:var(--crema);border-radius:7px;padding:9px 11px;margin-bottom:8px;font-size:0.78rem;color:var(--gris);">Este mes no toca siembra ni cosecha para ${c.nombre}. Mantén el riego y vigila plagas.</div>`;
+
+  // 2. Rotación — comprobar historial
+  let rotacionHtml = '';
+  if(b.historial && b.historial.length){
+    const ultimoMismaFamilia = b.historial.find(h => FAMILIA_DE_CULTIVO[h.cultivo]===familiaActual);
+    if(ultimoMismaFamilia){
+      rotacionHtml = `<div style="background:#FDE8E8;border-left:3px solid #CC0A0A;border-radius:7px;padding:9px 11px;margin-bottom:8px;">
+        <strong>⚠️ Aviso de rotación</strong><br>
+        <span style="font-size:0.78rem;">En ${ultimoMismaFamilia.anyo} plantaste ${ultimoMismaFamilia.cultivo} (misma familia: ${familiaActual}) en este bancal. Repetir familia agota el suelo y favorece plagas específicas. Si puedes, cambia a otra familia este año.</span>
+      </div>`;
+    } else {
+      rotacionHtml = `<div style="background:#EAF5E0;border-left:3px solid var(--oliva);border-radius:7px;padding:9px 11px;margin-bottom:8px;font-size:0.78rem;">
+        ✅ Buena rotación: el cultivo anterior (${b.historial[0].cultivo}) era de otra familia.
+      </div>`;
+    }
+  }
+
+  // 3. Riego necesario (usa RIEGO_TABLA si existe)
+  let riegoHtml = '';
+  if(typeof RIEGO_TABLA !== 'undefined'){
+    const riegoMes = RIEGO_TABLA.find(r=>{
+      const idx = MESES_NOMBRE.findIndex((m,i)=>r.periodo.toLowerCase().includes(m.toLowerCase()));
+      return true;
+    });
+    // Selección simple por estación
+    let riegoTxt = '';
+    if([5,6,7].includes(MES_ACTUAL)) riegoTxt = 'Riego alto — cada 1-2 días. Julio-agosto son críticos en Jaén.';
+    else if([3,4,8].includes(MES_ACTUAL)) riegoTxt = 'Riego medio — cada 3-4 días.';
+    else riegoTxt = 'Riego bajo — cada 7-10 días, según lluvias.';
+    riegoHtml = `<div style="background:var(--crema);border-radius:7px;padding:9px 11px;margin-bottom:8px;font-size:0.78rem;">
+      💧 <strong>Riego este mes:</strong> ${riegoTxt}
+    </div>`;
+  }
+
+  // 4. Plagas típicas del cultivo
+  let plagasHtml = '';
+  if(typeof PLAGAS !== 'undefined'){
+    const plagasCultivo = PLAGAS.filter(p=>p.cultivos.toLowerCase().includes(c.nombre.toLowerCase().split('/')[0].split(' ')[0].toLowerCase()));
+    if(plagasCultivo.length){
+      plagasHtml = `<details style="margin-bottom:8px;">
+        <summary style="font-size:0.75rem;font-weight:700;color:var(--gris);cursor:pointer;padding:5px 0;">🐛 Plagas a vigilar (${plagasCultivo.length})</summary>
+        <div style="margin-top:6px;">
+          ${plagasCultivo.map(p=>`<div style="background:var(--crema);border-radius:6px;padding:7px 9px;margin-bottom:5px;font-size:0.76rem;"><strong>${p.nombre}:</strong> ${p.remedio}</div>`).join('')}
+        </div>
+      </details>`;
+    }
+  }
+
+  // 5. Superficie y densidad recomendada
+  let densidadHtml = '';
+  if(typeof MARCOS_CULTIVO !== 'undefined' && MARCOS_CULTIVO[c.nombre]){
+    const m = MARCOS_CULTIVO[c.nombre];
+    const largoM = b.tipo==='rect' ? b.w : b.wCells*0.5;
+    const anchoM = b.tipo==='rect' ? b.h : b.hCells*0.5;
+    const plantas = Math.floor(largoM/m.fila) * Math.floor(anchoM/m.columna);
+    densidadHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+      <div class="dato-box"><div class="valor" style="font-size:1rem;">${area.toFixed(1)}m²</div><div class="etiq">Superficie</div></div>
+      <div class="dato-box"><div class="valor" style="font-size:1rem;">~${plantas}</div><div class="etiq">Plantas recomendadas</div></div>
+    </div>`;
+  }
+
+  // 6. Consejos específicos del cultivo (los que ya existen en CULTIVOS)
+  const consejosLista = c.consejos && c.consejos.length
+    ? `<details><summary style="font-size:0.75rem;font-weight:700;color:var(--gris);cursor:pointer;padding:5px 0;">💡 Consejos de cultivo (${c.consejos.length})</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${c.consejos.map(x=>`<li>${x}</li>`).join('')}</ul>
+      </details>`
+    : '';
+
+  return `<div style="border-top:1px solid #E0D8CC;padding-top:12px;margin-top:6px;">
+    ${estadoSiembra}
+    ${rotacionHtml}
+    ${riegoHtml}
+    ${densidadHtml}
+    ${plagasHtml}
+    ${consejosLista}
+  </div>`;
+}
+
+// ══════ LISTA DE BANCALES (fuera del modal) ══════
+function renderListaBancales(){
+  const container = document.getElementById('lista-bancales-plano');
+  if(!container) return;
+
+  if(!planoState.bancales.length){
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--gris);">
+      <div style="font-size:2rem;margin-bottom:8px;">🗺️</div>
+      <div>Aún no tienes bancales. Pulsa "+ Añadir bancal" y dibuja tu primer bancal en el lienzo.</div>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  planoState.bancales.forEach(b=>{
+    const c = CULTIVOS.find(x=>x.nombre===b.cultivo);
+    const familia = b.cultivo ? (FAMILIA_DE_CULTIVO[b.cultivo]||'Sin asignar') : 'Sin asignar';
+    const color = COLOR_FAMILIA[familia];
+    const dims = b.tipo==='rect' ? `${b.w.toFixed(1)}×${b.h.toFixed(1)}m` : `${b.wCells}×${b.hCells} celdas`;
+    const cosechaAhora = c && c.cosecha && c.cosecha.includes(MES_ACTUAL);
+
+    html += `<div onclick="abrirModalBancal(${b.id})" style="background:white;border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${color};cursor:pointer;">
+      <span style="font-size:1.5rem;">${c ? c.emoji : '➕'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:0.85rem;">Bancal #${b.id} ${c ? '— '+c.nombre : '— Sin asignar'}</div>
+        <div style="font-size:0.68rem;color:var(--gris);">${dims} · ${familia}${b.historial&&b.historial.length ? ' · Historial: '+b.historial.length+' cultivo(s)' : ''}</div>
+        ${cosechaAhora ? '<div style="font-size:0.68rem;font-weight:800;color:var(--cosecha);">🧺 ¡En cosecha!</div>' : ''}
+      </div>
+      <span style="color:#CCC;font-size:1.1rem;">›</span>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderLeyendaFamiliasPlano(){
+  const container = document.getElementById('leyenda-familias-plano');
+  if(!container) return;
+  const familiasUsadas = new Set(['Sin asignar']);
+  planoState.bancales.forEach(b=>{
+    if(b.cultivo) familiasUsadas.add(FAMILIA_DE_CULTIVO[b.cultivo]||'Sin asignar');
+  });
+  container.innerHTML = Array.from(familiasUsadas).map(f=>`
+    <span style="display:flex;align-items:center;gap:4px;">
+      <span style="width:10px;height:10px;background:${COLOR_FAMILIA[f]};border-radius:2px;display:inline-block;"></span>${f}
+    </span>`).join('');
+}
+
+function initPlano(){
+  cargarPlano();
+  document.getElementById('modo-libre-btn')?.classList.toggle('on', planoState.modo==='libre');
+  document.getElementById('modo-cuadricula-btn')?.classList.toggle('on', planoState.modo==='cuadricula');
+  initPlanoCanvas();
+  dibujarPlano();
+  renderListaBancales();
+  renderLeyendaFamiliasPlano();
+}
+
 function descargar(){
   const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -3611,6 +4143,7 @@ window.onload=function(){
   renderSetas();
   renderCereales();
   renderFitoveterinaria();
+  setTimeout(initPlano, 150);
 };
 </script>
 </body>
