@@ -539,6 +539,7 @@
     <button onclick="mostrarVista('cereales',this)">🌾 Cereales</button>
     <button onclick="mostrarVista('fitoveterinaria',this)">💉 Fitoveterinaria</button>
     <button onclick="mostrarVista('plano',this)">🗺️ Plano del Huerto</button>
+    <button onclick="mostrarVista('autosuficiencia',this)">🌾 Autosuficiencia</button>
   </nav>
 </header>
 
@@ -703,6 +704,7 @@
     <button class="filtro-btn" data-animal="abejas" onclick="filtrarAnimal('abejas',this)">🐝 Abejas</button>
     <button class="filtro-btn" data-animal="patos" onclick="filtrarAnimal('patos',this)">🦆 Patos</button>
     <button class="filtro-btn" data-animal="palomas" onclick="filtrarAnimal('palomas',this)">🕊️ Palomas</button>
+    <button class="filtro-btn" data-animal="ovejas" onclick="filtrarAnimal('ovejas',this)">🐑 Ovejas</button>
   </div>
   <div id="lista-animales"></div>
 </div>
@@ -1000,6 +1002,65 @@
   <div class="modal" id="modal-bancal-contenido"></div>
 </div>
 
+<!-- ══════════════ AUTOSUFICIENCIA ══════════════ -->
+<div class="vista" id="vista-autosuficiencia">
+  <h2 class="seccion-titulo">🌾 Plan de Autosuficiencia</h2>
+  <div class="info-banner">
+    <span class="icon">🔄</span>
+    <span>Todo se conecta: el huerto alimenta a los animales, los animales abonan el huerto, y ambos os alimentan a vosotros. Ajusta la casa y descubre qué necesitas producir.</span>
+  </div>
+
+  <div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <label style="font-size:0.72rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:10px;">👨‍👩‍👧‍👦 Composición de la casa</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <div style="font-size:0.7rem;color:var(--gris);margin-bottom:6px;text-align:center;">🧑 Adultos (12+ años)</div>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+          <button onclick="cambiarAdultosAuto(-1)" style="background:var(--tierra);color:white;border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">−</button>
+          <div id="num-adultos-auto" style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--oliva);min-width:32px;text-align:center;">4</div>
+          <button onclick="cambiarAdultosAuto(1)" style="background:var(--oliva);color:white;border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">+</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:0.7rem;color:var(--gris);margin-bottom:6px;text-align:center;">🧒 Niños (&lt;12 años)</div>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+          <button onclick="cambiarNinosAuto(-1)" style="background:var(--tierra);color:white;border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">−</button>
+          <div id="num-ninos-auto" style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--miel);min-width:32px;text-align:center;">1</div>
+          <button onclick="cambiarNinosAuto(1)" style="background:var(--miel);color:white;border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;flex-shrink:0;">+</button>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:0.68rem;color:var(--gris);margin-top:10px;border-top:1px solid #EEE;padding-top:8px;">
+      Equivalente a <strong id="equivalente-personas-auto">4.5</strong> personas adultas (los niños cuentan como 0.5 de consumo)
+    </div>
+  </div>
+
+  <div id="panel-reparto-carne" style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);display:none;">
+    <label style="font-size:0.72rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:10px;">🍖 Reparto de la carne entre especies</label>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:3px;"><span>🐇 Conejo</span><strong id="valor-slider-conejo">40%</strong></div>
+      <input type="range" id="slider-conejo" min="0" max="100" value="40" oninput="ajustarRepartoCarne('conejo', this.value)" style="width:100%;accent-color:#6B8E3A;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:3px;"><span>🐷 Cerdo</span><strong id="valor-slider-cerdo">35%</strong></div>
+      <input type="range" id="slider-cerdo" min="0" max="100" value="35" oninput="ajustarRepartoCarne('cerdo', this.value)" style="width:100%;accent-color:#FF7000;">
+    </div>
+    <div style="margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:3px;"><span>🐑 Cordero</span><strong id="valor-slider-cordero">25%</strong></div>
+      <input type="range" id="slider-cordero" min="0" max="100" value="25" oninput="ajustarRepartoCarne('cordero', this.value)" style="width:100%;accent-color:#CC0A0A;">
+    </div>
+    <div id="aviso-reparto-carne" style="font-size:0.68rem;color:var(--gris);text-align:center;margin-top:6px;">Total: 100% ✅</div>
+  </div>
+
+  <div class="filtros" style="margin-bottom:10px;">
+    <button class="filtro-btn on" onclick="mostrarSeccionAuto('plan',this)">📋 Plan anual</button>
+    <button class="filtro-btn" onclick="mostrarSeccionAuto('mapa',this)">🔗 Qué alimenta a qué</button>
+    <button class="filtro-btn" onclick="mostrarSeccionAuto('checklist',this)">✅ Checklist</button>
+  </div>
+
+  <div id="auto-contenido"></div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
   <div class="modal" id="modal-contenido"></div>
@@ -1198,6 +1259,51 @@ const CULTIVOS = [
     profundidad:'2 cm',marco:'50×50 cm',temp:'15–30 °C',dias_germinar:'7–14 días',
     consejos:['Atrae polinizadores beneficiosos al huerto','Sus raíces descompactan el suelo','Aguanta muy bien la sequía jiennense de verano','Planta en los bordes norte del huerto para no dar sombra'],
     descripcion:'El girasol es icónico en los campos jiennenses. Atrae insectos beneficiosos y embellece el huerto.' },
+  { nombre:'Melón',emoji:'🍈',cat:'hortalizas',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[7,8,9],
+    profundidad:'2 cm',marco:'1×1.5 m',temp:'20–30 °C',dias_germinar:'6–10 días',
+    consejos:['Necesita mucho calor y sol pleno: perfecto para el verano de Jaén','Riego regular hasta que engorde el fruto, luego reduce para concentrar azúcares','Coloca una teja o tabla bajo el fruto para que no toque tierra húmeda','Poda los brotes laterales para concentrar la energía en 2–3 melones por planta','El melón de Sanlúcar y variedades de piel de sapo van muy bien en Jaén'],
+    descripcion:'El melón se da de maravilla en el calor extremo jiennense de julio-agosto. Necesita espacio y mucha agua en la fase de crecimiento.' },
+  { nombre:'Sandía',emoji:'🍉',cat:'hortalizas',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[7,8,9],
+    profundidad:'2.5 cm',marco:'1.5×2 m',temp:'22–32 °C',dias_germinar:'7–12 días',
+    consejos:['Necesita el máximo calor: es de los cultivos que mejor tolera el verano de Jaén','Riego abundante en crecimiento, reduce las últimas 2 semanas para más dulzor','El zarcillo seco junto al fruto indica que está madura','Golpea la sandía: un sonido hueco y grave señala buen punto de maduración','Deja mucho espacio entre plantas: las guías pueden alcanzar 3-4 metros'],
+    descripcion:'La sandía ama el calor jiennense tanto como el melón. Con buen riego en floración, las piezas pueden superar los 8-10 kg.' },
+  { nombre:'Apio',emoji:'🥬',cat:'hortalizas',
+    semillero:[1,2,7,8],trasplante:[3,4,9,10],directa:[],cosecha:[5,6,11,12],
+    profundidad:'0.3 cm',marco:'25×30 cm',temp:'15–21 °C',dias_germinar:'14–21 días',
+    consejos:['Germina muy lento: ten paciencia y mantén el sustrato húmedo','Necesita riego muy constante: no tolera la sequía ni un solo día','Aporca ligeramente para blanquear la base y suavizar el sabor','Cosecha cortando toda la planta a ras de suelo','En Jaén va mejor en otoño-invierno, el calor de verano lo endurece'],
+    descripcion:'El apio exige riego constante, algo escaso en el verano jiennense, por eso rinde mejor en las siembras de otoño.' },
+  { nombre:'Escarola',emoji:'🥬',cat:'hortalizas',
+    semillero:[7,8],trasplante:[8,9],directa:[8,9],cosecha:[10,11,12,1],
+    profundidad:'0.5 cm',marco:'30×30 cm',temp:'12–20 °C',dias_germinar:'5–10 días',
+    consejos:['Ata las hojas exteriores 2-3 semanas antes de cosechar para blanquear el cogollo','Tolera el frío mejor que la lechuga: perfecta para el huerto de invierno','Riego regular pero moderado','Cosecha cuando el cogollo esté bien formado y blanqueado','Muy usada en ensaladas de invierno junto con granada y naranja en Jaén'],
+    descripcion:'La escarola es un clásico del huerto de invierno jiennense. Su amargor se suaviza atando las hojas antes de cosechar.' },
+  { nombre:'Berza / Col rizada (Kale)',emoji:'🥬',cat:'hortalizas',
+    semillero:[7,8],trasplante:[9,10],directa:[],cosecha:[11,12,1,2,3],
+    profundidad:'0.5 cm',marco:'50×60 cm',temp:'8–20 °C',dias_germinar:'7–14 días',
+    consejos:['Aguanta heladas fuertes sin problema: mejora incluso su sabor con el frío','Cosecha hoja a hoja desde abajo, la planta sigue produciendo meses','Abona con nitrógeno en el trasplante','Base del potaje de berza tradicional de Jaén','Muy resistente a plagas comparada con otras crucíferas'],
+    descripcion:'La berza es el pilar del potaje jiennense de invierno. Extremadamente resistente al frío y muy productiva durante meses.' },
+  { nombre:'Alcachofa',emoji:'🥬',cat:'hortalizas',
+    semillero:[],trasplante:[2,3,9,10],directa:[],cosecha:[3,4,5,10,11],
+    profundidad:'—',marco:'80×100 cm',temp:'13–24 °C',dias_germinar:'—',
+    consejos:['Se planta de hijuelo (esqueje de planta madre), no de semilla','Planta perenne: dura 4-5 años en el mismo lugar','Corta toda la parte aérea en verano cuando hace mucho calor y rebrota en otoño','Cosecha los capítulos cuando estén bien apretados, antes de que abran las brácteas','Abona generosamente cada otoño con compost'],
+    descripcion:'La alcachofa es un cultivo de larga duración muy agradecido en el huerto jiennense, con dos cosechas al año: primavera y otoño.' },
+  { nombre:'Boniato / Batata',emoji:'🍠',cat:'hortalizas',
+    semillero:[],trasplante:[4,5],directa:[],cosecha:[9,10],
+    profundidad:'—',marco:'30×90 cm',temp:'20–30 °C',dias_germinar:'—',
+    consejos:['Se planta de esqueje (brote de boniato germinado en agua), no de semilla','Necesita mucho calor: perfecto para el verano extremo de Jaén','Riego moderado, reduce las últimas semanas para concentrar azúcares','Cosecha antes de las primeras heladas de otoño','Cura los boniatos al sol 1 semana antes de guardar para que endulcen más'],
+    descripcion:'El boniato aprovecha muy bien el calor jiennense de verano. Cultivo poco exigente y muy productivo en suelos sueltos.' },
+  { nombre:'Chirivía',emoji:'🥕',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,8,9],cosecha:[11,12,1,2],
+    profundidad:'1 cm',marco:'8×25 cm',temp:'10–20 °C',dias_germinar:'15–25 días',
+    consejos:['Germina muy lento e irregular: siembra semilla fresca cada año','Suelo profundo y sin piedras, igual que la zanahoria','El frío mejora su sabor: cosecha después de las primeras heladas','Puede quedarse en el suelo todo el invierno sin dañarse','Poco conocida en Jaén pero muy fácil de cultivar y de sabor dulce'],
+    descripcion:'La chirivía es una raíz poco habitual en los huertos jiennenses pero de cultivo sencillo, con sabor dulce que mejora tras las heladas.' },
+  { nombre:'Rúcula',emoji:'🥬',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,9,10],cosecha:[4,5,11,12],
+    profundidad:'0.3 cm',marco:'15×20 cm',temp:'10–22 °C',dias_germinar:'5–7 días',
+    consejos:['Crecimiento ultrarrápido: 4-6 semanas hasta la primera cosecha','Cosecha hoja a hoja para prolongar la producción varios meses','Bolta rápido con calor: mejor otoño-invierno en Jaén','Siembra escalonada cada 2 semanas para cosecha continua','Deja algunas plantas florecer: las flores blancas también son comestibles'],
+    descripcion:'La rúcula es de los cultivos más rápidos y agradecidos, perfecta para principiantes en el huerto jiennense.' },
 ];
 
 // ══════ CONSEJOS POR MES ══════
@@ -2034,6 +2140,7 @@ const ANIMALES = [
       'Necesitan agua para limpiar el pico y los ojos: mínimo un cubo grande',
       'El huevo de pato dura más que el de gallina y es ideal para repostería',
       'No los sueltes con plántulas pequeñas: las pisotean',
+      'En la vega junto al Guadalquivir el acceso a agua facilita mucho su cría',
     ],
     alimentacion:'Pienso de aves de corral + verduras del huerto + babosas y caracoles que encuentren. Maíz y trigo como suplemento. Agua siempre disponible.',
   },
@@ -2060,6 +2167,23 @@ const ANIMALES = [
       'La paramixovirosis es la enfermedad más grave: vacuna anual obligatoria',
     ],
     alimentacion:'Mezcla de cereales (maíz, trigo, cebada, guisantes). 40–50 g por paloma al día. Agua limpia siempre. Mineral de sepia para el calcio de los huevos.',
+  },
+  {
+    id:'ovejas', nombre:'Ovejas', emoji:'🐑',
+    descripcion:'La oveja es un animal tradicional en el campo jiennense, aprovechado para carne (cordero), leche (queso) y lana. Muy adaptada al pastoreo en rastrojeras de cereal y bajo olivar.',
+    espacio:'Mínimo 400–600 m² de pasto por oveja + redil o cobertizo de 1.5 m² por animal',
+    inicio:'Comprar corderas en otoño para parir en primavera, o en primavera para parir en otoño',
+    razas:'Segureña (raza autóctona de Jaén, muy rústica y adaptada), Merina, Manchega para leche y queso',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Época de partos si la monta fue en otoño. Vigila especialmente las primeras 48 horas del cordero. Calostro imprescindible.'},
+      {mes:'Marzo–Abril', tarea:'Máximo aprovechamiento del pasto de primavera. Desparasitación general del rebaño. Esquileo si la raza lo requiere.'},
+      {mes:'Mayo–Junio', tarea:'Destete de los corderos de invierno. Buen momento para vender o sacrificar los corderos lechales.'},
+      {mes:'Julio–Agosto', tarea:'El pasto escasea por el calor: suplementa con paja y pienso. Sombra y agua abundante son críticas.'},
+      {mes:'Sep–Octubre', tarea:'Época de monta para partos de invierno. Aprovecha las rastrojeras de cereal recién cosechado como pasto.'},
+      {mes:'Nov–Diciembre', tarea:'Aprovechamiento del olivar: las ovejas pueden pastar bajo los olivos, limpiando de hierba de forma natural.'},
+    ],
+    consejos:['La raza Segureña es la autóctona de Jaén: muy resistente al calor y de gran calidad cárnica','El pastoreo bajo el olivar es tradicional y beneficioso: limpia de hierba sin química','Las rastrojeras de cereal en verano son un recurso de pasto gratuito y muy valioso','Necesitan sal mineral disponible siempre, especialmente en época de cría','El estiércol de oveja es un abono excelente, algo menos fuerte que el de cabra o gallina'],
+    alimentacion:'Pasto natural la mayor parte del año + suplemento de paja y pienso concentrado en verano y en gestación/lactancia. Heno de calidad en los meses de escasez. Sal mineral en bloque siempre disponible.',
   },
 ];
 
@@ -2762,6 +2886,63 @@ const FRUTALES = [
     ],
     consejos:['Las moras manchan permanentemente: cuidado con la ropa','Un árbol adulto produce tantas moras que no se pueden consumir todas: mermelada, licor, congelado','Muy rústica: tolera podas brutales y cualquier tipo de suelo','La mora negra (Morus nigra) tiene más sabor que la blanca','Perfecta para dar sombra en el huerto en verano']
   },
+  { nombre:'Naranjo', emoji:'🍊', origen:'Sudeste Asiático',
+    variedades:'Navelina (temprana), Salustiana, Valencia Late (tardía), Navelate',
+    plantacion:'Marzo–abril o octubre–noviembre',
+    marco:'5×6 m', agua:'Moderada a regular, sensible a la sequía prolongada',
+    cosecha:'Noviembre–marzo según variedad',
+    descripcion:'El naranjo se adapta bien a las zonas bajas y cálidas de Jaén, especialmente en la vega del Guadalquivir donde el riego es más accesible. Sensible a heladas fuertes.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Cosecha de variedades tardías. Poda ligera de limpieza tras la cosecha, eliminando ramas secas y chupones.'},
+      {mes:'Marzo–Mayo', t:'Floración muy aromática (azahar). Abona con nitrógeno. Riego regular para el cuajado del fruto.'},
+      {mes:'Jun–Agosto', t:'Crecimiento del fruto. Riego crítico en el calor extremo del valle: no debe faltar agua en esta fase.'},
+      {mes:'Sep–Octubre', t:'El fruto empieza a cambiar de color. Reduce ligeramente el riego para concentrar azúcares.'},
+      {mes:'Nov–Diciembre', t:'Cosecha de variedades tempranas (Navelina). Protege con manta térmica en noches de helada fuerte.'},
+    ],
+    consejos:['En la vega de Espeluy y Mengíbar, junto al río, el riesgo de helada es menor que en zonas altas','Riega en surcos o goteo, nunca dejes secar el suelo en verano','Un naranjo adulto puede dar 100–200 kg de fruta','El agua de riego regular y constante es más importante que la cantidad de abono','Protege el tronco joven con pintura blanca para evitar quemaduras solares en verano']
+  },
+  { nombre:'Limonero', emoji:'🍋', origen:'Asia',
+    variedades:'Fino (el más cultivado en España), Verna, Eureka',
+    plantacion:'Marzo–abril',
+    marco:'4×5 m', agua:'Regular, no tolera encharcamiento ni sequía extrema',
+    cosecha:'Prácticamente todo el año, con picos en invierno y verano',
+    descripcion:'El limonero es de los cítricos más productivos y agradecidos del huerto jiennense, con cosecha casi continua si se cuida bien el riego.',
+    calendario:[
+      {mes:'Enero–Marzo', t:'Cosecha de invierno. Poda de aclareo tras la recolección. Protege del frío intenso con manta si hay heladas fuertes previstas.'},
+      {mes:'Abril–Mayo', t:'Floración intensa y muy aromática, puede solaparse con fruto ya cuajado del año anterior. Abona con nitrógeno.'},
+      {mes:'Jun–Agosto', t:'Riego crítico: el limonero sufre mucho con la sequía del verano jiennense. Riega cada 3-4 días como mínimo.'},
+      {mes:'Sep–Diciembre', t:'Segunda floración y cuajado. Cosecha de verano-otoño según variedad.'},
+    ],
+    consejos:['Es el cítrico menos resistente al frío: protege bien en invierno','Puede dar 3-4 floraciones al año, lo que explica su cosecha casi continua','No tolera encharcamientos: asegura buen drenaje','Las hojas amarillas suelen indicar falta de hierro (clorosis): aplica quelato de hierro','Un limonero sano puede producir 50–100 kg de limones al año']
+  },
+  { nombre:'Nogal', emoji:'🌰', origen:'Asia Central/Balcanes',
+    variedades:'Franquette, Chandler, nogal común de semilla',
+    plantacion:'Noviembre–febrero',
+    marco:'8×8 m (necesita mucho espacio)', agua:'Moderada, agradece riego de apoyo en verano',
+    cosecha:'Septiembre–octubre',
+    descripcion:'El nogal es un árbol de gran porte que necesita espacio y años para producir, pero puede vivir y dar fruto durante generaciones en el huerto jiennense.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda mínima: el nogal sangra mucho savia si se poda mal o tarde. Solo poda de formación en árboles jóvenes.'},
+      {mes:'Marzo–Abril', t:'Brotación tardía, después de que haya pasado el riesgo de heladas. Muy resistente una vez brotado.'},
+      {mes:'Mayo–Agosto', t:'Crecimiento del fruto. Riego de apoyo en el calor extremo mejora mucho el tamaño de la nuez.'},
+      {mes:'Sep–Octubre', t:'Cosecha cuando la cáscara verde exterior empieza a abrirse y cae sola. Recoge del suelo cada 2-3 días.'},
+    ],
+    consejos:['Necesita 5-8 años para empezar a producir en cantidad: es una inversión a largo plazo','Es alelopático: sus raíces inhiben el crecimiento de otras plantas cercanas (tomate especialmente)','Planta lejos de otros cultivos del huerto, mínimo 15 metros','Las nueces recién caídas se secan al sol 1-2 semanas antes de guardar','Un nogal adulto puede vivir más de 100 años y producir 50-100 kg de nueces']
+  },
+  { nombre:'Ciruelo', emoji:'🍑', origen:'Asia/Europa',
+    variedades:'Claudia Reina, Angelino, Santa Rosa, Ciruelo japonés',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Moderada',
+    cosecha:'Junio–agosto según variedad',
+    descripcion:'El ciruelo es de los frutales de hueso más fáciles y agradecidos en Jaén, con variedades que escalonan la cosecha durante todo el verano.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o mantenimiento. El ciruelo acepta bien la poda, a diferencia de otros frutales de hueso.'},
+      {mes:'Marzo', t:'Floración temprana, antes que las hojas. Sensible a heladas tardías en flor: vigila el tiempo.'},
+      {mes:'Abril–Mayo', t:'Cuajado y crecimiento del fruto. Aclara frutos si hay demasiados para mejorar el tamaño.'},
+      {mes:'Jun–Agosto', t:'Cosecha escalonada según variedad: las tempranas en junio, las tardías en agosto.'},
+    ],
+    consejos:['Las variedades japonesas maduran antes que las europeas','Riega con regularidad durante el crecimiento del fruto para evitar que se agriete','Un árbol adulto puede producir 30-60 kg de ciruelas','Excelente para mermelada y para secar (ciruela pasa)','Poda en verano tras la cosecha para controlar el vigor y la forma']
+  },
 ];
 
 // ══════ CONSERVAS Y RECETAS ══════
@@ -2815,6 +2996,46 @@ const CONSERVAS = [
     ingredientes:['2 kg habas frescas (desgranadas)','100g jamón serrano en tacos','1 cebolla','4 dientes de ajo','Aceite de oliva virgen extra','Sal, pimienta, comino','Pimentón dulce de la Vera'],
     pasos:['Sofríe la cebolla y el ajo en abundante aceite de oliva','Añade el jamón y sofríe 2 minutos','Incorpora las habas y el pimentón','Cubre con agua y cocina 20–30 minutos según el tamaño','Sazona con sal, pimienta y comino','Mete en tarros esterilizados y pasteuriza 30 minutos en olla a presión o 45 en baño maría'],
     consejo:'Las habas de Jaén de siembra otoñal son las más tiernas. Este guiso en conserva sabe igual o mejor que recién hecho.'
+  },
+  { nombre:'Naranjas en almíbar', tipo:'conserva', emoji:'🍊', temporada:'Nov–Mar', dificultad:'Fácil',
+    ingredientes:['1 kg naranjas (piel fina, tipo Navelina)','700g azúcar','500ml agua','1 rama de canela','1 clavo de olor'],
+    pasos:['Lava bien las naranjas y córtalas en rodajas finas con piel','Hiérvelas 10 minutos en agua para quitar el amargor, cambia el agua y repite 2 veces','Prepara un almíbar con el azúcar, el agua y las especias','Añade las rodajas de naranja escurridas y cocina a fuego lento 45 minutos hasta que estén translúcidas','Mete en tarros esterilizados cubiertas de almíbar y cierra en caliente'],
+    consejo:'Con las naranjas de la vega del Guadalquivir, dulces y de piel fina, el resultado es espectacular. Perfectas para acompañar quesos o como postre.'
+  },
+  { nombre:'Mermelada de naranja amarga (tipo mermelada inglesa)', tipo:'mermelada', emoji:'🍊', temporada:'Dic–Feb', dificultad:'Media',
+    ingredientes:['1 kg naranjas (mezcla de amargas si tienes, o normales con más limón)','800g azúcar','2 limones (zumo)','1.2 litros de agua'],
+    pasos:['Corta las naranjas por la mitad, exprime el zumo y reserva las pieles y pepitas','Corta las pieles en tiras finas','Ata las pepitas en una gasa (contienen la pectina) y cocina todo junto con el agua durante 1 hora','Retira la gasa, añade el zumo y el azúcar y cocina removiendo hasta que espese (30-40 min)','Comprueba el punto en un plato frío: si arruga al empujar con el dedo, está lista','Mete en tarros calientes y cierra boca abajo'],
+    consejo:'La mermelada de naranja es perfecta para aprovechar el excedente de cítricos de la vega en pleno invierno. Con una tostada y aceite de oliva virgen extra es un desayuno excepcional.'
+  },
+  { nombre:'Limones en conserva (estilo marroquí)', tipo:'encurtido', emoji:'🍋', temporada:'Ene–Mar', dificultad:'Fácil',
+    ingredientes:['8-10 limones (piel fina)','Sal gruesa (abundante)','Zumo de limón adicional si hace falta','Especias opcionales: laurel, canela, granos de pimienta'],
+    pasos:['Lava bien los limones y córtalos en cuartos sin llegar a separar la base','Rellena los cortes con sal gruesa generosamente','Aprieta los limones en un tarro esterilizado, capa a capa con más sal entre medias','Presiona bien para que suelten su jugo, cubre completamente con zumo de limón si no llega el líquido','Cierra y deja curar en lugar fresco mínimo 3-4 semanas, agitando el tarro cada pocos días','Se conservan más de 1 año'],
+    consejo:'El limonero produce casi todo el año en Jaén: esta es la forma perfecta de aprovechar el excedente. La piel confitada en sal es un condimento excepcional en guisos y tajines.'
+  },
+  { nombre:'Nueces en almíbar', tipo:'conserva', emoji:'🌰', temporada:'Sep–Oct', dificultad:'Media',
+    ingredientes:['500g nueces verdes (recogidas antes de que endurezca la cáscara, a finales de junio)','1kg azúcar','1 litro de agua','Cal apagada (opcional, para el remojo)','1 rama de canela'],
+    pasos:['Pincha bien las nueces verdes con un tenedor por todos lados','Remoja en agua con cal 24 horas (opcional, ayuda a fijar el color), luego enjuaga bien','Hierve las nueces en agua limpia 20 minutos, cambiando el agua 2-3 veces para quitar el amargor','Prepara un almíbar con el azúcar, agua y canela','Cuece las nueces en el almíbar a fuego lento 1 hora hasta que estén tiernas y oscuras','Mete en tarros esterilizados cubiertas de almíbar'],
+    consejo:'Se hacen con nuez verde de junio, no con la nuez madura de otoño. Un dulce tradicional muy laborioso pero espectacular, típico de zonas con nogales en Jaén.'
+  },
+  { nombre:'Ciruelas pasas caseras', tipo:'conserva', emoji:'🍑', temporada:'Jun–Ago', dificultad:'Fácil',
+    ingredientes:['2 kg ciruelas maduras (Claudia o similar)'],
+    pasos:['Lava las ciruelas y córtalas por la mitad quitando el hueso','Colócalas con la piel hacia abajo en una bandeja con rejilla','Seca al sol 5-7 días, tapando con una gasa fina para evitar insectos y metiéndolas de noche','Alternativamente, usa el horno a 60-70°C con la puerta entreabierta durante 8-10 horas','Están listas cuando quedan flexibles pero sin humedad interior','Guarda en tarro hermético o bolsa de tela en lugar seco'],
+    consejo:'El secado al sol de Jaén en pleno verano es ideal: calor seco y constante. Las ciruelas pasas caseras no tienen comparación con las industriales.'
+  },
+  { nombre:'Salsa de tomate frito casera (para conservar)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+    ingredientes:['3 kg tomates maduros de pera','1 cebolla grande','2 dientes de ajo','200ml aceite de oliva virgen extra','1 cucharadita de azúcar','Sal al gusto','Albahaca u orégano fresco (opcional)'],
+    pasos:['Pela y trocea los tomates, la cebolla y el ajo','Sofríe la cebolla y el ajo en el aceite hasta que estén transparentes','Añade el tomate y cocina a fuego lento removiendo con frecuencia durante 45-60 minutos','Añade el azúcar (corrige la acidez) y la sal, cocina 10 minutos más','Tritura si prefieres textura fina, o deja con tropezones','Mete en tarros calientes y pasteuriza en baño maría 30 minutos'],
+    consejo:'Con tomates de pera bien maduros del huerto de julio-agosto, el sofrito casero de Jaén no necesita nada industrial. Dura 1 año en despensa sin abrir.'
+  },
+  { nombre:'Berenjenas en aceite (estilo Almagro adaptado)', tipo:'encurtido', emoji:'🍆', temporada:'Jul–Sep', dificultad:'Media',
+    ingredientes:['2 kg berenjenas pequeñas','Agua','Sal','Vinagre de vino blanco','Aceite de oliva virgen extra','Pimentón dulce','Ajo','Orégano y comino'],
+    pasos:['Corta las berenjenas en tiras o rodajas gruesas','Hiérvelas 5-8 minutos en agua con sal hasta que estén tiernas pero firmes','Escurre muy bien y deja enfriar prensadas bajo un peso 2-3 horas para quitar el exceso de agua','Prepara un aliño con vinagre, ajo machacado, pimentón, orégano y comino','Mezcla las berenjenas con el aliño y mete en tarros','Cubre completamente con aceite de oliva virgen extra y deja curar mínimo 1 semana'],
+    consejo:'Inspirado en la berenjena de Almagro pero con el toque de aceite de oliva jiennense. El calor de julio-agosto en Jaén da berenjenas muy carnosas, perfectas para este encurtido.'
+  },
+  { nombre:'Cordero al ajillo en conserva (estilo pastoril)', tipo:'receta', emoji:'🐑', temporada:'Todo el año', dificultad:'Media',
+    ingredientes:['1.5 kg de cordero segureño en trozos','1 cabeza de ajo','200ml aceite de oliva virgen extra','1 vaso de vino blanco','Laurel, tomillo y romero frescos','Sal y pimienta'],
+    pasos:['Dora los trozos de cordero en el aceite de oliva a fuego fuerte','Añade los ajos machacados y las hierbas aromáticas','Vierte el vino blanco y deja reducir un poco','Cubre con agua, sazona y cocina a fuego lento 1.5-2 horas hasta que esté muy tierno','Para conservar: mete en tarros de cristal cubierto con su propio jugo y algo de aceite','Pasteuriza en olla a presión 45 minutos o en baño maría 90 minutos'],
+    consejo:'El cordero segureño de las sierras de Jaén tiene un sabor incomparable. Esta conserva permite disfrutar del guiso pastoril tradicional durante todo el año.'
   },
 ];
 
@@ -3883,9 +4104,32 @@ function abrirModalBancal(id){
   const b = planoState.bancales.find(x=>x.id===id);
   if(!b) return;
 
-  const dims = b.tipo==='rect'
-    ? `${b.w.toFixed(1)}m × ${b.h.toFixed(1)}m (${(b.w*b.h).toFixed(1)} m²)`
-    : `${b.wCells}×${b.hCells} celdas`;
+  const dimsTexto = b.tipo==='rect'
+    ? `${(b.w*b.h).toFixed(2)} m²`
+    : `${(b.wCells*b.hCells*0.25).toFixed(2)} m² aprox.`;
+
+  const panelMedidas = b.tipo==='rect' ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+      <div>
+        <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Largo (m)</label>
+        <input type="number" id="input-medida-w" value="${b.w}" min="0.2" max="30" step="0.1" onchange="actualizarMedidasBancal(${b.id})" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.9rem;background:var(--crema);font-family:'Courier Prime',monospace;">
+      </div>
+      <div>
+        <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Ancho (m)</label>
+        <input type="number" id="input-medida-h" value="${b.h}" min="0.2" max="30" step="0.1" onchange="actualizarMedidasBancal(${b.id})" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.9rem;background:var(--crema);font-family:'Courier Prime',monospace;">
+      </div>
+    </div>` : `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+      <div>
+        <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Columnas</label>
+        <input type="number" id="input-medida-w" value="${b.wCells}" min="1" max="40" step="1" onchange="actualizarMedidasBancal(${b.id})" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.9rem;background:var(--crema);font-family:'Courier Prime',monospace;">
+      </div>
+      <div>
+        <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Filas</label>
+        <input type="number" id="input-medida-h" value="${b.hCells}" min="1" max="40" step="1" onchange="actualizarMedidasBancal(${b.id})" style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-size:0.9rem;background:var(--crema);font-family:'Courier Prime',monospace;">
+      </div>
+    </div>
+    <div style="font-size:0.66rem;color:var(--gris);margin-bottom:6px;">Cada celda equivale a 0.5 × 0.5 m aprox.</div>`;
 
   const opcionesCultivo = CULTIVOS.map(c=>`<option value="${c.nombre}" ${b.cultivo===c.nombre?'selected':''}>${c.emoji} ${c.nombre}</option>`).join('');
 
@@ -3899,7 +4143,12 @@ function abrirModalBancal(id){
       <span style="font-size:1.5rem">🗺️</span> Bancal #${b.id}
       <button class="modal-close" onclick="cerrarModalBancal()">✕</button>
     </div>
-    <div style="font-size:0.78rem;color:var(--gris);margin-bottom:14px;">📐 ${dims}</div>
+
+    <div style="background:var(--crema);border-radius:10px;padding:12px;margin-bottom:14px;">
+      <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:6px;">📐 Medidas reales del bancal</label>
+      ${panelMedidas}
+      <div id="medidas-area-texto" style="font-size:0.76rem;font-weight:700;color:var(--oliva);">${dimsTexto}</div>
+    </div>
 
     <div style="margin-bottom:14px;">
       <label style="font-size:0.72rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:5px;">Cultivo actual</label>
@@ -3917,6 +4166,37 @@ function abrirModalBancal(id){
     </div>
   `;
   document.getElementById('modal-bancal-overlay').classList.add('abierto');
+}
+
+function actualizarMedidasBancal(id){
+  const b = planoState.bancales.find(x=>x.id===id);
+  if(!b) return;
+
+  const wInput = parseFloat(document.getElementById('input-medida-w').value);
+  const hInput = parseFloat(document.getElementById('input-medida-h').value);
+
+  if(b.tipo==='rect'){
+    const w = Math.min(30, Math.max(0.2, isNaN(wInput)?b.w:wInput));
+    const h = Math.min(30, Math.max(0.2, isNaN(hInput)?b.h:hInput));
+    b.w = parseFloat(w.toFixed(2));
+    b.h = parseFloat(h.toFixed(2));
+    document.getElementById('medidas-area-texto').textContent = `${(b.w*b.h).toFixed(2)} m²`;
+  } else {
+    const wCells = Math.min(40, Math.max(1, Math.round(isNaN(wInput)?b.wCells:wInput)));
+    const hCells = Math.min(40, Math.max(1, Math.round(isNaN(hInput)?b.hCells:hInput)));
+    b.wCells = wCells;
+    b.hCells = hCells;
+    document.getElementById('medidas-area-texto').textContent = `${(wCells*hCells*0.25).toFixed(2)} m² aprox.`;
+  }
+
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
+
+  // Refresca los consejos si hay cultivo asignado (cambia superficie y densidad de plantas)
+  if(b.cultivo){
+    document.getElementById('consejos-bancal-container').innerHTML = generarConsejosBancal(b);
+  }
 }
 
 function cerrarModalBancal(e){
@@ -4109,6 +4389,324 @@ function initPlano(){
   renderLeyendaFamiliasPlano();
 }
 
+// ══════════════════════════════════════════
+// AUTOSUFICIENCIA
+// ══════════════════════════════════════════
+
+let adultosAuto = 4;
+let ninosAuto = 1;
+let seccionAutoActual = 'plan';
+let repartoCarne = { conejo:40, cerdo:35, cordero:25 };
+
+// Consumo medio anual por persona ADULTA (referencias FAO / dieta mediterránea estándar)
+// Los niños (<12) cuentan como 0.5 persona-adulta de consumo, aplicado en personasEquivalentesAuto()
+const CONSUMO_PERSONA_ANUAL = {
+  hortalizas_kg: 120,      // hortalizas y verduras variadas
+  legumbres_kg: 6,         // legumbre seca
+  huevos_unidades: 220,    // ~4-5 por semana
+  carne_kg: 35,            // carne total (aves+cerdo+cordero) consumo moderado
+  leche_litros: 90,        // leche/derivados equivalente
+  miel_kg: 2,               // consumo medio
+  aceite_litros: 15,        // aceite de oliva, consumo español medio
+  fruta_kg: 90,             // fruta fresca variada
+  cereal_kg: 60,            // trigo/harina equivalente para pan propio
+  vino_litros: 0,           // opcional, no calculado
+};
+
+// Rendimientos de referencia (de los datos ya usados en COSTES_CULTIVOS y ANIMALES)
+const RENDIMIENTO_HUERTO_M2_KG = 3.5;      // kg de hortaliza por m² de huerto bien llevado y rotado, promedio anual
+const RENDIMIENTO_LEGUMBRE_M2_KG = 0.25;   // kg de legumbre seca por m²
+const HUEVOS_GALLINA_ANUAL = 220;          // huevos/gallina/año (ponedora media)
+const LECHE_CABRA_ANUAL_L = 450;           // litros/cabra/año (9 meses de lactancia aprox)
+const MIEL_COLMENA_ANUAL_KG = 25;          // kg/colmena/año en Jaén
+const CARNE_CONEJO_ANUAL_KG = 12;          // kg carne limpia/coneja reproductora/año
+const CARNE_CERDO_KG = 90;                 // kg carne limpia/cerdo cebado (matanza anual)
+const CARNE_CORDERO_KG = 12;               // kg carne limpia/cordero
+const ACEITUNA_OLIVO_KG = 40;              // kg aceituna/olivo adulto/año
+const RENDIMIENTO_ACEITE = 0.18;           // 18% de la aceituna se convierte en aceite
+
+function personasEquivalentesAuto(){
+  return adultosAuto + (ninosAuto * 0.5);
+}
+
+function cambiarAdultosAuto(delta){
+  adultosAuto = Math.max(1, Math.min(20, adultosAuto+delta));
+  actualizarContadoresAuto();
+  renderAutosuficiencia();
+}
+
+function cambiarNinosAuto(delta){
+  ninosAuto = Math.max(0, Math.min(15, ninosAuto+delta));
+  actualizarContadoresAuto();
+  renderAutosuficiencia();
+}
+
+function actualizarContadoresAuto(){
+  document.getElementById('num-adultos-auto').textContent = adultosAuto;
+  document.getElementById('num-ninos-auto').textContent = ninosAuto;
+  document.getElementById('equivalente-personas-auto').textContent = personasEquivalentesAuto().toFixed(1);
+}
+
+function ajustarRepartoCarne(especie, valor){
+  valor = parseInt(valor);
+  repartoCarne[especie] = valor;
+
+  // Reparte el resto proporcionalmente entre las otras dos para que siempre sume 100
+  const otras = Object.keys(repartoCarne).filter(k=>k!==especie);
+  const sumaOtras = otras.reduce((s,k)=>s+repartoCarne[k], 0);
+  const restante = 100 - valor;
+
+  if(sumaOtras > 0){
+    otras.forEach(k=>{
+      repartoCarne[k] = Math.round((repartoCarne[k]/sumaOtras) * restante);
+    });
+  } else {
+    // Si las otras estaban a 0, reparte a partes iguales
+    otras.forEach(k=> repartoCarne[k] = Math.round(restante/otras.length));
+  }
+
+  // Ajuste de redondeo: asegura que sume exactamente 100
+  const total = repartoCarne.conejo + repartoCarne.cerdo + repartoCarne.cordero;
+  if(total !== 100){
+    const diff = 100 - total;
+    // Aplica el ajuste a la especie que no se acaba de mover, la de mayor valor
+    const otraKey = otras.reduce((a,b)=> repartoCarne[a]>repartoCarne[b]?a:b);
+    repartoCarne[otraKey] += diff;
+  }
+
+  document.getElementById('slider-conejo').value = repartoCarne.conejo;
+  document.getElementById('slider-cerdo').value = repartoCarne.cerdo;
+  document.getElementById('slider-cordero').value = repartoCarne.cordero;
+  document.getElementById('valor-slider-conejo').textContent = repartoCarne.conejo+'%';
+  document.getElementById('valor-slider-cerdo').textContent = repartoCarne.cerdo+'%';
+  document.getElementById('valor-slider-cordero').textContent = repartoCarne.cordero+'%';
+
+  const sumaFinal = repartoCarne.conejo + repartoCarne.cerdo + repartoCarne.cordero;
+  document.getElementById('aviso-reparto-carne').innerHTML = sumaFinal===100
+    ? 'Total: 100% ✅'
+    : `Total: ${sumaFinal}% ⚠️`;
+
+  renderAutosuficiencia();
+}
+
+function mostrarSeccionAuto(sec, btn){
+  seccionAutoActual = sec;
+  document.querySelectorAll('#vista-autosuficiencia .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAutosuficiencia();
+}
+
+function renderAutosuficiencia(){
+  if(seccionAutoActual==='plan') renderPlanAnual();
+  else if(seccionAutoActual==='mapa') renderMapaConexiones();
+  else renderChecklistAuto();
+}
+
+function renderPlanAnual(){
+  // Muestra el panel de reparto de carne solo en esta sección
+  document.getElementById('panel-reparto-carne').style.display = 'block';
+
+  const p = personasEquivalentesAuto();
+  const necesidad = {
+    hortalizas: CONSUMO_PERSONA_ANUAL.hortalizas_kg * p,
+    legumbres: CONSUMO_PERSONA_ANUAL.legumbres_kg * p,
+    huevos: CONSUMO_PERSONA_ANUAL.huevos_unidades * p,
+    carne: CONSUMO_PERSONA_ANUAL.carne_kg * p,
+    leche: CONSUMO_PERSONA_ANUAL.leche_litros * p,
+    miel: CONSUMO_PERSONA_ANUAL.miel_kg * p,
+    aceite: CONSUMO_PERSONA_ANUAL.aceite_litros * p,
+    fruta: CONSUMO_PERSONA_ANUAL.fruta_kg * p,
+    cereal: CONSUMO_PERSONA_ANUAL.cereal_kg * p,
+  };
+
+  // Cálculos de lo que hace falta producir
+  const m2_hortalizas = Math.ceil(necesidad.hortalizas / RENDIMIENTO_HUERTO_M2_KG);
+  const m2_legumbres = Math.ceil(necesidad.legumbres / RENDIMIENTO_LEGUMBRE_M2_KG);
+  const gallinas = Math.ceil(necesidad.huevos / HUEVOS_GALLINA_ANUAL);
+  const colmenas = Math.max(1, Math.ceil(necesidad.miel / MIEL_COLMENA_ANUAL_KG));
+  const cabras_leche = Math.ceil(necesidad.leche / LECHE_CABRA_ANUAL_L);
+  const olivos = Math.ceil(necesidad.aceite / (ACEITUNA_OLIVO_KG * RENDIMIENTO_ACEITE));
+
+  // Reparto de carne AJUSTABLE con los sliders (repartoCarne.conejo/cerdo/cordero, siempre suman 100)
+  const carne_conejo_obj = necesidad.carne * (repartoCarne.conejo/100);
+  const carne_cerdo_obj = necesidad.carne * (repartoCarne.cerdo/100);
+  const carne_cordero_obj = necesidad.carne * (repartoCarne.cordero/100);
+  const coneja_reproductoras = repartoCarne.conejo>0 ? Math.ceil(carne_conejo_obj / CARNE_CONEJO_ANUAL_KG) : 0;
+  const cerdos_ano = repartoCarne.cerdo>0 ? Math.max(1, Math.round(carne_cerdo_obj / CARNE_CERDO_KG)) : 0;
+  const corderos_ano = repartoCarne.cordero>0 ? Math.ceil(carne_cordero_obj / CARNE_CORDERO_KG) : 0;
+
+  // ══════ CRUCE CON MI HUERTO: qué ya tienes vs qué te falta ══════
+  cargarMiHuerto();
+  const cultivosActivos = CULTIVOS.filter(c=>miHuertoData[c.nombre]);
+  const hortalizasActivas = cultivosActivos.filter(c=>c.cat==='hortalizas' || c.cat==='frutales').length;
+  const legumbresActivas = cultivosActivos.filter(c=>c.cat==='legumbres').length;
+  // Estimación simple: cada cultivo activo aporta un "cupo" proporcional a su marco de plantación medio
+  const m2_hortalizas_cubiertos = hortalizasActivas * 4; // estimación de 4m² medios por cultivo activo en Mi Huerto
+  const m2_legumbres_cubiertos = legumbresActivas * 4;
+  const pct_hortalizas = Math.min(100, Math.round((m2_hortalizas_cubiertos/m2_hortalizas)*100));
+  const pct_legumbres = Math.min(100, Math.round((m2_legumbres_cubiertos/m2_legumbres)*100));
+
+  const barraProgreso = (pct, color) => `
+    <div style="background:#EEE;border-radius:6px;height:8px;margin-top:6px;overflow:hidden;">
+      <div style="background:${color};height:100%;width:${pct}%;border-radius:6px;"></div>
+    </div>`;
+
+  const html = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+      <div class="dato-box" style="background:#EAF5E0;"><div class="valor" style="color:var(--oliva);">${necesidad.hortalizas.toFixed(0)} kg</div><div class="etiq">Hortalizas/año</div></div>
+      <div class="dato-box" style="background:#FFF4D8;"><div class="valor" style="color:var(--cosecha);">${necesidad.huevos.toFixed(0)}</div><div class="etiq">Huevos/año</div></div>
+    </div>
+    <div style="text-align:center;font-size:0.68rem;color:var(--gris);margin-bottom:16px;">Calculado para <strong>${p.toFixed(1)} personas equivalentes</strong> (${adultosAuto} adulto${adultosAuto>1?'s':''}${ninosAuto>0?' + '+ninosAuto+' niño'+(ninosAuto>1?'s':''):''})</div>
+
+    <h3 class="seccion-titulo">🥬 Huerto necesario</h3>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🥕 Hortalizas de temporada</div>
+      <div class="consejo-texto">Necesitas <strong>${necesidad.hortalizas.toFixed(0)} kg/año</strong> (${(necesidad.hortalizas/p).toFixed(0)} kg por persona). Con un rendimiento medio de ${RENDIMIENTO_HUERTO_M2_KG} kg/m² bien rotado, hacen falta <strong>${m2_hortalizas} m²</strong> de huerto activo (unos ${(m2_hortalizas/20).toFixed(1)} bancales de 4×5m).</div>
+      <div style="font-size:0.72rem;margin-top:8px;color:var(--gris);">📍 Tienes <strong>${hortalizasActivas} cultivo${hortalizasActivas!==1?'s':''}</strong> activo${hortalizasActivas!==1?'s':''} en Mi Huerto — cubres aprox. <strong>${pct_hortalizas}%</strong> de lo necesario</div>
+      ${barraProgreso(pct_hortalizas, 'var(--oliva)')}
+    </div>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🫘 Legumbres secas</div>
+      <div class="consejo-texto">Necesitas <strong>${necesidad.legumbres.toFixed(0)} kg/año</strong> de garbanzo, lenteja o judía seca. Hacen falta <strong>${m2_legumbres} m²</strong> dedicados a legumbre (rendimiento bajo pero mejoran el suelo con nitrógeno).</div>
+      <div style="font-size:0.72rem;margin-top:8px;color:var(--gris);">📍 Tienes <strong>${legumbresActivas} cultivo${legumbresActivas!==1?'s':''}</strong> de legumbre activo${legumbresActivas!==1?'s':''} en Mi Huerto — cubres aprox. <strong>${pct_legumbres}%</strong></div>
+      ${barraProgreso(pct_legumbres, 'var(--directa)')}
+    </div>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🌾 Cereal para pan</div>
+      <div class="consejo-texto">Para <strong>${necesidad.cereal.toFixed(0)} kg/año</strong> de harina, con un rendimiento de 300-400 kg/ha en secano jiennense, necesitas aproximadamente <strong>${Math.ceil(necesidad.cereal/0.035)} m²</strong> de trigo o mezcla de cereales. Consulta la pestaña Cereales para el cultivo.</div>
+    </div>
+
+    <h3 class="seccion-titulo" style="margin-top:18px;">🐓 Animales necesarios</h3>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🥚 Gallinas ponedoras</div>
+      <div class="consejo-texto">Para <strong>${necesidad.huevos.toFixed(0)} huevos/año</strong> (${(necesidad.huevos/p/52).toFixed(1)} huevos/semana por persona), con ${HUEVOS_GALLINA_ANUAL} huevos/gallina/año, necesitas <strong>${gallinas} gallinas ponedoras</strong>. Añade 1-2 de reserva por si alguna deja de poner.</div>
+    </div>
+    ${repartoCarne.conejo>0 ? `
+    <div class="consejo-card">
+      <div class="consejo-titulo">🐇 Conejos (${(carne_conejo_obj).toFixed(0)} kg/año, ${repartoCarne.conejo}% de la carne)</div>
+      <div class="consejo-texto">Con ${CARNE_CONEJO_ANUAL_KG} kg de carne limpia por coneja reproductora al año, necesitas <strong>${coneja_reproductoras} conejas reproductoras</strong> (más 1 macho). Es la fuente de carne más rápida y de menor espacio.</div>
+    </div>` : ''}
+    ${repartoCarne.cerdo>0 ? `
+    <div class="consejo-card">
+      <div class="consejo-titulo">🐷 Cerdo ibérico (${(carne_cerdo_obj).toFixed(0)} kg/año, ${repartoCarne.cerdo}% de la carne)</div>
+      <div class="consejo-texto">Con ~${CARNE_CERDO_KG} kg de carne limpia por cerdo cebado, necesitas criar <strong>${cerdos_ano} cerdo${cerdos_ano>1?'s':''} al año</strong> para la matanza. Complementa con bellota de vuestros propios encinares si tenéis.</div>
+    </div>` : ''}
+    ${repartoCarne.cordero>0 ? `
+    <div class="consejo-card">
+      <div class="consejo-titulo">🐑 Ovejas/Cordero (${(carne_cordero_obj).toFixed(0)} kg/año, ${repartoCarne.cordero}% de la carne)</div>
+      <div class="consejo-texto">Con ~${CARNE_CORDERO_KG} kg de carne limpia por cordero, necesitas <strong>${corderos_ano} corderos al año</strong>. Con 2-3 ovejas reproductoras de raza Segureña puedes cubrir esto con partos anuales.</div>
+    </div>` : ''}
+    <div class="consejo-card">
+      <div class="consejo-titulo">🐐 Cabras de leche</div>
+      <div class="consejo-texto">Para <strong>${necesidad.leche.toFixed(0)} litros/año</strong> de leche (para queso, yogur, consumo directo), con ${LECHE_CABRA_ANUAL_L} litros/cabra/año, necesitas <strong>${cabras_leche} cabra${cabras_leche>1?'s':''} en ordeño</strong>.</div>
+    </div>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🐝 Colmenas</div>
+      <div class="consejo-texto">Para <strong>${necesidad.miel.toFixed(0)} kg/año</strong> de miel propia, con ${MIEL_COLMENA_ANUAL_KG} kg/colmena/año en Jaén, necesitas <strong>${colmenas} colmena${colmenas>1?'s':''}</strong>. Además polinizan todo el huerto y los frutales, mejorando la producción general un 20-30%.</div>
+    </div>
+
+    <h3 class="seccion-titulo" style="margin-top:18px;">🌳 Árboles necesarios</h3>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🫒 Olivos para aceite propio</div>
+      <div class="consejo-texto">Para <strong>${necesidad.aceite.toFixed(0)} litros/año</strong> de aceite (consumo español medio), con ~${ACEITUNA_OLIVO_KG} kg de aceituna por olivo adulto y un 18% de rendimiento graso, necesitas <strong>${olivos} olivo${olivos>1?'s':''} adulto${olivos>1?'s':''}</strong>.</div>
+    </div>
+    <div class="consejo-card">
+      <div class="consejo-titulo">🍊🍋🍎 Frutales variados</div>
+      <div class="consejo-texto">Para <strong>${necesidad.fruta.toFixed(0)} kg/año</strong> de fruta fresca, planifica un mix de 6-10 árboles: 2 naranjos, 1 limonero, 2 higueras, 1 granado, 1 membrillero, 1-2 ciruelos. Consulta la pestaña Frutales para el cultivo de cada uno.</div>
+    </div>
+
+    <div style="background:var(--tierra);color:white;border-radius:10px;padding:14px;margin-top:16px;font-size:0.82rem;line-height:1.6;">
+      💡 <strong>Resumen del plan para ${p.toFixed(1)} personas equivalentes:</strong><br>
+      ${m2_hortalizas + m2_legumbres} m² de huerto · ${gallinas} gallinas${coneja_reproductoras>0?' · '+coneja_reproductoras+' conejas':''}${cerdos_ano>0?' · '+cerdos_ano+' cerdo/s':''}${corderos_ano>0?' · 2-3 ovejas':''} · ${cabras_leche} cabra/s · ${colmenas} colmena/s · ${olivos} olivos
+    </div>
+  `;
+
+  document.getElementById('auto-contenido').innerHTML = html;
+}
+
+// ══════ MAPA DE CONEXIONES ══════
+const MAPA_ALIMENTA_A = [
+  { origen:'🌻 Girasol / Tagetes', flecha:'→', destino:'🐝 Abejas (néctar y polen)', detalle:'Las flores del huerto alimentan a las abejas, que a cambio polinizan tus cultivos y producen miel.' },
+  { origen:'🌾 Cereal (trigo, cebada, maíz)', flecha:'→', destino:'🐔 Gallinas, 🐇 Conejos, 🐷 Cerdos', detalle:'El grano es la base del pienso casero para todos los animales de corral.' },
+  { origen:'🥬 Restos de huerto (hojas, tallos)', flecha:'→', destino:'🐐 Cabras, 🐑 Ovejas, 🐇 Conejos', detalle:'Nada se tira: los recortes y hojas exteriores alimentan al ganado menor.' },
+  { origen:'🌿 Diente de león, hierba fresca', flecha:'→', destino:'🐇 Conejos', detalle:'Forraje verde gratuito del entorno del huerto.' },
+  { origen:'🫒 Restos de poda del olivar', flecha:'→', destino:'🐐 Cabras (ramón)', detalle:'Las cabras aprovechan las hojas de la poda del olivo que de otro modo se desperdiciarían.' },
+  { origen:'🥔 Patata, boniato (excedente/no comercial)', flecha:'→', destino:'🐷 Cerdos', detalle:'Los tubérculos que no cumplen calibre comercial son excelente pienso para el cerdo.' },
+  { origen:'🍂 Restos de cosecha y poda triturados', flecha:'→', destino:'🪱 Compost', detalle:'Todo lo vegetal que no se come vuelve al suelo como abono.' },
+  { origen:'🐔 Gallinas', flecha:'→', destino:'🥚 Huevos + 🍗 Carne + 💩 Estiércol (abono)', detalle:'Las gallinas dan huevos y carne, y su estiércol es un fertilizante muy rico para el huerto.' },
+  { origen:'🐐 Cabras', flecha:'→', destino:'🥛 Leche + 🧀 Queso + 💩 Estiércol', detalle:'Leche para consumo directo o transformar en queso, más abono de calidad.' },
+  { origen:'🐇 Conejos', flecha:'→', destino:'🍖 Carne + 💩 Estiércol (el único que se aplica en fresco)', detalle:'El estiércol de conejo no necesita compostar: va directo al huerto.' },
+  { origen:'🐷 Cerdo', flecha:'→', destino:'🍖🥓 Carne y embutidos + 💩 Estiércol', detalle:'La matanza tradicional aprovecha prácticamente el 100% del animal.' },
+  { origen:'🐑 Ovejas', flecha:'→', destino:'🍖 Cordero + 🧶 Lana + 💩 Estiércol', detalle:'Además pastan bajo el olivar, limpiando de hierba de forma natural.' },
+  { origen:'🐝 Abejas', flecha:'→', destino:'🍯 Miel + 🌸 Polinización de todo el huerto y frutales', detalle:'Sin coste de alimentación (se alimentan solas de las flores) y mejoran la cosecha general un 20-30%.' },
+  { origen:'🫒 Olivos', flecha:'→', destino:'🫒 Aceituna y Aceite + 🔥 Leña de poda + 🐐 Ramón para cabras', detalle:'El olivo casi no desperdicia nada: fruto, leña y hasta las hojas de poda son aprovechables.' },
+  { origen:'🍊🍋 Cítricos y frutales', flecha:'→', destino:'🍎 Fruta fresca + 🥫 Conservas + 🐝 Flores para abejas', detalle:'La floración de los frutales en primavera es fuente importante de néctar para las abejas.' },
+  { origen:'💩 Estiércol de todos los animales', flecha:'→', destino:'🌱 Compost → 🥬 Huerto', detalle:'El ciclo se cierra: el abono animal nutre el suelo que alimenta a las plantas que alimentan a los animales.' },
+];
+
+function renderMapaConexiones(){
+  document.getElementById('panel-reparto-carne').style.display = 'none';
+  let html = '<p style="font-size:0.8rem;color:var(--gris);margin-bottom:14px;line-height:1.5;">Así se conecta todo en un sistema de autosuficiencia: nada se desperdicia, cada elemento alimenta al siguiente.</p>';
+  MAPA_ALIMENTA_A.forEach(m=>{
+    html += `<div style="background:white;border-radius:10px;padding:13px;margin-bottom:9px;box-shadow:0 1px 5px rgba(0,0,0,0.07);border-left:4px solid var(--oliva);">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-weight:700;font-size:0.85rem;">
+        <span>${m.origen}</span><span style="color:var(--miel);font-size:1.1rem;">${m.flecha}</span><span>${m.destino}</span>
+      </div>
+      <div style="font-size:0.78rem;color:var(--gris);line-height:1.5;">${m.detalle}</div>
+    </div>`;
+  });
+  document.getElementById('auto-contenido').innerHTML = html;
+}
+
+// ══════ CHECKLIST ══════
+function renderChecklistAuto(){
+  document.getElementById('panel-reparto-carne').style.display = 'none';
+  cargarMiHuerto();
+  const cultivosMiHuerto = CULTIVOS.filter(c=>miHuertoData[c.nombre]);
+  const categoriasPresentes = new Set(cultivosMiHuerto.map(c=>c.cat));
+
+  const items = [
+    { emoji:'🥬', texto:'Huerto de hortalizas activo', cumplido: categoriasPresentes.has('hortalizas'), accion:'Ve a Mi Huerto y marca al menos 5-6 hortalizas de temporada.' },
+    { emoji:'🫘', texto:'Legumbres para autoconsumo', cumplido: categoriasPresentes.has('legumbres'), accion:'Añade habas, garbanzo o judía en Mi Huerto.' },
+    { emoji:'🌿', texto:'Aromáticas y medicinales', cumplido: categoriasPresentes.has('hierbas'), accion:'Añade romero, tomillo o manzanilla: útiles también para los animales.' },
+    { emoji:'🐔', texto:'Gallinas ponedoras', cumplido: null, accion:'Consulta la pestaña Animales → Gallinas para empezar.' },
+    { emoji:'🐇', texto:'Conejos para carne', cumplido: null, accion:'La fuente de carne más rápida y de menor espacio. Ver pestaña Animales.' },
+    { emoji:'🐐', texto:'Cabra o cabras de leche', cumplido: null, accion:'Para leche y queso propio. Ver pestaña Animales → Cabras.' },
+    { emoji:'🐝', texto:'Colmenas de abejas', cumplido: null, accion:'Miel propia y mejor polinización de todo el huerto. Ver pestaña Animales → Abejas.' },
+    { emoji:'🫒', texto:'Olivar para aceite propio', cumplido: null, accion:'Consulta la pestaña Olivar para el manejo completo.' },
+    { emoji:'🍊', texto:'Frutales variados plantados', cumplido: null, accion:'Ver pestaña Frutales: naranjo, higuera, granado, membrillero...' },
+    { emoji:'🌾', texto:'Cereal para pan/pienso', cumplido: null, accion:'Ver pestaña Cereales: trigo, cebada o avena según tu terreno.' },
+    { emoji:'🥫', texto:'Sistema de conservas para el excedente', cumplido: null, accion:'Ver pestaña Conservas para no perder nada de la cosecha.' },
+    { emoji:'📝', texto:'Diario de registro activo', cumplido: null, accion:'Anota siembras y cosechas en la pestaña Diario para ver tu progreso real.' },
+  ];
+
+  // Comprobar diario y otros datos guardados
+  const entradasDiario = cargarDiario ? cargarDiario() : [];
+  items[11].cumplido = entradasDiario.length > 0;
+
+  let cumplidos = items.filter(i=>i.cumplido===true).length;
+  let total = items.length;
+
+  let html = `<div style="background:var(--oliva);color:white;border-radius:10px;padding:14px;margin-bottom:14px;text-align:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;">${cumplidos}/${total}</div>
+    <div style="font-size:0.78rem;opacity:0.9;">elementos de tu plan de autosuficiencia en marcha</div>
+  </div>`;
+
+  items.forEach(i=>{
+    const estado = i.cumplido===true ? '✅' : i.cumplido===false ? '❌' : '⬜';
+    const bgColor = i.cumplido===true ? '#EAF5E0' : 'white';
+    html += `<div style="background:${bgColor};border-radius:9px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      <span style="font-size:1.2rem;">${estado}</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:0.83rem;">${i.emoji} ${i.texto}</div>
+        ${i.cumplido!==true ? `<div style="font-size:0.74rem;color:var(--gris);margin-top:2px;">${i.accion}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('auto-contenido').innerHTML = html;
+}
+
 function descargar(){
   const blob=new Blob([document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
   const a=document.createElement('a');
@@ -4144,6 +4742,7 @@ window.onload=function(){
   renderCereales();
   renderFitoveterinaria();
   setTimeout(initPlano, 150);
+  renderAutosuficiencia();
 };
 </script>
 </body>
