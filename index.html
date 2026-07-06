@@ -540,6 +540,7 @@
     <button onclick="mostrarVista('fitoveterinaria',this)">💉 Fitoveterinaria</button>
     <button onclick="mostrarVista('plano',this)">🗺️ Plano del Huerto</button>
     <button onclick="mostrarVista('autosuficiencia',this)">🌾 Autosuficiencia</button>
+    <button onclick="mostrarVista('identificar',this)">📸 Identificar Planta</button>
   </nav>
 </header>
 
@@ -725,10 +726,23 @@
   <h2 class="seccion-titulo">💊 Plantas Medicinales — Jaén</h2>
   <div class="info-banner" style="background:#5A3A8A;color:white;">
     <span class="icon">⚕️</span>
-    <span>La fitoterapia tradicional jiennense tiene siglos de historia. Estas plantas crecen en nuestras sierras y se pueden cultivar fácilmente en el huerto.</span>
+    <span>La fitoterapia tradicional jiennense tiene siglos de historia. Estas plantas crecen en nuestras sierras y se pueden cultivar fácilmente en el huerto. La fitoterapia es un complemento, nunca un sustituto de la atención médica.</span>
   </div>
-  <input type="text" class="buscador" placeholder="Buscar planta o uso medicinal..." oninput="buscarMedicinal(this.value)">
-  <div id="lista-medicinales"></div>
+  <div class="filtros" style="margin-bottom:10px;">
+    <button class="filtro-btn on" onclick="mostrarSeccionMedicinal('todas',this)">📋 Todas las plantas</button>
+    <button class="filtro-btn" onclick="mostrarSeccionMedicinal('botiquin',this)">🚑 Botiquín de emergencia</button>
+  </div>
+  <div id="medicinales-todas-wrap">
+    <input type="text" class="buscador" placeholder="Buscar planta o uso medicinal..." oninput="buscarMedicinal(this.value)">
+    <div id="lista-medicinales"></div>
+  </div>
+  <div id="medicinales-botiquin-wrap" style="display:none;">
+    <div class="info-banner" style="background:#A0390A;color:white;">
+      <span class="icon">🚑</span>
+      <span>Plantas seleccionadas por su utilidad real en una emergencia sin acceso a farmacia. Organizadas por el problema que resuelven. Esto NO sustituye atención médica cuando esté disponible.</span>
+    </div>
+    <div id="lista-botiquin"></div>
+  </div>
 </div>
 
 <!-- ══════════════ MI HUERTO ══════════════ -->
@@ -745,6 +759,7 @@
     <button class="filtro-btn" data-mh="hierbas" onclick="filtrarMiHuerto('hierbas',this)">🌿 Aromáticas</button>
     <button class="filtro-btn" data-mh="frutales" onclick="filtrarMiHuerto('frutales',this)">🍅 Solanáceas</button>
     <button class="filtro-btn" data-mh="flores" onclick="filtrarMiHuerto('flores',this)">🌻 Flores</button>
+    <button class="filtro-btn" data-mh="arboles" onclick="filtrarMiHuerto('arboles',this)">🌳 Árboles frutales</button>
   </div>
   <div id="mihuerto-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;"></div>
   <div id="lista-mihuerto"></div>
@@ -1056,9 +1071,59 @@
     <button class="filtro-btn on" onclick="mostrarSeccionAuto('plan',this)">📋 Plan anual</button>
     <button class="filtro-btn" onclick="mostrarSeccionAuto('mapa',this)">🔗 Qué alimenta a qué</button>
     <button class="filtro-btn" onclick="mostrarSeccionAuto('checklist',this)">✅ Checklist</button>
+    <button class="filtro-btn" onclick="mostrarSeccionAuto('alertascruzadas',this)">🔔 Alertas cruzadas</button>
   </div>
 
   <div id="auto-contenido"></div>
+</div>
+
+<!-- ══════════════ IDENTIFICAR PLANTA ══════════════ -->
+<div class="vista" id="vista-identificar">
+  <h2 class="seccion-titulo">📸 Identificar Planta por Foto</h2>
+
+  <div class="info-banner">
+    <span class="icon">🤖</span>
+    <span>Haz una foto a la planta y la IA te dirá qué es, si está sana y qué cuidados necesita. Usa tu propia clave gratuita de Google Gemini.</span>
+  </div>
+
+  <!-- Configuración de la clave API -->
+  <div id="config-api-key-wrap" style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <label style="font-size:0.72rem;font-weight:700;color:var(--gris);text-transform:uppercase;">🔑 Clave de Google Gemini</label>
+      <span id="estado-api-key" style="font-size:0.68rem;font-weight:700;"></span>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <input type="password" id="input-api-key" placeholder="Pega aquí tu clave de Gemini" style="flex:1;padding:9px 11px;border:1.5px solid #D0C9BC;border-radius:8px;font-size:0.8rem;background:var(--crema);font-family:monospace;">
+      <button onclick="guardarApiKey()" style="background:var(--oliva);color:white;border:none;border-radius:8px;padding:9px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">Guardar</button>
+    </div>
+    <div style="font-size:0.68rem;color:var(--gris);margin-top:6px;">
+      ¿No tienes clave? Consíguela gratis en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--oliva);font-weight:700;">aistudio.google.com/apikey</a> (2 minutos, sin tarjeta)
+    </div>
+  </div>
+
+  <!-- Zona de captura -->
+  <div id="captura-wrap" style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);text-align:center;">
+    <div id="preview-imagen-wrap" style="display:none;margin-bottom:12px;">
+      <img id="preview-imagen" style="max-width:100%;max-height:280px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.15);">
+    </div>
+    <div id="placeholder-camara" style="padding:30px 10px;color:var(--gris);">
+      <div style="font-size:3rem;margin-bottom:8px;">🌿📷</div>
+      <div style="font-size:0.85rem;">Haz una foto o elige una imagen de la galería</div>
+    </div>
+    <input type="file" id="input-foto-camara" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoPlanta(event)">
+    <input type="file" id="input-foto-galeria" accept="image/*" style="display:none;" onchange="procesarFotoPlanta(event)">
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="document.getElementById('input-foto-camara').click()" style="flex:1;background:var(--oliva);color:white;border:none;border-radius:10px;padding:12px;font-size:0.85rem;font-weight:700;cursor:pointer;">📷 Hacer foto</button>
+      <button onclick="document.getElementById('input-foto-galeria').click()" style="flex:1;background:var(--miel);color:white;border:none;border-radius:10px;padding:12px;font-size:0.85rem;font-weight:700;cursor:pointer;">🖼️ Desde galería</button>
+    </div>
+  </div>
+
+
+  <!-- Botón analizar -->
+  <button id="btn-analizar-planta" onclick="analizarPlanta()" disabled style="width:100%;background:#CCC;color:white;border:none;border-radius:10px;padding:13px;font-size:0.9rem;font-weight:700;cursor:not-allowed;margin-bottom:14px;">🔍 Analizar planta</button>
+
+  <!-- Resultado -->
+  <div id="resultado-identificacion"></div>
 </div>
 
 <!-- MODAL -->
@@ -1995,6 +2060,110 @@ const MEDICINALES = [
     cultivo:['Planta ornamental muy vistosa: flores rosas grandes','Suelo bien drenado, sol pleno','Se multiplica por semillas en primavera'],
     precauciones:'No usar mas de 8 semanas seguidas. Contraindicada en enfermedades autoinmunes.'
   },
+  { nombre:'Hoja de Higuera', emoji:'🌿', familia:'Moraceae',
+    parte:'Hojas', ciclo:'Perenne (árbol)', epoca_recoleccion:'Mayo–septiembre',
+    descripcion:'La hoja de higuera tiene un efecto hipoglucemiante leve, tradicionalmente usado como apoyo en diabetes tipo 2 ya controlada con tratamiento médico. NO sustituye a la insulina ni a ningún medicamento para la diabetes.',
+    propiedades:['Efecto hipoglucemiante leve (reduce ligeramente la glucosa en sangre)','Antiinflamatoria suave','Digestiva'],
+    usos_medicinales:[
+      {uso:'Apoyo en diabetes tipo 2 ya diagnosticada y tratada', prep:'Infusión de 3-4 hojas frescas o secas por taza de agua, hervidas 10 minutos. 1-2 tazas al día, SIEMPRE bajo supervisión médica y sin dejar de tomar la medicación pautada.'},
+    ],
+    cultivo:['La higuera crece en toda la vega jiennense sin apenas cuidados','Recolecta hojas sanas, sin manchas, en pleno verano','Seca a la sombra para conservarlas todo el año'],
+    precauciones:'⚠️ IMPORTANTE: NINGUNA PLANTA SUSTITUYE A LA INSULINA. La diabetes tipo 1 depende exclusivamente de insulina inyectada; no existe alternativa vegetal y su ausencia pone la vida en riesgo. Esta hoja es, como mucho, un apoyo muy leve en diabetes tipo 2 ya controlada médicamente, y solo bajo supervisión de un profesional. No la uses para autotratarte ni para sustituir cualquier medicación pautada. Ante síntomas de hipoglucemia o hiperglucemia, actúa según indicación médica y busca atención sanitaria.'
+  },
+  { nombre:'Llantén Mayor', emoji:'🌿', familia:'Plantaginaceae',
+    parte:'Hojas', ciclo:'Perenne', epoca_recoleccion:'Abril–octubre',
+    descripcion:'El llantén crece silvestre en caminos y bordes de huerto de toda la provincia. Tiene un leve efecto regulador del azúcar en sangre, además de sus conocidas propiedades cicatrizantes y respiratorias.',
+    propiedades:['Efecto hipoglucemiante muy leve (de apoyo, no terapéutico)','Cicatrizante potente','Expectorante y antitusivo','Antiinflamatorio'],
+    usos_medicinales:[
+      {uso:'Apoyo leve en diabetes tipo 2 ya tratada', prep:'Infusión de hojas secas, 1 taza al día como máximo, nunca como sustituto de tratamiento.'},
+      {uso:'Heridas y cortes', prep:'Hoja fresca machacada aplicada directamente sobre la herida limpia.'},
+      {uso:'Tos y mucosidad', prep:'Infusión con miel, 2-3 tazas al día.'},
+    ],
+    cultivo:['Crece silvestre en cualquier camino o borde de bancal','No necesita cultivo: identifícalo y recolecta','Hojas jóvenes son las más tiernas para uso medicinal'],
+    precauciones:'⚠️ El efecto sobre el azúcar es muy leve y NUNCA sustituye insulina ni antidiabéticos orales. Uso exclusivamente como complemento y siempre con seguimiento médico en personas diagnosticadas de diabetes.'
+  },
+  { nombre:'Hoja de Nogal', emoji:'🌰', familia:'Juglandaceae',
+    parte:'Hojas', ciclo:'Perenne (árbol)', epoca_recoleccion:'Junio–agosto',
+    descripcion:'La hoja de nogal es otro remedio tradicional de apoyo muy leve para la diabetes tipo 2, además de ser astringente y usada en afecciones cutáneas.',
+    propiedades:['Efecto hipoglucemiante leve (de apoyo)','Astringente','Antiinflamatoria cutánea','Antiséptica suave'],
+    usos_medicinales:[
+      {uso:'Apoyo leve en diabetes tipo 2 ya tratada', prep:'Infusión de 2-3 hojas secas por taza, 1 taza al día, siempre bajo supervisión médica y sin abandonar tratamiento.'},
+      {uso:'Eccemas y afecciones de piel', prep:'Compresas con infusión concentrada aplicadas sobre la zona.'},
+    ],
+    cultivo:['Si tienes nogal en el huerto, recolecta hojas jóvenes en verano','Seca a la sombra para conservar'],
+    precauciones:'⚠️ Efecto muy leve y no comparable en ningún caso a un tratamiento antidiabético. NUNCA sustituye insulina. Solo como complemento en diabetes tipo 2 ya diagnosticada y en tratamiento, con seguimiento médico continuo.'
+  },
+  { nombre:'Ajo (uso medicinal)', emoji:'🧄', familia:'Amaryllidaceae',
+    parte:'Bulbo', ciclo:'Anual', epoca_recoleccion:'Junio–julio',
+    descripcion:'El ajo es uno de los antibióticos y antisépticos naturales más potentes y accesibles del huerto. Imprescindible en cualquier botiquín de emergencia casero.',
+    propiedades:['Antibiótico y antiséptico natural de amplio espectro','Antiviral','Hipotensor suave (baja la tensión ligeramente)','Antiparasitario','Estimulante inmunitario'],
+    usos_medicinales:[
+      {uso:'Infecciones respiratorias y resfriados', prep:'Machaca 2-3 dientes crudos y toma con miel, o en infusión con limón. 2-3 veces al día.'},
+      {uso:'Heridas leves como desinfectante de emergencia', prep:'Diente de ajo cortado y frotado suavemente sobre la piel intacta alrededor de la herida (nunca directamente sobre tejido abierto, quema).'},
+      {uso:'Parásitos intestinales', prep:'2 dientes crudos en ayunas durante 5-7 días.'},
+      {uso:'Hipertensión leve de apoyo', prep:'1-2 dientes crudos al día, siempre con seguimiento médico si hay tratamiento previo.'},
+    ],
+    cultivo:['Ya cultivado en la app en la pestaña Calendario','Guarda parte de la cosecha trenzada para todo el año'],
+    precauciones:'En dosis altas puede irritar el estómago. Interacciona con anticoagulantes: consulta a tu médico si tomas Sintrom u otros. No sustituye antibióticos en infecciones graves.'
+  },
+  { nombre:'Cebolla (uso medicinal)', emoji:'🧅', familia:'Amaryllidaceae',
+    parte:'Bulbo', ciclo:'Bienal', epoca_recoleccion:'Junio–julio',
+    descripcion:'La cebolla cruda o en cataplasma es un remedio de emergencia muy accesible para tos, congestión y picaduras, siempre disponible en cualquier huerto o despensa.',
+    propiedades:['Expectorante potente','Antiinflamatoria','Antihistamínica leve (picaduras e irritaciones)','Antiséptica'],
+    usos_medicinales:[
+      {uso:'Tos y congestión (jarabe casero)', prep:'Cebolla en rodajas cubierta de miel, macerada toda la noche. Toma 1 cucharada del jugo varias veces al día.'},
+      {uso:'Picaduras de insectos', prep:'Frota una rodaja de cebolla cruda directamente sobre la picadura para aliviar el picor e hinchazón.'},
+      {uso:'Congestión nasal', prep:'Inhala el vapor de cebolla recién cortada.'},
+    ],
+    cultivo:['Ya cultivada en la app en la pestaña Calendario'],
+    precauciones:'Uso externo seguro. En jarabe, vigilar en diabéticos por el contenido de miel.'
+  },
+  { nombre:'Cola de Caballo', emoji:'🌿', familia:'Equisetaceae',
+    parte:'Tallos', ciclo:'Perenne', epoca_recoleccion:'Abril–agosto',
+    descripcion:'La cola de caballo crece silvestre junto a acequias y zonas húmedas de la vega del Guadalquivir. Muy rica en sílice, es diurética y remineralizante, útil en heridas y para fortalecer huesos y uñas.',
+    propiedades:['Diurética potente','Remineralizante (rica en sílice)','Cicatrizante','Hemostática (corta hemorragias leves)','Astringente'],
+    usos_medicinales:[
+      {uso:'Retención de líquidos', prep:'Infusión de tallos secos, 2-3 tazas al día.'},
+      {uso:'Heridas con sangrado leve', prep:'Infusión concentrada aplicada con gasa sobre la herida para ayudar a cortar el sangrado.'},
+      {uso:'Fortalecimiento óseo y de uñas', prep:'Infusión diaria durante 3-4 semanas.'},
+    ],
+    cultivo:['Crece silvestre junto a acequias, canales de riego y la orilla del Guadalquivir','Recolecta los tallos verdes en primavera-verano'],
+    precauciones:'No usar en insuficiencia renal o cardíaca sin supervisión médica, por su efecto diurético. Evitar uso prolongado sin descanso.'
+  },
+  { nombre:'Diente de León', emoji:'🌼', familia:'Asteraceae',
+    parte:'Hojas y raíz', ciclo:'Perenne', epoca_recoleccion:'Marzo–junio',
+    descripcion:'El diente de león crece silvestre en cualquier prado o borde de huerto de Jaén. Depurativo hepático clásico, también usado como diurético suave y digestivo.',
+    propiedades:['Depurativo hepático','Diurético suave','Digestivo','Antiinflamatorio leve'],
+    usos_medicinales:[
+      {uso:'Digestión pesada y depuración hepática', prep:'Infusión de hojas o raíz seca, 2-3 tazas al día durante 1-2 semanas.'},
+      {uso:'Retención leve de líquidos', prep:'Infusión de hojas frescas.'},
+    ],
+    cultivo:['Crece silvestre en toda la vega, no necesita cultivo','Recolecta hojas jóvenes en primavera para menor amargor'],
+    precauciones:'Evitar en obstrucción de vías biliares. Puede interaccionar con diuréticos y litio: consultar médico si tomas medicación.'
+  },
+  { nombre:'Ortiga', emoji:'🌿', familia:'Urticaceae',
+    parte:'Hojas', ciclo:'Perenne', epoca_recoleccion:'Marzo–junio (hojas jóvenes)',
+    descripcion:'La ortiga es una de las plantas más nutritivas y versátiles del entorno del huerto: remineralizante, hemostática y muy rica en hierro, útil en anemia leve y como tónico general.',
+    propiedades:['Remineralizante (hierro, calcio, vitaminas)','Hemostática','Diurética suave','Antiinflamatoria (articular)','Tónico general'],
+    usos_medicinales:[
+      {uso:'Anemia leve y agotamiento', prep:'Infusión de hojas secas, 2-3 tazas al día durante 2-3 semanas. También en puré o sopa (cocinada pierde el picor urticante).'},
+      {uso:'Sangrados nasales leves', prep:'Zumo de hoja fresca aplicado con un algodón.'},
+      {uso:'Dolores articulares', prep:'El propio picor de la hoja fresca aplicada sobre la piel (urtcación) es un remedio tradicional para el reuma, usar con precaución.'},
+    ],
+    cultivo:['Crece silvestre en zonas húmedas y sombreadas del huerto','Usa guantes para recolectar: pica al tacto en fresco','Al secar o cocinar pierde el efecto urticante'],
+    precauciones:'Evitar en insuficiencia renal. El contacto directo con la piel produce urticaria transitoria: usa guantes al recolectar y manipular en fresco.'
+  },
+  { nombre:'Corteza de Sauce', emoji:'🌳', familia:'Salicaceae',
+    parte:'Corteza', ciclo:'Perenne (árbol)', epoca_recoleccion:'Primavera (savia en movimiento)',
+    descripcion:'La corteza de sauce es el remedio vegetal más clásico contra el dolor y la fiebre: contiene salicina, precursora natural de la aspirina. Muy útil en un botiquín de emergencia sin acceso a farmacia.',
+    propiedades:['Analgésico (dolor leve-moderado)','Antipirético (baja la fiebre)','Antiinflamatorio'],
+    usos_medicinales:[
+      {uso:'Dolor de cabeza, muscular o articular leve', prep:'Decocción de corteza seca troceada, 1 cucharadita hervida 10 minutos en una taza de agua. 2-3 tazas al día.'},
+      {uso:'Fiebre leve-moderada', prep:'Misma decocción, tomar cada 4-6 horas mientras dure la fiebre.'},
+    ],
+    cultivo:['El sauce crece junto al Guadalquivir y en zonas húmedas de la vega','Recolecta corteza de ramas jóvenes en primavera, sin anillar el tronco completo para no matar la rama'],
+    precauciones:'⚠️ NO usar en niños (riesgo de síndrome de Reye, igual que la aspirina). Evitar si hay alergia a la aspirina o problemas de coagulación. No es analgésico para dolor intenso: en ese caso busca atención médica.'
+  },
 ];
 
 const ANIMALES = [
@@ -2227,6 +2396,60 @@ function renderAromaticasFiltradas(q){
 
 function renderMedicinales(){ renderMedicinalesFiltradas(''); }
 function buscarMedicinal(q){ renderMedicinalesFiltradas(q.toLowerCase()); }
+
+// ══════ BOTIQUÍN DE EMERGENCIA ══════
+function mostrarSeccionMedicinal(sec, btn){
+  document.querySelectorAll('#vista-medicinales .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(sec==='todas'){
+    document.getElementById('medicinales-todas-wrap').style.display = 'block';
+    document.getElementById('medicinales-botiquin-wrap').style.display = 'none';
+  } else {
+    document.getElementById('medicinales-todas-wrap').style.display = 'none';
+    document.getElementById('medicinales-botiquin-wrap').style.display = 'block';
+    renderBotiquin();
+  }
+}
+
+// Referencia rápida por categoría de urgencia. Los nombres deben existir en MEDICINALES.
+const BOTIQUIN_CATEGORIAS = [
+  { titulo:'🩸 Heridas y sangrado', color:'#CC0A0A', plantas:['Cola de Caballo','Llantén Mayor','Caléndula','Aloe Vera'] },
+  { titulo:'🔥 Fiebre y dolor', color:'#A0390A', plantas:['Corteza de Sauce','Manzanilla'] },
+  { titulo:'🦠 Infecciones y antisépticos', color:'#3D6B1A', plantas:['Ajo (uso medicinal)','Tomillo','Romero'] },
+  { titulo:'🤒 Respiratorio (tos, congestión)', color:'#4A9FC8', plantas:['Cebolla (uso medicinal)','Tomillo','Llantén Mayor'] },
+  { titulo:'🤢 Digestivo', color:'#C8900A', plantas:['Manzanilla','Diente de León','Hipérico'] },
+  { titulo:'😰 Ansiedad y descanso', color:'#7020A8', plantas:['Lavanda','Melisa','Valeriana'] },
+  { titulo:'💪 Remineralizante y anemia leve', color:'#2E8B57', plantas:['Ortiga','Cola de Caballo'] },
+  { titulo:'🍯 Apoyo glucémico (NUNCA sustituye insulina)', color:'#8A0000', plantas:['Hoja de Higuera','Llantén Mayor','Hoja de Nogal'] },
+];
+
+function renderBotiquin(){
+  let html = '';
+  BOTIQUIN_CATEGORIAS.forEach(cat=>{
+    const plantasEncontradas = cat.plantas.map(nombre => MEDICINALES.find(m=>m.nombre===nombre)).filter(Boolean);
+    if(!plantasEncontradas.length) return;
+
+    html += `<div style="margin-bottom:18px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:${cat.color};margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid ${cat.color};">${cat.titulo}</div>`;
+
+    plantasEncontradas.forEach(a=>{
+      const primerUso = a.usos_medicinales[0];
+      html += `<div style="background:white;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${cat.color};">
+        <div style="font-weight:700;font-size:0.86rem;margin-bottom:4px;">${a.emoji} ${a.nombre}</div>
+        <div style="font-size:0.78rem;color:var(--gris);margin-bottom:6px;line-height:1.45;"><strong>${primerUso.uso}:</strong> ${primerUso.prep}</div>
+        <div style="font-size:0.71rem;color:#8A0000;background:#FDE8E8;border-radius:5px;padding:5px 8px;">⚠️ ${a.precauciones}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `<div style="background:var(--tierra);color:white;border-radius:10px;padding:14px;font-size:0.8rem;line-height:1.6;margin-top:8px;">
+    💡 <strong>Recuerda:</strong> este botiquín vegetal es un apoyo para situaciones sin acceso a atención sanitaria. Para heridas profundas, fiebre alta persistente, dificultad para respirar, dolor intenso o cualquier síntoma grave, la prioridad siempre es buscar ayuda médica en cuanto sea posible.
+  </div>`;
+
+  document.getElementById('lista-botiquin').innerHTML = html;
+}
+
 function renderMedicinalesFiltradas(q){
   const lista = q ? MEDICINALES.filter(a=>
     a.nombre.toLowerCase().includes(q)||
@@ -2439,11 +2662,20 @@ function busquedaGlobal(q){
 function registrarSW(){
   if('serviceWorker' in navigator){
     const swCode = `
-const CACHE = 'huerto-jaen-v1';
+const CACHE = 'huerto-jaen-v2';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
 });
 self.addEventListener('fetch', e => {
+  const url = e.request.url;
+  // No interceptar llamadas a APIs externas (Gemini, clima, etc.) — deben ir directas a la red
+  if(url.includes('generativelanguage.googleapis.com') || url.includes('api.open-meteo.com') || url.startsWith('http') && !url.includes(self.location.origin)){
+    return; // deja pasar la petición sin tocarla
+  }
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(()=>caches.match('./index.html'))));
 });`;
     const blob = new Blob([swCode], {type:'application/javascript'});
@@ -2516,6 +2748,30 @@ function renderMiHuerto(){
     <div class="dato-box"><div class="valor" style="color:var(--oliva);font-size:1.4rem">${total}</div><div class="etiq">Cultivos activos</div></div>
     <div class="dato-box"><div class="valor" style="color:var(--cosecha);font-size:1.4rem">${enCosecha}</div><div class="etiq">En cosecha ahora</div></div>
     <div class="dato-box"><div class="valor" style="color:var(--semillero);font-size:1.4rem">${enSiembra}</div><div class="etiq">Para sembrar ya</div></div>`;
+
+  // ══════ Árboles frutales: fuente de datos distinta (FRUTALES en vez de CULTIVOS) ══════
+  if(miHuertoCat === 'arboles'){
+    let htmlArboles = '';
+    for(const f of FRUTALES){
+      const activo = !!miHuertoData[f.nombre];
+      // Detecta si el mes actual aparece mencionado en el texto de cosecha (formato libre, ej: "Brevas: junio–julio")
+      const mesTexto = MESES_LARGO[MES_ACTUAL].toLowerCase();
+      const cosechaAhora = activo && f.cosecha && f.cosecha.toLowerCase().includes(mesTexto);
+      htmlArboles += `<div style="background:${activo?'#EAF5E0':'white'};border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${activo?'var(--oliva)':'#DDD'};transition:all .2s;">
+        <span style="font-size:1.5rem">${f.emoji}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:0.86rem;">${f.nombre}</div>
+          ${activo ? `<div style="font-size:0.68rem;color:var(--gris);">Desde: ${miHuertoData[f.nombre].fechaSiembra}</div>` : `<div style="font-size:0.68rem;color:var(--gris);">Cosecha: ${f.cosecha}</div>`}
+          ${cosechaAhora ? `<div style="font-size:0.68rem;font-weight:800;color:var(--cosecha);">🧺 ¡En temporada de cosecha!</div>` : ''}
+        </div>
+        <button onclick="toggleCultivo('${f.nombre.replace(/'/g,"\\'")}')" style="background:${activo?'var(--oliva)':'#EEE'};color:${activo?'white':'#888'};border:none;border-radius:20px;padding:6px 12px;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;">
+          ${activo ? '✅ Plantado' : '+ Añadir'}
+        </button>
+      </div>`;
+    }
+    document.getElementById('lista-mihuerto').innerHTML = htmlArboles;
+    return;
+  }
 
   const lista = CULTIVOS.filter(c => miHuertoCat==='all' || c.cat===miHuertoCat);
   let html = '';
@@ -4499,7 +4755,8 @@ function mostrarSeccionAuto(sec, btn){
 function renderAutosuficiencia(){
   if(seccionAutoActual==='plan') renderPlanAnual();
   else if(seccionAutoActual==='mapa') renderMapaConexiones();
-  else renderChecklistAuto();
+  else if(seccionAutoActual==='checklist') renderChecklistAuto();
+  else renderAlertasCruzadasAuto();
 }
 
 function renderPlanAnual(){
@@ -4615,6 +4872,9 @@ function renderPlanAnual(){
       <div class="consejo-texto">Para <strong>${necesidad.fruta.toFixed(0)} kg/año</strong> de fruta fresca, planifica un mix de 6-10 árboles: 2 naranjos, 1 limonero, 2 higueras, 1 granado, 1 membrillero, 1-2 ciruelos. Consulta la pestaña Frutales para el cultivo de cada uno.</div>
     </div>
 
+    <h3 class="seccion-titulo" style="margin-top:18px;">📅 Calendario de siembra sugerido</h3>
+    <div id="calendario-generado-auto">${generarCalendarioSiembraAuto(m2_hortalizas, m2_legumbres)}</div>
+
     <div style="background:var(--tierra);color:white;border-radius:10px;padding:14px;margin-top:16px;font-size:0.82rem;line-height:1.6;">
       💡 <strong>Resumen del plan para ${p.toFixed(1)} personas equivalentes:</strong><br>
       ${m2_hortalizas + m2_legumbres} m² de huerto · ${gallinas} gallinas${coneja_reproductoras>0?' · '+coneja_reproductoras+' conejas':''}${cerdos_ano>0?' · '+cerdos_ano+' cerdo/s':''}${corderos_ano>0?' · 2-3 ovejas':''} · ${cabras_leche} cabra/s · ${colmenas} colmena/s · ${olivos} olivos
@@ -4622,6 +4882,54 @@ function renderPlanAnual(){
   `;
 
   document.getElementById('auto-contenido').innerHTML = html;
+}
+
+// ══════ CALENDARIO DE SIEMBRA GENERADO DESDE EL PLAN ══════
+function generarCalendarioSiembraAuto(m2_hortalizas, m2_legumbres){
+  // Selecciona cultivos representativos de mayor rendimiento/utilidad para cubrir el objetivo
+  const candidatosHortalizas = ['Tomate','Calabacín','Acelga','Lechuga','Zanahoria','Cebolla'];
+  const candidatosLegumbres = ['Habas','Judía verde','Garbanzo'];
+
+  const seleccionH = candidatosHortalizas.map(n=>CULTIVOS.find(c=>c.nombre===n)).filter(Boolean);
+  const seleccionL = candidatosLegumbres.map(n=>CULTIVOS.find(c=>c.nombre===n)).filter(Boolean);
+  const todos = [...seleccionH, ...seleccionL];
+
+  // Reparto proporcional simple del m² total entre los cultivos seleccionados
+  const m2PorHortaliza = seleccionH.length ? Math.round(m2_hortalizas / seleccionH.length) : 0;
+  const m2PorLegumbre = seleccionL.length ? Math.round(m2_legumbres / seleccionL.length) : 0;
+
+  // Agrupa por "próximos 3 meses a sembrar" para dar utilidad inmediata
+  const proximosMeses = [0,1,2].map(i=>(MES_ACTUAL+i)%12);
+
+  let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+  todos.forEach(c=>{
+    const m2 = seleccionH.includes(c) ? m2PorHortaliza : m2PorLegumbre;
+    const mesesSiembra = [...(c.semillero||[]), ...(c.directa||[])];
+    const proximaSiembra = proximosMeses.find(m=>mesesSiembra.includes(m));
+    const tipoSiembra = c.semillero && c.semillero.includes(proximaSiembra) ? 'semillero' : 'directa';
+
+    if(proximaSiembra !== undefined){
+      html += `<div style="background:white;border-radius:9px;padding:10px 13px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border-left:4px solid ${tipoSiembra==='semillero'?'var(--semillero)':'var(--directa)'};display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.3rem;">${c.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:0.83rem;">${c.nombre} — ${m2} m²</div>
+          <div style="font-size:0.72rem;color:var(--gris);">${tipoSiembra==='semillero'?'🌱 Semillero':'🌾 Siembra directa'} en <strong>${MESES_NOMBRE[proximaSiembra]}</strong></div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div style="background:var(--crema);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px;opacity:0.75;">
+        <span style="font-size:1.3rem;">${c.emoji}</span>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:0.83rem;">${c.nombre} — ${m2} m²</div>
+          <div style="font-size:0.72rem;color:var(--gris);">Fuera de temporada de siembra los próximos 3 meses. Consulta su ficha en Calendario.</div>
+        </div>
+      </div>`;
+    }
+  });
+  html += '</div>';
+  html += `<div style="font-size:0.72rem;color:var(--gris);margin-top:8px;padding:8px 0;">📍 Selección basada en cultivos de alto rendimiento y fácil manejo. Toca cualquier cultivo en la pestaña Calendario para ver su ficha completa y ajustar según tu terreno.</div>`;
+
+  return html;
 }
 
 // ══════ MAPA DE CONEXIONES ══════
@@ -4659,52 +4967,443 @@ function renderMapaConexiones(){
 }
 
 // ══════ CHECKLIST ══════
+// ══════ ALERTAS CRUZADAS: ANIMALES ↔ CULTIVOS ══════
+function renderAlertasCruzadasAuto(){
+  document.getElementById('panel-reparto-carne').style.display = 'none';
+  cargarMiHuerto();
+
+  const p = personasEquivalentesAuto();
+  const necesidadHuevos = CONSUMO_PERSONA_ANUAL.huevos_unidades * p;
+  const necesidadMiel = CONSUMO_PERSONA_ANUAL.miel_kg * p;
+  const necesidadLeche = CONSUMO_PERSONA_ANUAL.leche_litros * p;
+  const necesidadCarneConejo = (CONSUMO_PERSONA_ANUAL.carne_kg * p) * (repartoCarne.conejo/100);
+  const necesidadCarneCabra = (CONSUMO_PERSONA_ANUAL.carne_kg * p) * (repartoCarne.cordero/100);
+
+  const gallinasObjetivo = Math.ceil(necesidadHuevos / HUEVOS_GALLINA_ANUAL);
+  const colmenasObjetivo = Math.max(1, Math.ceil(necesidadMiel / MIEL_COLMENA_ANUAL_KG));
+  const cabrasObjetivo = Math.ceil(necesidadLeche / LECHE_CABRA_ANUAL_L);
+  const conejasObjetivo = repartoCarne.conejo>0 ? Math.ceil(necesidadCarneConejo / CARNE_CONEJO_ANUAL_KG) : 0;
+
+  // Qué tiene el usuario en Mi Huerto por categoría (única fuente de datos real disponible)
+  const tieneCereal = CULTIVOS.some(c => miHuertoData[c.nombre] && c.nombre==='Maíz');
+  const tieneFloresAbono = CULTIVOS.some(c => miHuertoData[c.nombre] && c.cat==='flores');
+  const tieneAromaticas = CULTIVOS.some(c => miHuertoData[c.nombre] && c.cat==='hierbas');
+  const tieneVerdeForraje = CULTIVOS.some(c => miHuertoData[c.nombre] && ['Acelga','Espinaca','Lechuga'].includes(c.nombre));
+  const tieneLegumbreVerde = CULTIVOS.some(c => miHuertoData[c.nombre] && c.cat==='legumbres');
+
+  const alertas = [];
+
+  if(gallinasObjetivo>0){
+    alertas.push({
+      icon:'🐔', color: tieneCereal ? '#3D6B1A' : '#CC0A0A',
+      titulo: `${gallinasObjetivo} gallinas necesitan pienso propio`,
+      texto: tieneCereal
+        ? `Tienes maíz activo en Mi Huerto: buena base de pienso casero para las gallinas.`
+        : `No tienes cereal (maíz, trigo, cebada) marcado en Mi Huerto. Sin cereal propio, dependerás de comprar pienso todo el año. Consulta la pestaña Cereales para planificar una parcela.`
+    });
+  }
+
+  if(colmenasObjetivo>0){
+    alertas.push({
+      icon:'🐝', color: (tieneFloresAbono || tieneAromaticas) ? '#3D6B1A' : '#C8900A',
+      titulo: `${colmenasObjetivo} colmena${colmenasObjetivo>1?'s':''} necesitan flores cerca todo el año`,
+      texto: (tieneFloresAbono || tieneAromaticas)
+        ? `Tienes flores o aromáticas activas en Mi Huerto: buen aporte de néctar y polen para las abejas.`
+        : `No tienes flores de abono (caléndula, tagetes, girasol) ni aromáticas marcadas en Mi Huerto. Sin floración escalonada cerca de las colmenas, la producción de miel puede resentirse. Añade caléndula o tagetes en Mi Huerto.`
+    });
+  }
+
+  if(cabrasObjetivo>0){
+    alertas.push({
+      icon:'🐐', color: tieneVerdeForraje ? '#3D6B1A' : '#C8900A',
+      titulo: `${cabrasObjetivo} cabra${cabrasObjetivo>1?'s':''} necesitan forraje verde de apoyo`,
+      texto: tieneVerdeForraje
+        ? `Tienes hortalizas de hoja (acelga, espinaca o lechuga) activas: sirven de complemento verde para las cabras.`
+        : `No tienes hortalizas de hoja marcadas en Mi Huerto para complementar el pasto. Los restos de acelga, espinaca o lechuga son un buen aporte extra para las cabras. Considera dedicar parte del huerto a esto.`
+    });
+  }
+
+  if(conejasObjetivo>0){
+    alertas.push({
+      icon:'🐇', color: (tieneVerdeForraje || tieneLegumbreVerde) ? '#3D6B1A' : '#C8900A',
+      titulo: `${conejasObjetivo} coneja${conejasObjetivo>1?'s':''} necesitan verde fresco diario`,
+      texto: (tieneVerdeForraje || tieneLegumbreVerde)
+        ? `Tienes hortalizas de hoja o legumbres activas: buena fuente de verde fresco para los conejos.`
+        : `No tienes hortalizas de hoja ni legumbres marcadas en Mi Huerto. Los conejos necesitan verde fresco a diario (hojas de acelga, lechuga, ramas de leguminosas). Sin esto dependerás más del pienso comprado.`
+    });
+  }
+
+  let html = `<p style="font-size:0.8rem;color:var(--gris);margin-bottom:14px;line-height:1.5;">Cruza lo que necesitan tus animales objetivo (según el Plan Anual) con lo que ya tienes activo en <strong>Mi Huerto</strong>. En verde: cubierto. En rojo/naranja: te falta la base para alimentarlos sin depender de comprar pienso.</p>`;
+
+  if(!alertas.length){
+    html += `<div style="text-align:center;padding:30px;color:var(--gris);">
+      <div style="font-size:2rem;margin-bottom:8px;">🐣</div>
+      <div>Ajusta el reparto de carne y el nº de personas en <strong>Plan anual</strong> para generar objetivos de animales y ver aquí las alertas cruzadas.</div>
+    </div>`;
+  } else {
+    alertas.forEach(a=>{
+      html += `<div style="background:white;border-radius:10px;padding:13px;margin-bottom:9px;border-left:4px solid ${a.color};box-shadow:0 1px 5px rgba(0,0,0,0.06);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span style="font-size:1.2rem">${a.icon}</span>
+          <span style="font-weight:800;font-size:0.86rem;">${a.titulo}</span>
+        </div>
+        <div style="font-size:0.79rem;color:var(--gris);line-height:1.45;padding-left:28px;">${a.texto}</div>
+      </div>`;
+    });
+  }
+
+  document.getElementById('auto-contenido').innerHTML = html;
+}
+
+// ══════ CHECKLIST MARCABLE MANUALMENTE ══════
+function cargarChecklistManual(){
+  try { return JSON.parse(localStorage.getItem('hj-checklist-auto') || '{}'); } catch(e){ return {}; }
+}
+
+function guardarChecklistManual(data){
+  localStorage.setItem('hj-checklist-auto', JSON.stringify(data));
+}
+
+function toggleChecklistItem(idx){
+  const manual = cargarChecklistManual();
+  manual[idx] = !manual[idx];
+  guardarChecklistManual(manual);
+  renderChecklistAuto();
+}
+
 function renderChecklistAuto(){
   document.getElementById('panel-reparto-carne').style.display = 'none';
   cargarMiHuerto();
   const cultivosMiHuerto = CULTIVOS.filter(c=>miHuertoData[c.nombre]);
   const categoriasPresentes = new Set(cultivosMiHuerto.map(c=>c.cat));
+  const manual = cargarChecklistManual();
 
   const items = [
-    { emoji:'🥬', texto:'Huerto de hortalizas activo', cumplido: categoriasPresentes.has('hortalizas'), accion:'Ve a Mi Huerto y marca al menos 5-6 hortalizas de temporada.' },
-    { emoji:'🫘', texto:'Legumbres para autoconsumo', cumplido: categoriasPresentes.has('legumbres'), accion:'Añade habas, garbanzo o judía en Mi Huerto.' },
-    { emoji:'🌿', texto:'Aromáticas y medicinales', cumplido: categoriasPresentes.has('hierbas'), accion:'Añade romero, tomillo o manzanilla: útiles también para los animales.' },
-    { emoji:'🐔', texto:'Gallinas ponedoras', cumplido: null, accion:'Consulta la pestaña Animales → Gallinas para empezar.' },
-    { emoji:'🐇', texto:'Conejos para carne', cumplido: null, accion:'La fuente de carne más rápida y de menor espacio. Ver pestaña Animales.' },
-    { emoji:'🐐', texto:'Cabra o cabras de leche', cumplido: null, accion:'Para leche y queso propio. Ver pestaña Animales → Cabras.' },
-    { emoji:'🐝', texto:'Colmenas de abejas', cumplido: null, accion:'Miel propia y mejor polinización de todo el huerto. Ver pestaña Animales → Abejas.' },
-    { emoji:'🫒', texto:'Olivar para aceite propio', cumplido: null, accion:'Consulta la pestaña Olivar para el manejo completo.' },
-    { emoji:'🍊', texto:'Frutales variados plantados', cumplido: null, accion:'Ver pestaña Frutales: naranjo, higuera, granado, membrillero...' },
-    { emoji:'🌾', texto:'Cereal para pan/pienso', cumplido: null, accion:'Ver pestaña Cereales: trigo, cebada o avena según tu terreno.' },
-    { emoji:'🥫', texto:'Sistema de conservas para el excedente', cumplido: null, accion:'Ver pestaña Conservas para no perder nada de la cosecha.' },
-    { emoji:'📝', texto:'Diario de registro activo', cumplido: null, accion:'Anota siembras y cosechas en la pestaña Diario para ver tu progreso real.' },
+    { emoji:'🥬', texto:'Huerto de hortalizas activo', auto: categoriasPresentes.has('hortalizas'), accion:'Ve a Mi Huerto y marca al menos 5-6 hortalizas de temporada. También puedes marcarlo aquí a mano.' },
+    { emoji:'🫘', texto:'Legumbres para autoconsumo', auto: categoriasPresentes.has('legumbres'), accion:'Añade habas, garbanzo o judía en Mi Huerto. También puedes marcarlo aquí a mano.' },
+    { emoji:'🌿', texto:'Aromáticas y medicinales', auto: categoriasPresentes.has('hierbas'), accion:'Añade romero, tomillo o manzanilla: útiles también para los animales. También puedes marcarlo aquí a mano.' },
+    { emoji:'🐔', texto:'Gallinas ponedoras', auto: false, accion:'Consulta la pestaña Animales → Gallinas para empezar.' },
+    { emoji:'🐇', texto:'Conejos para carne', auto: false, accion:'La fuente de carne más rápida y de menor espacio. Ver pestaña Animales.' },
+    { emoji:'🐐', texto:'Cabra o cabras de leche', auto: false, accion:'Para leche y queso propio. Ver pestaña Animales → Cabras.' },
+    { emoji:'🐝', texto:'Colmenas de abejas', auto: false, accion:'Miel propia y mejor polinización de todo el huerto. Ver pestaña Animales → Abejas.' },
+    { emoji:'🫒', texto:'Olivar para aceite propio', auto: false, accion:'Consulta la pestaña Olivar para el manejo completo.' },
+    { emoji:'🍊', texto:'Árboles frutales plantados', auto: FRUTALES.some(f=>miHuertoData[f.nombre]), accion:'Ve a Mi Huerto → 🌳 Árboles frutales y marca naranjo, higuera, limonero, níspero...' },
+    { emoji:'🌾', texto:'Cereal para pan/pienso', auto: cultivosMiHuerto.some(c=>c.nombre==='Maíz'), accion:'Ver pestaña Cereales: trigo, cebada o avena según tu terreno.' },
+    { emoji:'🥫', texto:'Sistema de conservas para el excedente', auto: false, accion:'Ver pestaña Conservas para no perder nada de la cosecha.' },
+    { emoji:'📝', texto:'Diario de registro activo', auto: null, accion:'Anota siembras y cosechas en la pestaña Diario para ver tu progreso real.' },
   ];
 
-  // Comprobar diario y otros datos guardados
+  // Comprobar diario (este sigue siendo 100% automático, no tiene sentido marcarlo a mano)
   const entradasDiario = cargarDiario ? cargarDiario() : [];
-  items[11].cumplido = entradasDiario.length > 0;
+  items[11].auto = entradasDiario.length > 0;
+
+  // Estado final de cada ítem: si hay marca manual, esa manda; si no, se usa la detección automática (si existe)
+  items.forEach((item, idx) => {
+    if(manual[idx] !== undefined){
+      item.cumplido = manual[idx];
+      item.esManual = true;
+    } else {
+      item.cumplido = item.auto;
+      item.esManual = false;
+    }
+  });
 
   let cumplidos = items.filter(i=>i.cumplido===true).length;
   let total = items.length;
 
-  let html = `<div style="background:var(--oliva);color:white;border-radius:10px;padding:14px;margin-bottom:14px;text-align:center;">
-    <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;">${cumplidos}/${total}</div>
-    <div style="font-size:0.78rem;opacity:0.9;">elementos de tu plan de autosuficiencia en marcha</div>
+  // ══════ % DE AUTOSUFICIENCIA REAL (basado en actividad de cosecha del Diario) ══════
+  const hoyMs = Date.now();
+  const unAnoMs = 365*24*60*60*1000;
+  const entradasUltimoAno = entradasDiario.filter(e=>{
+    const fechaMs = new Date(e.fecha+'T12:00:00').getTime();
+    return (hoyMs - fechaMs) <= unAnoMs && (hoyMs - fechaMs) >= 0;
+  });
+  const cosechasRegistradas = entradasUltimoAno.filter(e=>e.tipo==='cosecha').length;
+  const cultivosDistintosCosechados = new Set(entradasUltimoAno.filter(e=>e.tipo==='cosecha' && e.cultivo).map(e=>e.cultivo)).size;
+
+  // Objetivo de referencia: cosechar de forma regular a lo largo del año requiere actividad frecuente.
+  // Usamos como referencia 24 registros de cosecha/año (aprox. 2 al mes) como "diario muy activo" = 100%
+  const OBJETIVO_COSECHAS_ANUAL = 24;
+  const pctActividad = Math.min(100, Math.round((cosechasRegistradas/OBJETIVO_COSECHAS_ANUAL)*100));
+
+  // Combina con el checklist estructural (cuántos elementos del plan están en marcha)
+  const pctEstructural = Math.round((cumplidos/total)*100);
+  const pctGlobal = Math.round((pctActividad*0.5) + (pctEstructural*0.5));
+
+  let colorPct = pctGlobal < 30 ? '#CC0A0A' : pctGlobal < 65 ? '#C8900A' : '#3D6B1A';
+
+  let html = `<div style="background:${colorPct};color:white;border-radius:12px;padding:16px;margin-bottom:14px;text-align:center;">
+    <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;">${pctGlobal}%</div>
+    <div style="font-size:0.8rem;opacity:0.95;margin-bottom:8px;">de autosuficiencia estimada</div>
+    <div style="display:flex;justify-content:center;gap:16px;font-size:0.7rem;opacity:0.9;">
+      <span>📋 Plan en marcha: ${pctEstructural}%</span>
+      <span>📝 Actividad registrada: ${pctActividad}%</span>
+    </div>
   </div>`;
 
-  items.forEach(i=>{
-    const estado = i.cumplido===true ? '✅' : i.cumplido===false ? '❌' : '⬜';
+  if(cosechasRegistradas===0){
+    html += `<div class="consejo-card" style="border-color:#C8900A;">
+      <div class="consejo-titulo">📝 Aún no hay cosechas registradas en el Diario</div>
+      <div class="consejo-texto">El porcentaje de actividad se calcula a partir de las entradas de tipo "cosecha" que apuntes en la pestaña Diario. Cuantas más registres a lo largo del año, más preciso será este dato. Es una estimación por frecuencia de registro, no un pesaje exacto de kilos.</div>
+    </div>`;
+  } else {
+    html += `<div class="consejo-card">
+      <div class="consejo-titulo">📊 Actividad del último año</div>
+      <div class="consejo-texto"><strong>${cosechasRegistradas} cosecha${cosechasRegistradas!==1?'s':''}</strong> registrada${cosechasRegistradas!==1?'s':''} de <strong>${cultivosDistintosCosechados} cultivo${cultivosDistintosCosechados!==1?'s':''} distinto${cultivosDistintosCosechados!==1?'s':''}</strong>. Este dato mide la frecuencia con la que registras cosechas, no el peso exacto — para más precisión, anota cantidades aproximadas en la nota de cada entrada del Diario.</div>
+    </div>`;
+  }
+
+  html += `<div style="font-size:0.72rem;color:var(--gris);margin:10px 0 8px;text-align:center;">👆 Toca cualquier elemento para marcarlo o desmarcarlo a mano</div>`;
+
+  html += items.map((i, idx)=>{
+    const estado = i.cumplido===true ? '✅' : '⬜';
     const bgColor = i.cumplido===true ? '#EAF5E0' : 'white';
-    html += `<div style="background:${bgColor};border-radius:9px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    const puedeMarcar = idx !== 11; // el diario (índice 11) sigue siendo 100% automático
+    return `<div onclick="${puedeMarcar ? `toggleChecklistItem(${idx})` : ''}" style="background:${bgColor};border-radius:9px;padding:11px 13px;margin-bottom:7px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);${puedeMarcar ? 'cursor:pointer;' : ''}">
       <span style="font-size:1.2rem;">${estado}</span>
       <div style="flex:1;">
-        <div style="font-weight:700;font-size:0.83rem;">${i.emoji} ${i.texto}</div>
+        <div style="font-weight:700;font-size:0.83rem;">${i.emoji} ${i.texto} ${i.esManual ? '<span style="font-size:0.62rem;font-weight:700;color:var(--gris);">(marcado a mano)</span>' : ''}</div>
         ${i.cumplido!==true ? `<div style="font-size:0.74rem;color:var(--gris);margin-top:2px;">${i.accion}</div>` : ''}
       </div>
     </div>`;
-  });
+  }).join('');
 
   document.getElementById('auto-contenido').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// IDENTIFICAR PLANTA POR FOTO (Google Gemini)
+// ══════════════════════════════════════════
+
+let imagenPlantaBase64 = null;
+let imagenPlantaMimeType = null;
+
+function cargarApiKey(){
+  return localStorage.getItem('hj-gemini-key') || '';
+}
+
+function guardarApiKey(){
+  const key = document.getElementById('input-api-key').value.trim();
+  if(!key){ alert('Pega tu clave antes de guardar.'); return; }
+  const formatoValido = key.startsWith('AIza') || key.startsWith('AQ.');
+  if(!formatoValido){
+    if(!confirm('Esta clave no tiene el formato habitual de Google (ni "AIza..." ni "AQ...."). ¿Guardar de todas formas?')) return;
+  }
+  localStorage.setItem('hj-gemini-key', key);
+  document.getElementById('input-api-key').value = '';
+  actualizarEstadoApiKey();
+}
+
+function borrarApiKey(){
+  if(!confirm('¿Borrar la clave guardada de este dispositivo?')) return;
+  localStorage.removeItem('hj-gemini-key');
+  actualizarEstadoApiKey();
+}
+
+function actualizarEstadoApiKey(){
+  const key = cargarApiKey();
+  const el = document.getElementById('estado-api-key');
+  if(!el) return;
+  if(key){
+    el.innerHTML = `<span style="color:var(--oliva);">✅ Clave guardada</span> <button onclick="borrarApiKey()" style="background:transparent;border:none;color:#CC0A0A;font-size:0.68rem;text-decoration:underline;cursor:pointer;margin-left:6px;">borrar</button>`;
+  } else {
+    el.innerHTML = `<span style="color:var(--arcilla);">⚠️ Sin configurar</span>`;
+  }
+}
+
+function procesarFotoPlanta(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      // Redimensiona a un máximo de 1024px en el lado más largo para evitar bodies enormes
+      // que fallan silenciosamente ("Load failed") al enviar por fetch desde móvil.
+      const MAX_LADO = 1024;
+      let w = img.width;
+      let h = img.height;
+      if(w > MAX_LADO || h > MAX_LADO){
+        if(w > h){ h = Math.round(h * (MAX_LADO/w)); w = MAX_LADO; }
+        else { w = Math.round(w * (MAX_LADO/h)); h = MAX_LADO; }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Siempre reexportamos como JPEG de calidad 0.8: reduce mucho el peso del body
+      const resultadoComprimido = canvas.toDataURL('image/jpeg', 0.8);
+      imagenPlantaMimeType = 'image/jpeg';
+      imagenPlantaBase64 = resultadoComprimido.split(',')[1];
+
+      document.getElementById('preview-imagen').src = resultadoComprimido;
+      document.getElementById('preview-imagen-wrap').style.display = 'block';
+      document.getElementById('placeholder-camara').style.display = 'none';
+
+      const btn = document.getElementById('btn-analizar-planta');
+      btn.disabled = false;
+      btn.style.background = 'var(--oliva)';
+      btn.style.cursor = 'pointer';
+
+      document.getElementById('resultado-identificacion').innerHTML = '';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analizarPlanta(){
+  const apiKey = cargarApiKey();
+  if(!apiKey){
+    alert('Primero pega y guarda tu clave de Google Gemini arriba.');
+    return;
+  }
+  if(!imagenPlantaBase64){
+    alert('Primero haz o sube una foto.');
+    return;
+  }
+
+  const resultDiv = document.getElementById('resultado-identificacion');
+  const btn = document.getElementById('btn-analizar-planta');
+  btn.disabled = true;
+  btn.textContent = '🔄 Analizando...';
+  const pesoKB = Math.round((imagenPlantaBase64.length * 0.75) / 1024);
+  resultDiv.innerHTML = `<div style="text-align:center;padding:24px;color:var(--gris);">
+    <div style="font-size:2rem;margin-bottom:8px;">🔬</div>
+    <div style="font-size:0.85rem;">Analizando la foto, un momento...</div>
+    <div style="font-size:0.68rem;margin-top:6px;opacity:0.7;">Imagen comprimida: ~${pesoKB} KB</div>
+  </div>`;
+
+  const promptTexto = `Eres un experto agrónomo especializado en huertos mediterráneos de la provincia de Jaén, España (clima mediterráneo continental, vega del Guadalquivir cerca de Espeluy y Mengíbar).
+
+Analiza la imagen de esta planta y responde ÚNICAMENTE con un JSON válido (sin \`\`\`json ni texto adicional antes o después), con esta estructura exacta:
+
+{
+  "especie": "nombre común de la planta en español",
+  "nombre_cientifico": "nombre científico si lo identificas, o vacío si no estás seguro",
+  "confianza": "alta/media/baja",
+  "estado_salud": "sana/leve/preocupante/grave",
+  "resumen_estado": "una frase breve resumiendo cómo está la planta",
+  "problemas_detectados": ["lista de problemas visibles: plagas, carencias, enfermedades, o vacía si está sana"],
+  "cuidados_recomendados": ["lista de 3-5 consejos concretos de cuidado, adaptados al clima de Jaén"],
+  "urgente": true o false (true si necesita atención en las próximas 48h)
+}
+
+Si la imagen no muestra claramente una planta o no puedes identificarla con ninguna confianza, usa "especie": "No identificada" y explica en "resumen_estado" por qué (mala luz, demasiado lejos, no es una planta, etc).`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: promptTexto },
+            { inline_data: { mime_type: imagenPlantaMimeType, data: imagenPlantaBase64 } }
+          ]
+        }],
+        generationConfig: { thinkingConfig: { thinkingBudget: 0 } }
+      })
+    });
+
+    if(!response.ok){
+      const errData = await response.json().catch(()=>({}));
+      throw new Error(errData?.error?.message || `Error HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textoRespuesta = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Limpia posibles restos de markdown ```json ... ```
+    const jsonLimpio = textoRespuesta.replace(/```json|```/g, '').trim();
+    const resultado = JSON.parse(jsonLimpio);
+
+    renderResultadoIdentificacion(resultado);
+
+  } catch(err){
+    const esFalloRed = (err.message||'').toLowerCase().includes('load failed') || (err.message||'').toLowerCase().includes('failed to fetch') || (err.message||'').toLowerCase().includes('network');
+    const mensaje = esFalloRed
+      ? 'No se pudo conectar con el servidor de Google. Comprueba tu conexión a internet (o desactiva el bloqueador de rastreadores/VPN si usas alguno) e inténtalo de nuevo.'
+      : (err.message || 'Error desconocido') + '. Comprueba que tu clave de API sea correcta.';
+
+    resultDiv.innerHTML = `<div style="background:#FDE8E8;border-radius:10px;padding:16px;border-left:4px solid #CC0A0A;">
+      <div style="font-weight:700;color:#CC0A0A;margin-bottom:6px;">⚠️ No se pudo analizar la imagen</div>
+      <div style="font-size:0.82rem;color:var(--gris);line-height:1.5;">${mensaje}</div>
+    </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 Analizar planta';
+  }
+}
+
+function renderResultadoIdentificacion(r){
+  const coloresEstado = {
+    'sana': { bg:'#EAF5E0', color:'#3D6B1A', icon:'✅' },
+    'leve': { bg:'#FFF4D8', color:'#C8900A', icon:'⚠️' },
+    'preocupante': { bg:'#FDE8D0', color:'#A0390A', icon:'🟠' },
+    'grave': { bg:'#FDE8E8', color:'#CC0A0A', icon:'🔴' },
+  };
+  const estilo = coloresEstado[r.estado_salud] || coloresEstado['leve'];
+
+  const problemasHtml = (r.problemas_detectados && r.problemas_detectados.length)
+    ? `<ul class="consejo-lista">${r.problemas_detectados.map(p=>`<li>${p}</li>`).join('')}</ul>`
+    : `<div style="font-size:0.8rem;color:var(--oliva);font-weight:600;">✅ No se detectan problemas visibles.</div>`;
+
+  const cuidadosHtml = (r.cuidados_recomendados && r.cuidados_recomendados.length)
+    ? `<ul class="consejo-lista">${r.cuidados_recomendados.map(c=>`<li>${c}</li>`).join('')}</ul>`
+    : '';
+
+  const urgenteHtml = r.urgente
+    ? `<div style="background:#CC0A0A;color:white;border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:0.78rem;font-weight:700;text-align:center;">🚨 Necesita atención en las próximas 48 horas</div>`
+    : '';
+
+  document.getElementById('resultado-identificacion').innerHTML = `
+    <div style="background:white;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.09);border-top:5px solid ${estilo.color};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;">${r.especie}</div>
+        <span style="font-size:0.68rem;font-weight:700;background:#F0F0F0;color:var(--gris);padding:2px 9px;border-radius:10px;">Confianza: ${r.confianza}</span>
+      </div>
+      ${r.nombre_cientifico ? `<div style="font-size:0.76rem;font-style:italic;color:var(--gris);margin-bottom:10px;">${r.nombre_cientifico}</div>` : ''}
+
+      <div style="background:${estilo.bg};border-radius:9px;padding:11px 13px;margin-bottom:14px;">
+        <div style="font-weight:700;font-size:0.85rem;color:${estilo.color};margin-bottom:3px;">${estilo.icon} Estado: ${r.estado_salud}</div>
+        <div style="font-size:0.8rem;color:var(--tierra);">${r.resumen_estado}</div>
+      </div>
+
+      ${urgenteHtml}
+
+      <div class="modal-seccion">
+        <h4>🔍 Problemas detectados</h4>
+        ${problemasHtml}
+      </div>
+
+      ${cuidadosHtml ? `<div class="modal-seccion"><h4>💡 Cuidados recomendados</h4>${cuidadosHtml}</div>` : ''}
+
+      <button onclick="reiniciarIdentificacion()" style="width:100%;background:var(--crema);color:var(--tierra);border:1.5px solid #D0C9BC;border-radius:8px;padding:10px;font-size:0.8rem;font-weight:700;cursor:pointer;margin-top:8px;">📷 Analizar otra foto</button>
+    </div>
+  `;
+}
+
+function reiniciarIdentificacion(){
+  imagenPlantaBase64 = null;
+  imagenPlantaMimeType = null;
+  document.getElementById('preview-imagen-wrap').style.display = 'none';
+  document.getElementById('placeholder-camara').style.display = 'block';
+  document.getElementById('input-foto-camara').value = '';
+  document.getElementById('input-foto-galeria').value = '';
+  document.getElementById('resultado-identificacion').innerHTML = '';
+  const btn = document.getElementById('btn-analizar-planta');
+  btn.disabled = true;
+  btn.style.background = '#CCC';
+  btn.style.cursor = 'not-allowed';
+}
+
+function initIdentificarPlanta(){
+  actualizarEstadoApiKey();
 }
 
 function descargar(){
@@ -4743,6 +5442,7 @@ window.onload=function(){
   renderFitoveterinaria();
   setTimeout(initPlano, 150);
   renderAutosuficiencia();
+  initIdentificarPlanta();
 };
 </script>
 </body>
