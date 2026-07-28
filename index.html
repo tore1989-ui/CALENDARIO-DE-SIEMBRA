@@ -663,8 +663,21 @@
 <!-- ══════════════ PLAGAS ══════════════ -->
 <div class="vista" id="vista-plagas">
   <h2 class="seccion-titulo">🐛 Plagas y Enfermedades Frecuentes</h2>
-  <input type="text" class="buscador" placeholder="Buscar plaga o cultivo afectado..." oninput="buscarPlaga(this.value)">
-  <div id="lista-plagas"></div>
+  <div class="filtros" style="margin-bottom:10px;">
+    <button class="filtro-btn on" onclick="mostrarSeccionPlagas('lista',this)">📋 Plagas y remedios</button>
+    <button class="filtro-btn" onclick="mostrarSeccionPlagas('caseros',this)">🧪 Elabora tus remedios</button>
+  </div>
+  <div id="plagas-lista-wrap">
+    <input type="text" class="buscador" placeholder="Buscar plaga o cultivo afectado..." oninput="buscarPlaga(this.value)">
+    <div id="lista-plagas"></div>
+  </div>
+  <div id="plagas-caseros-wrap" style="display:none;">
+    <div class="info-banner">
+      <span class="icon">🧪</span>
+      <span>Prepara tus propios insecticidas y repelentes naturales a partir de plantas del huerto o de la sierra. Más baratos que los comprados y sin residuos químicos.</span>
+    </div>
+    <div id="lista-remedios-caseros"></div>
+  </div>
 </div>
 
 <!-- ══════════════ RIEGO ══════════════ -->
@@ -706,6 +719,14 @@
     <button class="filtro-btn" data-animal="patos" onclick="filtrarAnimal('patos',this)">🦆 Patos</button>
     <button class="filtro-btn" data-animal="palomas" onclick="filtrarAnimal('palomas',this)">🕊️ Palomas</button>
     <button class="filtro-btn" data-animal="ovejas" onclick="filtrarAnimal('ovejas',this)">🐑 Ovejas</button>
+    <button class="filtro-btn" data-animal="pavos" onclick="filtrarAnimal('pavos',this)">🦃 Pavos</button>
+    <button class="filtro-btn" data-animal="burro" onclick="filtrarAnimal('burro',this)">🫏 Burro</button>
+    <button class="filtro-btn" data-animal="perroguarda" onclick="filtrarAnimal('perroguarda',this)">🐕 Perro de guarda</button>
+    <button class="filtro-btn" data-animal="gansos" onclick="filtrarAnimal('gansos',this)">🦢 Gansos</button>
+    <button class="filtro-btn" data-animal="vacalechera" onclick="filtrarAnimal('vacalechera',this)">🐄 Vaca lechera</button>
+    <button class="filtro-btn" data-animal="codornices" onclick="filtrarAnimal('codornices',this)">🐦 Codornices</button>
+    <button class="filtro-btn" data-animal="pintadas" onclick="filtrarAnimal('pintadas',this)">🦃 Pintadas</button>
+    <button class="filtro-btn" data-animal="cerdovietnamita" onclick="filtrarAnimal('cerdovietnamita',this)">🐖 Cerdo vietnamita</button>
   </div>
   <div id="lista-animales"></div>
 </div>
@@ -806,7 +827,10 @@
       <label style="font-size:0.7rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">Nota</label>
       <textarea id="diario-nota" rows="3" placeholder="Describe lo que has hecho, observado o cualquier dato de interés..." style="width:100%;padding:8px;border:1.5px solid #D0C9BC;border-radius:7px;font-family:Inter,sans-serif;font-size:0.82rem;resize:vertical;background:var(--crema);"></textarea>
     </div>
-    <button onclick="guardarEntradaDiario()" style="width:100%;background:var(--oliva);color:white;border:none;border-radius:8px;padding:11px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">✅ Guardar entrada</button>
+    <div style="display:flex;gap:8px;">
+      <button id="btn-guardar-diario" onclick="guardarEntradaDiario()" style="flex:1;background:var(--oliva);color:white;border:none;border-radius:8px;padding:11px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">✅ Guardar entrada</button>
+      <button onclick="cancelarEdicionDiario()" title="Cancelar edición y limpiar el formulario" style="background:transparent;border:1.5px solid #D0C9BC;color:var(--gris);border-radius:8px;padding:11px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;">✕</button>
+    </div>
   </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
@@ -1147,6 +1171,69 @@ function mesesOrdenados(){
   return Array.from({length:12},(_,i)=>(MES_ACTUAL+i)%12);
 }
 
+// ══════ RECONOCEDOR DE TEMPORADA EN TEXTO LIBRE ══════
+// Detecta si el mes actual (o el indicado) cae dentro de un texto de temporada
+// como "Junio–agosto", "Octubre-noviembre", "Prácticamente todo el año", etc.
+// Se usa para ordenar por "de temporada ahora" en pestañas que no usan arrays de meses (0-11)
+// sino descripciones libres (Frutales, Conservas, Setas, Cereales, Aromáticas, Medicinales).
+const NOMBRES_MES_BUSQUEDA = [
+  ['enero'],['febrero'],['marzo'],['abril'],['mayo'],['junio'],
+  ['julio'],['agosto'],['septiembre','setiembre'],['octubre'],['noviembre'],['diciembre']
+];
+
+function normalizarTexto(s){
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita acentos
+    .replace(/[–—]/g,'-'); // unifica guiones/en-dash a guion normal
+}
+
+function estaEnTemporadaTexto(texto, mesRef){
+  if(!texto) return false;
+  const mes = (mesRef===undefined) ? MES_ACTUAL : mesRef;
+  const t = normalizarTexto(texto);
+
+  if(t.includes('todo el ano') || t.includes('todo el año')) return true;
+
+  // Encuentra todas las posiciones de nombres de mes en el texto, en orden de aparición
+  const encontrados = [];
+  NOMBRES_MES_BUSQUEDA.forEach((variantes, idx)=>{
+    variantes.forEach(v=>{
+      let pos = t.indexOf(v);
+      while(pos !== -1){
+        encontrados.push({idx, pos});
+        pos = t.indexOf(v, pos+1);
+      }
+    });
+  });
+  if(!encontrados.length) return false;
+  encontrados.sort((a,b)=>a.pos-b.pos);
+
+  // Agrupa en pares consecutivos como posibles rangos "MesA...MesB"
+  for(let i=0;i<encontrados.length;i++){
+    const actual = encontrados[i].idx;
+    const siguiente = encontrados[i+1] ? encontrados[i+1].idx : null;
+
+    if(siguiente!==null){
+      // Comprueba si hay un guion entre ambos (patrón de rango) en una ventana razonable de texto
+      const entre = t.substring(encontrados[i].pos, encontrados[i+1].pos);
+      const esRango = entre.includes('-') && entre.length < 25;
+      if(esRango){
+        if(actual <= siguiente){
+          if(mes>=actual && mes<=siguiente) return true;
+        } else {
+          // Rango que cruza fin de año, ej: Noviembre-Febrero
+          if(mes>=actual || mes<=siguiente) return true;
+        }
+        i++; // ya consumido el par
+        continue;
+      }
+    }
+    // Mes suelto sin rango: cuenta como coincidencia directa de ese único mes
+    if(mes===actual) return true;
+  }
+  return false;
+}
+
 // ══════ CULTIVOS ══════
 const CULTIVOS = [
   { nombre:'Tomate',emoji:'🍅',cat:'frutales',
@@ -1369,6 +1456,66 @@ const CULTIVOS = [
     profundidad:'0.3 cm',marco:'15×20 cm',temp:'10–22 °C',dias_germinar:'5–7 días',
     consejos:['Crecimiento ultrarrápido: 4-6 semanas hasta la primera cosecha','Cosecha hoja a hoja para prolongar la producción varios meses','Bolta rápido con calor: mejor otoño-invierno en Jaén','Siembra escalonada cada 2 semanas para cosecha continua','Deja algunas plantas florecer: las flores blancas también son comestibles'],
     descripcion:'La rúcula es de los cultivos más rápidos y agradecidos, perfecta para principiantes en el huerto jiennense.' },
+  { nombre:'Espárrago',emoji:'🌱',cat:'hortalizas',
+    semillero:[],trasplante:[10,11,1,2],directa:[],cosecha:[2,3,4],
+    profundidad:'—',marco:'40×150 cm',temp:'12–20 °C',dias_germinar:'—',
+    consejos:['Se planta de "garra" (raíz de 1-2 años), no de semilla, para adelantar la cosecha','El primer y segundo año no se cosecha: deja que la planta se desarrolle','A partir del tercer año, corta los turiones cuando asomen 15-20 cm sobre la tierra','Cultivo perenne: un buen espárrago puede producir 10-15 años','Aporca (amontona tierra) para conseguir espárragos blancos, o déjalo al sol para verdes'],
+    descripcion:'El espárrago es un cultivo de paciencia pero muy agradecido a largo plazo. Con un buen "esparraguero" tendrás cosecha temprana de primavera durante más de una década.' },
+  { nombre:'Colinabo',emoji:'🥬',cat:'hortalizas',
+    semillero:[7,8],trasplante:[8,9],directa:[8,9],cosecha:[10,11,12,1],
+    profundidad:'0.5 cm',marco:'30×30 cm',temp:'10–20 °C',dias_germinar:'7–10 días',
+    consejos:['Cosecha cuando el bulbo tenga el tamaño de una pelota de tenis: más grande se vuelve leñoso','Tolera bien el frío, similar a otras crucíferas de invierno','Riego regular para un crecimiento sin rajaduras','Las hojas también son comestibles, similares a la col','Poco conocido en Jaén pero de sabor suave entre col y nabo'],
+    descripcion:'El colinabo es una crucífera poco habitual en los huertos jiennenses pero de cultivo sencillo y muy nutritiva, ideal para el huerto de invierno.' },
+  { nombre:'Ruibarbo',emoji:'🌿',cat:'hortalizas',
+    semillero:[],trasplante:[10,11,1,2],directa:[],cosecha:[3,4,5],
+    profundidad:'—',marco:'80×80 cm',temp:'10–20 °C',dias_germinar:'—',
+    consejos:['Se planta de rizoma (esqueje de raíz), no suele germinar bien de semilla','Solo se comen los tallos (pecíolos): las hojas son tóxicas por el ácido oxálico','Cultivo perenne que dura años en el mismo sitio una vez establecido','En el calor extremo de Jaén, dale semisombra en verano para que no sufra','Cosecha tirando de los tallos hacia la base, no cortando'],
+    descripcion:'El ruibarbo es poco habitual en Jaén por el calor, pero se puede cultivar en un rincón con algo de sombra. Sus tallos ácidos son la base de mermeladas y postres tradicionales del norte de Europa.' },
+  { nombre:'Cardo',emoji:'🥬',cat:'hortalizas',
+    semillero:[2,3],trasplante:[4,5],directa:[3,4],cosecha:[10,11,12],
+    profundidad:'2 cm',marco:'50×80 cm',temp:'12–22 °C',dias_germinar:'10–15 días',
+    consejos:['Ata las pencas y cúbrelas con cartón o paja 3-4 semanas antes de cosechar para blanquearlas','Cultivo tradicional navideño en muchas casas de Jaén, guiso clásico en Nochebuena','Necesita bastante espacio y riego regular en verano','Cosecha completa de la planta, no parcial como la acelga','El cardo blanqueado es menos amargo y más tierno que el verde'],
+    descripcion:'El cardo es un cultivo tradicional navideño muy arraigado en la cocina jiennense, protagonista del guiso de cardo con almendras en Nochebuena.' },
+  { nombre:'Guindilla',emoji:'🌶️',cat:'frutales',
+    semillero:[1,2,3],trasplante:[4,5],directa:[],cosecha:[7,8,9,10],
+    profundidad:'0.5 cm',marco:'40×50 cm',temp:'20–30 °C',dias_germinar:'10–20 días',
+    consejos:['Cultivo idéntico al pimiento pero con frutos pequeños y picantes','Cuanto más calor y estrés hídrico moderado, más picante sale el fruto','Recolecta verde para encurtir o deja madurar a rojo para secar','Se seca muy bien colgada en ristras al sol del verano jiennense','Muy productiva: una sola planta da decenas de guindillas'],
+    descripcion:'La guindilla se cultiva igual que el pimiento pero es mucho más resistente y productiva, perfecta para encurtidos y para secar en ristras tradicionales.' },
+  { nombre:'Col lombarda',emoji:'🥬',cat:'hortalizas',
+    semillero:[7,8],trasplante:[9,10],directa:[],cosecha:[11,12,1,2],
+    profundidad:'0.5 cm',marco:'50×50 cm',temp:'10–20 °C',dias_germinar:'7–14 días',
+    consejos:['Cultivo idéntico a la col blanca pero de color morado intenso','El color se debe a antocianinas: cocinar con una gota de vinagre mantiene el color vivo','Muy resistente al frío del invierno jiennense','Plato clásico navideño en muchas casas: lombarda con manzana','Vigila la misma oruga de la col que ataca a las demás crucíferas'],
+    descripcion:'La col lombarda es un clásico navideño en la cocina jiennense y se cultiva exactamente igual que la col blanca, con la misma resistencia al frío invernal.' },
+  { nombre:'Endivia',emoji:'🥬',cat:'hortalizas',
+    semillero:[4,5],trasplante:[6,7],directa:[],cosecha:[11,12,1,2],
+    profundidad:'0.5 cm',marco:'25×30 cm',temp:'10–18 °C',dias_germinar:'5–10 días',
+    consejos:['Cultivo en dos fases: primero la raíz en verano, luego forzado en oscuridad para el cogollo blanco','Arranca la raíz en otoño, corta las hojas y entiérrala en arena en un lugar oscuro','El cogollo blanco crece en 3-4 semanas sin luz: por eso no amarga tanto','Cultivo algo laborioso pero de resultado muy apreciado en ensaladas de invierno','Guarda las raíces en un lugar fresco entre forzados sucesivos para cosecha escalonada'],
+    descripcion:'La endivia tiene un cultivo particular en dos fases que la hace poco habitual en huertos familiares, pero con paciencia se consigue el característico cogollo blanco de invierno.' },
+  { nombre:'Okra / Quingombó',emoji:'🌿',cat:'hortalizas',
+    semillero:[3,4],trasplante:[4,5],directa:[4,5],cosecha:[6,7,8,9],
+    profundidad:'2 cm',marco:'50×70 cm',temp:'20–32 °C',dias_germinar:'7–14 días',
+    consejos:['Ama el calor extremo del verano jiennense, de los cultivos más resistentes a las altas temperaturas','Recolecta las vainas jóvenes, de 5-8 cm: si se dejan crecer más se vuelven fibrosas','Cosecha cada 2-3 días para estimular nueva producción','Riego moderado, tolera bien la sequía una vez establecida','Muy usada en guisos y como espesante natural por su mucílago'],
+    descripcion:'La okra es un cultivo poco conocido en Jaén pero perfectamente adaptado al calor extremo de julio-agosto, con muy buena producción y escasas necesidades de riego.' },
+  { nombre:'Perifollo',emoji:'🌿',cat:'hierbas',
+    semillero:[],trasplante:[],directa:[2,3,9,10],cosecha:[4,5,11,12],
+    profundidad:'0.3 cm',marco:'15×20 cm',temp:'10–18 °C',dias_germinar:'7–14 días',
+    consejos:['Siembra directa, no tolera bien el trasplante','Prefiere semisombra y frescor, sufre mucho con el calor de verano','Cosecha las hojas jóvenes, pierde sabor si se deja madurar demasiado','Siembra escalonada cada 3 semanas para cosecha continua','En Jaén rinde mejor en otoño-invierno que en primavera avanzada'],
+    descripcion:'El perifollo es una hierba delicada de sabor anisado, poco cultivada en Jaén pero que se adapta bien a los meses frescos del año en zonas de semisombra del huerto.' },
+  { nombre:'Borraja',emoji:'🌸',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[2,3,9,10],cosecha:[4,5,6,11,12],
+    profundidad:'1 cm',marco:'40×40 cm',temp:'10–24 °C',dias_germinar:'7–14 días',
+    consejos:['Las hojas jóvenes se cocinan como verdura, plato tradicional en muchas casas de Jaén','Sus flores azules son comestibles y muy decorativas en ensaladas','Se resiembra sola año tras año una vez establecida','Muy atractiva para las abejas: buena planta melífera para el huerto','Riego regular, no tolera bien la sequía prolongada'],
+    descripcion:'La borraja es una hortaliza tradicional muy arraigada en la cocina jiennense, con sus pencas como verdura de guarnición y sus flores azules como decoración comestible.' },
+  { nombre:'Verdolaga',emoji:'🌿',cat:'hortalizas',
+    semillero:[],trasplante:[],directa:[4,5,6],cosecha:[6,7,8,9],
+    profundidad:'0.3 cm',marco:'20×20 cm',temp:'18–30 °C',dias_germinar:'5–10 días',
+    consejos:['De los cultivos más resistentes al calor extremo y la sequía de todo el huerto','Crece casi silvestre en muchos huertos jiennenses sin apenas cuidados','Cosecha los tallos y hojas tiernas, se resiembra sola con facilidad','Rica en omega-3, cada vez más valorada en la cocina saludable','Se puede comer cruda en ensalada o cocinada como verdura'],
+    descripcion:'La verdolaga es una planta muy rústica que crece casi sola en el calor jiennense de verano, tradicionalmente considerada mala hierba pero de gran valor nutricional y culinario.' },
+  { nombre:'Chufa',emoji:'🌾',cat:'legumbres',
+    semillero:[],trasplante:[],directa:[4,5],cosecha:[10,11],
+    profundidad:'5 cm',marco:'20×40 cm',temp:'18–28 °C',dias_germinar:'15–20 días',
+    consejos:['Necesita suelo suelto y arenoso para que los tubérculos se desarrollen bien','Riego regular durante todo el verano, es más exigente en agua que otras raíces','Cosecha cuando las hojas amarillean, escarba con cuidado para no dañar los tubérculos','Los tubérculos se secan al sol antes de guardar o usar para horchata','Cultivo tradicional de la huerta valenciana que se adapta bien a la vega jiennense con riego suficiente'],
+    descripcion:'La chufa es la base de la horchata tradicional. Necesita riego constante en verano pero se adapta bien a los suelos sueltos de la vega jiennense.' },
 ];
 
 // ══════ CONSEJOS POR MES ══════
@@ -1461,6 +1608,12 @@ const PLAGAS = [
   {nombre:'Nemátodos del suelo',cultivos:'Tomate, pimiento, zanahoria, patata',descripcion:'Gusanos microscópicos que atacan las raíces causando agallas y debilidad general. Problema serio en monocultivo.',remedio:'🌱 Rotación de cultivos. Tagetes como cultivo trampa. Solarización del suelo en verano (plástico 6 semanas).'},
   {nombre:'Gorgojo del garbanzo',cultivos:'Garbanzo, lenteja, judía (en almacén)',descripcion:'Coleóptero que ataca los granos almacenados. Las larvas devoran el grano.',remedio:'🫙 Guarda en recipientes herméticos. Congela los granos 4 días antes de guardar. Hoja de laurel en los tarros.'},
   {nombre:'Minador de hojas',cultivos:'Tomate, pimiento, lechuga, espinaca',descripcion:'Larva de mosca que hace galerías sinuosas dentro de las hojas visibles como dibujos plateados.',remedio:'✏️ Elimina hojas muy afectadas. Trampas amarillas para adultos. Aceite de neem.'},
+  {nombre:'Garrapatas',cultivos:'Animales del huerto (gallinas, cabras, perros), no cultivos vegetales',descripcion:'Ácaro parásito que se agarra a la piel de animales y personas, especialmente en primavera-verano junto a vegetación alta y linderos. Puede transmitir enfermedades como la piroplasmosis en el ganado.',remedio:'🕷️ Tierra de diatomeas en instalaciones. Aceite de neem diluido en el pelaje. Siega la hierba alta de linderos. Revisión diaria de los animales en temporada alta. Ver ficha completa en Fitoveterinaria.'},
+  {nombre:'Ratas y ratones de campo',cultivos:'Cereales almacenados, semilleros, tubérculos (patata, boniato), huevos de gallinero',descripcion:'Roedores que atacan el grano almacenado, roen tubérculos en el suelo y pueden entrar en gallineros a robar huevos o pollitos. Muy atraídos por el pienso de los animales.',remedio:'🐀 Guarda cereal y pienso en recipientes metálicos herméticos, nunca en sacos abiertos. Trampas mecánicas o de caja en accesos habituales. Mantén el gallinero bien sellado por la noche. Un gato o la presencia de perros ayuda a controlar la población.'},
+  {nombre:'Topos y ratopines',cultivos:'Zanahoria, patata, ajo, cebolla y raíces en general',descripcion:'Excavan galerías subterráneas que dañan directamente las raíces de los cultivos y airean en exceso el suelo, secando las raíces cercanas al túnel.',remedio:'⛏️ Trampas de tenaza específicas para topo colocadas en la galería activa (identifícala por montículos recientes de tierra). Plantar ricino o fritillaria imperial como repelente disuade su presencia. Riega bien tras cerrar galerías para asentar la tierra junto a las raíces.'},
+  {nombre:'Jabalí',cultivos:'Patata, maíz, tubérculos, cualquier cultivo cerca de zonas de monte',descripcion:'Puede entrar de noche en huertos cercanos a zonas de monte o sierra, destrozando bancales enteros al hozar buscando lombrices, tubérculos o restos de cosecha.',remedio:'🐗 Vallado perimetral resistente de al menos 1.2 m, enterrado 30 cm en el suelo (excavan por debajo). Luces con sensor de movimiento por la noche. Evita dejar restos de cosecha o compost sin cubrir cerca del vallado.'},
+  {nombre:'Conejo y liebre silvestre',cultivos:'Lechuga, judía tierna, brotes jóvenes de cualquier hortaliza',descripcion:'Especialmente dañinos en semilleros recién trasplantados y brotes tiernos, a los que pueden arrasar en una sola noche en huertos cercanos a zonas de monte bajo.',remedio:'🐇 Malla de gallinero de 60-90 cm de altura alrededor del huerto, enterrada 15 cm. Protege individualmente los plantones más jóvenes con botellas cortadas o mallas pequeñas hasta que crezcan.'},
+  {nombre:'Palomas y estorninos',cultivos:'Semilleros recién sembrados, cerezas, higos, uvas y frutos maduros',descripcion:'Aves que pueden arrancar semillas recién sembradas antes de germinar, y en bandada arrasar la cosecha de fruta madura de higueras o parras en pocos días.',remedio:'🕊️ Malla antipájaros sobre semilleros hasta la germinación. Cintas reflectantes o siluetas de rapaz colgadas cerca de árboles frutales en maduración. Espantapájaros con movimiento son más eficaces que los estáticos.'},
 ];
 
 // ══════ RIEGO ══════
@@ -1701,6 +1854,130 @@ function renderConsejos(){
   document.getElementById('lista-consejos').innerHTML=html;
 }
 
+// ══════ REMEDIOS CASEROS ELABORABLES ══════
+const REMEDIOS_CASEROS = [
+  { nombre:'Aceite de Neem casero (a partir de semillas)', emoji:'🌰', tipo:'insecticida/repelente',
+    descripcion:'El aceite de neem se extrae de las semillas del árbol Azadirachta indica. Su principio activo, la azadiractina, es uno de los insecticidas naturales más potentes que existen: no mata al insecto directamente sino que interrumpe su ciclo de alimentación y reproducción, por lo que es muy seguro para abejas si se aplica al atardecer, cuando no están activas.',
+    ingredientes:['200g de semillas secas de neem (se compran online si no tienes árbol; el árbol no es habitual en Jaén por el frío invernal)','500ml de alcohol de 96° o aceite vegetal neutro (girasol) como disolvente','Frasco de cristal oscuro con tapa','Colador fino o gasa','Botella spray para el uso final'],
+    elaboracion:[
+      'Machaca o muele las semillas de neem hasta obtener un polvo grueso.',
+      'Introduce el polvo en el frasco de cristal y cúbrelo completamente con el alcohol o el aceite vegetal.',
+      'Cierra bien y deja macerar en un lugar oscuro y fresco durante 2-3 semanas, agitando el frasco cada 2-3 días.',
+      'Pasado ese tiempo, cuela el líquido con la gasa, exprimiendo bien el residuo sólido para aprovechar todo el aceite extraído.',
+      'Guarda el concentrado en un frasco de cristal oscuro, bien cerrado, en lugar fresco: se conserva 6-12 meses.',
+    ],
+    uso_final:'Para pulverizar: diluye 5-10ml del concentrado + 1ml de jabón potásico (como emulsionante) en 1 litro de agua tibia. Agita bien antes de cada uso, ya que el aceite y el agua se separan. Aplica al atardecer, nunca en flor abierta con abejas presentes.',
+    consejos:['Si usas alcohol como disolvente, este se evapora en el proceso de maceración y solo queda el aceite activo','La compra de semillas de neem por internet es la vía más habitual en España, ya que el árbol no tolera las heladas de Jaén','Un lote de 200g de semillas puede rendir varios litros de producto final diluido','Aplica siempre una prueba en una sola hoja 24h antes de tratar toda la planta, por si hay sensibilidad']
+  },
+  { nombre:'Aceite de ajo y guindilla (repelente picante)', emoji:'🌶️', tipo:'repelente de insectos y mamíferos',
+    descripcion:'El extracto de guindilla (ají picante) combinado con ajo es uno de los repelentes más fáciles y baratos de elaborar en cualquier huerto de Jaén, donde tanto el ajo como la guindilla se cultivan sin problema. Repele pulgón, mosca blanca y también disuade a conejos y otros mamíferos pequeños de mordisquear los brotes.',
+    ingredientes:['5-6 guindillas picantes frescas o secas (cultivadas en el propio huerto)','1 cabeza de ajo entera','1 litro de agua','1 cucharada de jabón potásico o jabón de Marsella rallado','Colador o gasa'],
+    elaboracion:[
+      'Trocea las guindillas y machaca los dientes de ajo pelados.',
+      'Ponlos a hervir en el litro de agua durante 15-20 minutos a fuego bajo, con la olla tapada.',
+      'Deja enfriar completamente y déjalo reposar toda la noche para que se concentren bien los principios activos.',
+      'Cuela el líquido con la gasa para retirar todos los sólidos.',
+      'Añade el jabón potásico al líquido colado y remueve bien: actúa como emulsionante y ayuda a que el preparado se adhiera a las hojas.',
+    ],
+    uso_final:'Aplica sin diluir más, directamente en spray sobre las hojas afectadas, por la mañana temprano o al atardecer. Repite cada 5-7 días o tras lluvia. Se conserva en nevera hasta 2 semanas.',
+    consejos:['Usa guantes al manipular la guindilla concentrada: puede irritar la piel y sobre todo los ojos','No apliques en días de más de 30°C ni en pleno sol directo: puede quemar las hojas más tiernas','Combina bien con el aceite de neem alternando semanas para reforzar el efecto sin generar resistencias','También es eficaz espolvoreado en polvo seco de guindilla alrededor de los bancales para disuadir a caracoles y algunos mamíferos']
+  },
+  { nombre:'Purín de ortiga (fertilizante y repelente)', emoji:'🌿', tipo:'fertilizante/repelente suave',
+    descripcion:'El purín de ortiga es el preparado casero más clásico de la agricultura ecológica. Además de fertilizar, su olor fermentado ahuyenta a varios insectos y refuerza las defensas naturales de la planta.',
+    ingredientes:['1 kg de ortigas frescas (con guantes para recolectar)','10 litros de agua (a poder ser de lluvia o de acequia, sin cloro)','Recipiente grande no metálico con tapa'],
+    elaboracion:[
+      'Trocea las ortigas frescas y sumérgelas en el agua dentro del recipiente.',
+      'Tapa sin cerrar herméticamente (debe poder salir el gas de la fermentación) y deja fermentar 1-2 semanas removiendo cada día.',
+      'Sabrás que está listo cuando deje de hacer espuma al remover.',
+      'Cuela el líquido y guarda el concentrado en un lugar fresco y oscuro, en botellas no completamente cerradas.',
+    ],
+    uso_final:'Como fertilizante: diluye al 10% (1 parte de purín por 9 de agua) y riega al pie de la planta cada 2 semanas. Como repelente foliar: diluye al 20% y pulveriza sobre las hojas contra pulgón.',
+    consejos:['El olor durante la fermentación es muy fuerte: prepáralo lejos de la vivienda','Cuanto más concentrado, más potente pero también más riesgo de quemar la planta: empieza siempre diluido','Puedes hacer lo mismo con consuelda en vez de ortiga, con efecto similar']
+  },
+  { nombre:'Jabón potásico casero (base para todos los preparados)', emoji:'🧼', tipo:'insecticida de contacto/emulsionante',
+    descripcion:'El jabón potásico es la base emulsionante de casi todos los remedios anteriores, y también funciona por sí solo como insecticida de contacto contra pulgón, mosca blanca y cochinilla, ya que disuelve la cutícula protectora de estos insectos de cuerpo blando.',
+    ingredientes:['200g de jabón de potasa natural (o jabón de Marsella/Castilla rallado como alternativa)','1 litro de agua caliente'],
+    elaboracion:[
+      'Ralla el jabón en trozos pequeños si no es ya líquido.',
+      'Disuélvelo completamente en el litro de agua caliente, removiendo bien hasta que no queden grumos.',
+      'Deja enfriar antes de usar o guardar.',
+    ],
+    uso_final:'Diluye 15-20ml de esta base por litro de agua para pulverizar directamente sobre pulgón, mosca blanca o cochinilla. Aplica a primera hora de la mañana y repite cada 4-5 días hasta controlar la plaga.',
+    consejos:['No uses jabones con detergentes sintéticos añadidos (lavavajillas industrial): dañan la planta','Es la base que se añade a casi todos los demás preparados para que se adhieran bien a la hoja','Muy eficaz y económico para infestaciones leves detectadas a tiempo']
+  },
+  { nombre:'Aceite de linaza casero (protector de madera y suplemento)', emoji:'🌾', tipo:'protector de madera / suplemento nutricional',
+    descripcion:'El aceite de linaza se obtiene de la semilla de lino y no se usa contra plagas como el neem, sino como protector natural de la madera de herramientas y estructuras del huerto (tutores, cajas, mangos), y también como suplemento nutricional rico en omega-3 para gallinas y otros animales, mejorando el color de la yema y el brillo del plumaje.',
+    ingredientes:['Semillas de lino (linaza) maduras y secas','Prensa de aceite manual o mortero robusto para machacar (para uso casero a pequeña escala, lo más práctico es comprar el aceite ya prensado en frío y usarlo directamente)'],
+    elaboracion:[
+      'Si dispones de una pequeña prensa manual de aceites: introduce las semillas de lino secas y prensa en frío, recogiendo el aceite que va saliendo.',
+      'Para un uso casero sin prensa, la alternativa práctica es adquirir aceite de linaza prensado en frío (alimentario, no el de uso industrial para pinturas) y usarlo directamente.',
+      'Si prefieres macerar en vez de prensar: machaca las semillas y déjalas en remojo con un poco de aceite de oliva suave durante 2 semanas, colando después; el resultado es menos concentrado que el aceite puro pero sirve igualmente para pequeños usos.',
+      'Guarda siempre en un recipiente oscuro y bien cerrado, ya que el aceite de linaza se oxida y enrancia con facilidad expuesto a la luz y el aire.'
+    ],
+    uso_final:'Para proteger madera: aplica una capa fina con un paño sobre mangos de herramientas, cajas de madera o tutores, deja secar 24h y repite si la madera lo absorbe mucho. Para animales: añade 1 cucharadita de aceite de linaza al pienso de las gallinas 2-3 veces por semana; mejora el color de la yema y la calidad del plumaje.',
+    consejos:['No confundir con el aceite de linaza de uso industrial para pinturas y barnices, que lleva secantes químicos añadidos y no es apto para consumo animal ni contacto con alimentos','El aceite alimentario prensado en frío es el único adecuado si vas a usarlo también en el pienso de los animales','Se enrancia con relativa rapidez una vez abierto: compra cantidades pequeñas y guarda en la nevera tras abrir','No es un remedio contra plagas de insectos como el neem: su función en el huerto es proteger madera y complementar la alimentación animal']
+  },
+];
+
+let seccionPlagasActual = 'lista';
+
+function mostrarSeccionPlagas(sec, btn){
+  seccionPlagasActual = sec;
+  document.querySelectorAll('#vista-plagas .filtro-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if(sec==='lista'){
+    document.getElementById('plagas-lista-wrap').style.display = 'block';
+    document.getElementById('plagas-caseros-wrap').style.display = 'none';
+  } else {
+    document.getElementById('plagas-lista-wrap').style.display = 'none';
+    document.getElementById('plagas-caseros-wrap').style.display = 'block';
+    renderRemediosCaseros();
+  }
+}
+
+function renderRemediosCaseros(){
+  let html = '';
+  REMEDIOS_CASEROS.forEach(r=>{
+    const pasosHtml = r.elaboracion.map((p,i)=>`
+      <div style="display:flex;gap:9px;margin-bottom:6px;">
+        <div style="min-width:22px;height:22px;background:var(--oliva);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:800;flex-shrink:0;">${i+1}</div>
+        <div style="font-size:0.79rem;line-height:1.5;padding-top:1px;">${p}</div>
+      </div>`).join('');
+    const consejosHtml = r.consejos.map(c=>`<li>${c}</li>`).join('');
+    html += `<div style="background:white;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid var(--oliva);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:1.8rem;">${r.emoji}</span>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;">${r.nombre}</div>
+          <div style="font-size:0.65rem;font-weight:700;background:#EEF7E0;color:var(--oliva);padding:2px 8px;border-radius:10px;display:inline-block;margin-top:3px;">${r.tipo}</div>
+        </div>
+      </div>
+      <p style="font-size:0.79rem;color:var(--gris);margin-bottom:11px;line-height:1.5;">${r.descripcion}</p>
+
+      <details style="margin-bottom:8px;">
+        <summary style="font-size:0.73rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">🧾 Ingredientes</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${r.ingredientes.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </details>
+
+      <details open style="margin-bottom:10px;">
+        <summary style="font-size:0.73rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">👩‍🔬 Elaboración paso a paso</summary>
+        <div style="margin-top:9px;">${pasosHtml}</div>
+      </details>
+
+      <div style="background:var(--crema);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:0.68rem;font-weight:800;color:var(--oliva);text-transform:uppercase;margin-bottom:3px;">💧 Cómo usarlo</div>
+        <div style="font-size:0.79rem;line-height:1.5;">${r.uso_final}</div>
+      </div>
+
+      <details>
+        <summary style="font-size:0.73rem;font-weight:800;color:var(--gris);text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;padding:5px 0;">💡 Consejos</summary>
+        <ul class="consejo-lista" style="margin-top:7px;">${consejosHtml}</ul>
+      </details>
+    </div>`;
+  });
+  document.getElementById('lista-remedios-caseros').innerHTML = html;
+}
+
 function renderPlagas(){ renderPlagasFiltradas(''); }
 function buscarPlaga(q){ renderPlagasFiltradas(q.toLowerCase()); }
 function renderPlagasFiltradas(q){
@@ -1926,6 +2203,14 @@ const AROMATICAS = [
     usos:['Vinagres y aceites aromatizados','Salsas clásicas (béarnesa, tártara)','Condimento en pollo y pescados','Infusión digestiva'],
     cultivo:['Solo propaga por división: las semillas dan estragón ruso sin aroma','Necesita algo más de agua que otras aromáticas','En verano puede secarse: rebrotará en otoño'],
     conservacion:'Mejor fresco o en vinagre. El secado le hace perder casi todo el aroma.'
+  },
+  { nombre:'Laurel', emoji:'🌿', familia:'Lauraceae',
+    ciclo:'Perenne (arbusto/arbolillo)', exposicion:'Sol a semisombra', agua:'Escasa una vez establecido',
+    siembra:'Esquejes en primavera–verano, o plantón comprado (crecimiento muy lento por semilla)', cosecha:'Todo el año',
+    descripcion:'El laurel es un arbusto perenne muy resistente que se cultiva con mínimos cuidados en Jaén. Sus hojas son imprescindibles en la cocina tradicional y también tienen propiedades repelentes de insectos en la despensa.',
+    usos:['Condimento clásico en guisos, caldos, legumbres y marinados','Hojas secas en la despensa: repelen la polilla y el gorgojo de las harinas y legumbres almacenadas','Infusión digestiva suave','Decoración y coronas ornamentales tradicionales'],
+    cultivo:['Muy tolerante a la poda: se puede formar en seto o incluso en topiario','Resiste bien la sequía una vez establecido, aunque agradece riego moderado el primer año','Puede sufrir quemaduras por heladas fuertes en zonas de sierra, pero en la vega se comporta bien','Se multiplica fácilmente por esquejes semileñosos en verano','Un solo arbusto adulto proporciona hojas de sobra para todo el año'],
+    conservacion:'Las hojas se secan muy bien a la sombra y ganan aroma con el secado. Guarda en tarro hermético; conservan sus propiedades durante 1-2 años.'
   },
 ];
 
@@ -2354,6 +2639,130 @@ const ANIMALES = [
     consejos:['La raza Segureña es la autóctona de Jaén: muy resistente al calor y de gran calidad cárnica','El pastoreo bajo el olivar es tradicional y beneficioso: limpia de hierba sin química','Las rastrojeras de cereal en verano son un recurso de pasto gratuito y muy valioso','Necesitan sal mineral disponible siempre, especialmente en época de cría','El estiércol de oveja es un abono excelente, algo menos fuerte que el de cabra o gallina'],
     alimentacion:'Pasto natural la mayor parte del año + suplemento de paja y pienso concentrado en verano y en gestación/lactancia. Heno de calidad en los meses de escasez. Sal mineral en bloque siempre disponible.',
   },
+  {
+    id:'pavos', nombre:'Pavos', emoji:'🦃',
+    descripcion:'El pavo es una excelente fuente de carne para ocasiones especiales, con un rendimiento cárnico mucho mayor que la gallina. Requiere algo más de espacio y cuidados en las primeras semanas, pero es muy resistente de adulto.',
+    espacio:'6–8 m² por pavo adulto + refugio cerrado por la noche',
+    inicio:'Comprar pavipollos en primavera (abril-mayo) para sacrificar en Navidad',
+    razas:'Pavo Negro (rústico, buen sabor), Pavo de pechuga ancha (más productivo pero menos rústico), Pavo Bronceado americano',
+    calendario:[
+      {mes:'Enero–Marzo', tarea:'Fuera de ciclo de cría en la mayoría de explotaciones familiares. Si conservas reproductores, cuídalos del frío intenso.'},
+      {mes:'Abril–Mayo', tarea:'Compra de pavipollos de un día. Las primeras 6-8 semanas son críticas: necesitan calor constante (35°C reduciendo progresivamente) y mucha vigilancia.'},
+      {mes:'Jun–Agosto', tarea:'Crecimiento activo. Sombra y agua fresca imprescindibles en el calor extremo de la vega. Empiezan a comer verde del huerto como complemento.'},
+      {mes:'Sep–Noviembre', tarea:'Engorde final. Aumenta el pienso energético para preparar el peso de sacrificio.'},
+      {mes:'Diciembre', tarea:'Sacrificio para Navidad, el momento tradicional de consumo. Un pavo bien criado puede dar 8-12 kg de carne limpia.'},
+    ],
+    consejos:['Los pavipollos son mucho más delicados que los pollitos de gallina en las primeras semanas: vigila la temperatura de cría de cerca','Necesitan un refugio bien cerrado por la noche: son presa fácil de zorros y garduñas','Complementa con verde del huerto (acelga, lechuga) desde las 4-5 semanas de vida','El pavo negro tradicional tiene mejor sabor que las razas industriales de pechuga ancha','Planifica la compra en primavera para tener el pavo en su punto óptimo para Navidad'],
+    alimentacion:'Pienso de iniciación especial para pavipollos las primeras 8 semanas, después pienso de crecimiento/engorde + verduras del huerto como complemento. Agua fresca siempre disponible, crítica en el calor del verano.',
+  },
+  {
+    id:'burro', nombre:'Burro / Asno', emoji:'🫏',
+    descripcion:'El burro es un animal de trabajo tradicional en el campo jiennense, usado históricamente para el transporte de aceituna, leña y productos del huerto en terrenos donde no llega la maquinaria. Muy rústico y de bajo mantenimiento.',
+    espacio:'Mínimo 500 m² de terreno + cobertizo de 4-6 m²',
+    inicio:'Cualquier época del año, mejor adquirir un ejemplar ya adulto y domado',
+    razas:'Burro Andaluz (raza autóctona, muy resistente y adaptada al calor), Burro Zamorano-Leonés (más grande, para carga pesada)',
+    calendario:[
+      {mes:'Enero–Marzo', tarea:'Revisión veterinaria anual y desparasitación. El pasto de invierno suele ser suficiente sin apenas suplemento.'},
+      {mes:'Abril–Junio', tarea:'Época de mayor actividad en el campo: transporte de poda, materiales, apoyo en tareas del huerto y el olivar.'},
+      {mes:'Jul–Agosto', tarea:'Calor extremo: sombra y agua abundante son críticas. Reduce el trabajo físico en las horas centrales del día.'},
+      {mes:'Sep–Diciembre', tarea:'Época de recolección de aceituna: el burro es muy útil para transportar los sacos en terrenos de difícil acceso para vehículos.'},
+    ],
+    consejos:['El burro andaluz está perfectamente adaptado al calor extremo de la vega jiennense','Necesita herraje o recorte de cascos regular, especialmente si trabaja sobre terreno duro','Muy longevo: puede vivir y trabajar más de 25-30 años con buenos cuidados','Su estiércol es un abono excelente, similar en calidad al de caballo','Tradicionalmente usado para arar bancales pequeños y transportar cargas en el olivar donde no entra el tractor'],
+    alimentacion:'Pasto y heno de gramíneas como base + un pienso de mantenimiento moderado si trabaja con regularidad. No necesita pienso rico en energía como un caballo de deporte. Sal mineral en bloque disponible siempre.',
+  },
+  {
+    id:'perroguarda', nombre:'Perro de guarda y pastor', emoji:'🐕',
+    descripcion:'El perro de guarda es imprescindible en cualquier huerto o finca familiar: protege el gallinero y el ganado menor de zorros y garduñas, avisa de intrusos, y en las razas de pastor puede ayudar activamente con las cabras y ovejas.',
+    espacio:'Libertad de movimiento por la finca + caseta propia',
+    inicio:'Cualquier época, mejor cachorro de 2-3 meses para socializarlo bien con el resto de animales',
+    razas:'Mastín Español (guarda de ganado, muy territorial y protector), Podenco Andaluz (cazador y alerta, muy resistente al calor), Pastor Alemán o mestizo (versátil, guarda y compañía)',
+    calendario:[
+      {mes:'Enero–Marzo', tarea:'Desparasitación interna y externa de rutina. Revisa el pelaje tras el invierno.'},
+      {mes:'Abril–Junio', tarea:'Época de garrapatas en aumento: refuerza la prevención (ver ficha en Fitoveterinaria). Vacunación anual si corresponde.'},
+      {mes:'Jul–Agosto', tarea:'Calor extremo: sombra y agua abundante todo el día. Evita el ejercicio intenso en las horas centrales.'},
+      {mes:'Sep–Diciembre', tarea:'Vigilancia reforzada en la época de recolección de aceituna y matanza, cuando hay más movimiento de personas y animales en la finca.'},
+    ],
+    consejos:['El Mastín Español es la raza tradicional de guarda de ganado en el sur de España, muy territorial','El Podenco andaluz tolera muy bien el calor extremo de la vega y es un gran cazador de roedores','Manténlo bien socializado desde cachorro con las gallinas y demás animales para evitar que los persiga','La sombra y el agua fresca son vitales en el verano jiennense: un golpe de calor en un perro es una emergencia','Un buen perro de guarda reduce mucho las pérdidas por zorros, garduñas y jabalíes en el gallinero y el huerto'],
+    alimentacion:'Pienso de calidad adecuado a su tamaño y actividad + restos aprovechables de la cocina (nunca huesos de ave cocidos, chocolate, cebolla ni ajo en cantidad). Agua fresca siempre disponible, especialmente crítico en verano.',
+  },
+  {
+    id:'gansos', nombre:'Gansos', emoji:'🦢',
+    descripcion:'El ganso es uno de los mejores guardianes naturales de la finca: más ruidoso y alerta incluso que un perro ante la presencia de extraños, y con la ventaja añadida de dar carne, huevos grandes y un plumón muy apreciado.',
+    espacio:'15-20 m² por ganso con acceso a agua (balsa o cubo grande) y zona de pasto',
+    inicio:'Primavera, comprando ansarones de pocos días o incubando huevos',
+    razas:'Ganso Común o del Empordà (rústico, buen guardián), Toulouse (más pesado, orientado a carne)',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Reposo reproductivo. Protege del frío con cama de paja abundante y vigila que el agua no se congele.'},
+      {mes:'Marzo–Abril', tarea:'Época de puesta e incubación, 28-30 días. Los ansarones necesitan calor artificial las primeras 3 semanas si no hay clueca.'},
+      {mes:'Mayo–Junio', tarea:'Crecimiento rápido con pasto abundante: el ganso es muy buen aprovechador de hierba, casi como una oveja pequeña.'},
+      {mes:'Julio–Agosto', tarea:'Calor extremo: necesitan agua en abundancia para refrescarse. Sombra obligatoria durante las horas centrales.'},
+      {mes:'Sep–Octubre', tarea:'Muda de plumas: se puede aprovechar el plumón caído para almohadas o edredones caseros.'},
+      {mes:'Nov–Diciembre', tarea:'Época tradicional de sacrificio para los ejemplares de engorde del año, coincidiendo con las fiestas de invierno.'},
+    ],
+    consejos:['El ganso avisa de la presencia de zorros, extraños o cualquier intruso mucho antes que muchos perros','Es un excelente "cortacésped" natural: puede pastar en zonas donde no quieres que entren otros animales','Necesita agua para aparearse correctamente: sin balsa la fertilidad de los huevos baja mucho','Convive bien con gallinas y patos en el mismo corral si hay espacio suficiente','El plumón del ganso es de gran calidad y muy apreciado para rellenos de invierno'],
+    alimentacion:'Pasto fresco como base principal (es casi herbívoro puro) + cereal (maíz, trigo, cebada) como complemento, especialmente en invierno cuando escasea la hierba. Agua siempre disponible.',
+  },
+  {
+    id:'vacalechera', nombre:'Vaca lechera de raza pequeña', emoji:'🐄',
+    descripcion:'Para quien disponga de más espacio en la finca, una vaca de raza pequeña como la Jersey da una cantidad de leche muy superior a la cabra con una gestión no mucho más compleja, siendo también más rústica y de menor tamaño que las razas industriales.',
+    espacio:'Mínimo 2.000-3.000 m² de pasto por vaca + cobertizo de 6-8 m² para resguardo',
+    inicio:'Comprar novilla o vaca ya parida, preferiblemente en primavera',
+    razas:'Jersey (pequeña, muy lechera y de leche rica en grasa para mantequilla y queso), Retinta (raza autóctona andaluza, más rústica y de doble aptitud carne-leche)',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Época de partos si la monta fue en primavera anterior. Vigila especialmente las primeras horas del ternero y que mame el calostro.'},
+      {mes:'Marzo–Mayo', tarea:'Máximo aprovechamiento del pasto de primavera. Ordeño diario si está en lactación, 1-2 veces al día.'},
+      {mes:'Jun–Agosto', tarea:'El pasto escasea con el calor extremo: suplementa con heno de calidad y algo de pienso. Sombra y agua abundante son críticas.'},
+      {mes:'Sep–Octubre', tarea:'Época de monta para partos de la siguiente primavera. Aprovecha las rastrojeras de cereal recién cosechado como pasto complementario.'},
+      {mes:'Nov–Diciembre', tarea:'Refuerza la alimentación de cara al invierno y la gestación en curso. Revisa el cobertizo antes de las lluvias fuertes.'},
+    ],
+    consejos:['La Jersey es la raza lechera pequeña más recomendable para un huerto familiar por su tamaño y docilidad','Una Jersey bien alimentada puede dar 12-18 litros de leche al día en el pico de lactación, mucho más que una cabra','Necesita bastante más espacio de pasto que la cabra: no es una opción para parcelas pequeñas','El estiércol de vaca es un abono excelente y en gran cantidad para compostar','Requiere ordeño diario constante: es un compromiso mayor que las cabras u ovejas'],
+    alimentacion:'Pasto natural como base + heno de calidad en época de escasez + pienso de producción durante la lactación (2-4 kg/día según producción). Sal mineral en bloque y agua abundante siempre disponibles, 40-60 litros al día en verano.',
+  },
+  {
+    id:'codornices', nombre:'Codornices', emoji:'🐦',
+    descripcion:'La codorniz es el ave de corral más rápida y de menor espacio de todas: empieza a poner con solo 6-8 semanas de vida y necesita muy poco espacio, ideal para quien busca huevos propios sin apenas terreno disponible.',
+    espacio:'Jaula o corral de 0.1-0.2 m² por codorniz (pueden vivir en batería de jaulas si el espacio es muy limitado)',
+    inicio:'Cualquier época, comprando codornices jóvenes de pocas semanas o incubando huevos (18 días de incubación)',
+    razas:'Codorniz japonesa (Coturnix japonica, la más extendida para puesta y carne)',
+    calendario:[
+      {mes:'Enero–Marzo', tarea:'Menor puesta por las horas de luz cortas. Se puede añadir luz artificial (14h/día) para mantener la producción si interesa.'},
+      {mes:'Abril–Junio', tarea:'Máxima puesta natural con el alargamiento de los días: una codorniz puede poner casi un huevo diario.'},
+      {mes:'Jul–Agosto', tarea:'Vigila el calor extremo: son muy sensibles al golpe de calor por su tamaño pequeño. Sombra y ventilación constantes.'},
+      {mes:'Sep–Diciembre', tarea:'Reducción natural de la puesta con el acortamiento de los días. Buen momento para renovar la parvada con ejemplares jóvenes.'},
+    ],
+    consejos:['Empiezan a poner con solo 6-8 semanas: la producción más rápida de cualquier ave de corral','Perfectas para quien tiene muy poco espacio: un pequeño balcón cubierto puede alojar varias jaulas','Los huevos de codorniz duran más que los de gallina y son muy apreciados en cocina','Muy sensibles al estrés y al calor extremo: vigila la ventilación en verano','Vida productiva más corta que la gallina, 1-2 años de buena puesta antes de renovar'],
+    alimentacion:'Pienso específico de codorniz o de iniciación de pollos, muy rico en proteína (24-26%). Grit fino para la digestión. Agua limpia siempre disponible en bebederos pequeños que no permitan que se mojen y enfríen.',
+  },
+  {
+    id:'pintadas', nombre:'Pintadas (gallina de Guinea)', emoji:'🦃',
+    descripcion:'La pintada o gallina de Guinea es un ave muy resistente y excelente controladora de plagas del huerto, especialmente garrapatas e insectos. Su carne es apreciada por ser más magra y sabrosa que la del pollo.',
+    espacio:'2-3 m² por ave en corral con acceso a zona de vuelo, muy activas y necesitan espacio',
+    inicio:'Primavera, comprando pintadas jóvenes o incubando huevos (26-28 días de incubación)',
+    razas:'Pintada común gris-perla (la más extendida), Pintada blanca (algo más dócil)',
+    calendario:[
+      {mes:'Enero–Marzo', tarea:'Época de reposo relativo. Protege del frío intenso, aunque son bastante rústicas. Revisa el estado del corral tras el invierno.'},
+      {mes:'Abril–Junio', tarea:'Época de puesta e incubación natural si hay macho. Muy buenas incubadoras naturales si se les deja criar.'},
+      {mes:'Jul–Agosto', tarea:'Sueltalas por el huerto y linderos para que controlen garrapatas e insectos: son extraordinarias cazadoras. Sombra y agua abundante en el calor extremo.'},
+      {mes:'Sep–Diciembre', tarea:'Reducción de la puesta. Buen momento para el sacrificio de los ejemplares de carne del año si se cría también con ese fin.'},
+    ],
+    consejos:['Son de las mejores controladoras naturales de garrapatas que existen: sueltalas cerca de linderos y zonas de hierba alta','Muy ruidosas, avisan de la presencia de intrusos o rapaces como un sistema de alarma natural','Vuelan bien y pueden posarse en árboles: recorta las plumas de un ala si quieres limitarlas a una zona','Más resistentes a enfermedades que la gallina común','Su carne es muy valorada en gastronomía por ser más magra y de sabor más intenso'],
+    alimentacion:'Pienso de aves de corral o mezcla de cereales, similar a la gallina, más los insectos y garrapatas que cazan ellas mismas al soltarlas. Suplementa con verduras del huerto.',
+  },
+  {
+    id:'cerdovietnamita', nombre:'Cerdo vietnamita (mini-pig)', emoji:'🐖',
+    descripcion:'El cerdo vietnamita es una raza de tamaño reducido, más manejable que el cerdo ibérico tradicional para quien dispone de poco espacio. Muy inteligente, dócil y con menor necesidad de terreno que las razas grandes.',
+    espacio:'Mínimo 20-30 m² por animal, bastante menos que el cerdo ibérico tradicional',
+    inicio:'Comprar lechones jóvenes en cualquier época, aunque primavera facilita la adaptación',
+    razas:'Vietnamita panza (Vietnamese Pot-Bellied Pig), la variedad más extendida como raza de pequeño tamaño',
+    calendario:[
+      {mes:'Enero–Febrero', tarea:'Época de menor actividad. Protege del frío con cama de paja abundante, son sensibles a temperaturas muy bajas por su tamaño reducido.'},
+      {mes:'Marzo–Junio', tarea:'Buena época para adquirir lechones jóvenes. Vacunación básica y desparasitación inicial.'},
+      {mes:'Jul–Agosto', tarea:'Zona de barro imprescindible para refrescarse en el calor extremo, igual que el cerdo ibérico. Sombra constante.'},
+      {mes:'Sep–Diciembre', tarea:'Buen momento para el sacrificio si se cría con fines cárnicos, aunque muchas familias los mantienen como animal de compañía y control de restos del huerto.'},
+    ],
+    consejos:['Mucho menos espacio necesario que el cerdo ibérico tradicional: apto para huertos pequeños','Muy inteligente, se puede adiestrar para tareas básicas y reconoce a las personas','Excelente para aprovechar restos de cocina y del huerto sin necesidad de gran instalación','Puede alcanzar 40-70 kg de peso adulto, muy inferior al cerdo ibérico tradicional','Igual que el cerdo grande, necesita barro o agua para termorregularse en el calor jiennense'],
+    alimentacion:'Pienso específico para minipigs o pienso de cerdo en menor cantidad + restos del huerto (no cítricos ni carne) + verduras. Un animal adulto come bastante menos que un cerdo tradicional.',
+  },
 ];
 
 let filtroAnimal = 'all';
@@ -2361,17 +2770,26 @@ let filtroAnimal = 'all';
 function renderAromaticas(){ renderAromaticasFiltradas(''); }
 function buscarAromatica(q){ renderAromaticasFiltradas(q.toLowerCase()); }
 function renderAromaticasFiltradas(q){
-  const lista = q ? AROMATICAS.filter(a=>
+  let lista = q ? AROMATICAS.filter(a=>
     a.nombre.toLowerCase().includes(q)||
     a.usos.join(' ').toLowerCase().includes(q)||
     a.descripcion.toLowerCase().includes(q)
   ) : AROMATICAS;
+  lista = [...lista].sort((a,b)=>{
+    const aTemp = estaEnTemporadaTexto(a.cosecha) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.cosecha) ? 0 : 1;
+    return aTemp - bTemp;
+  });
   let html='';
   for(const a of lista){
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #447A10;">
-      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
+    const enTemporada = estaEnTemporadaTexto(a.cosecha);
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid ${enTemporada?'var(--cosecha)':'#447A10'};">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:1.4rem">${a.emoji}</span>${a.nombre}
-        <span style="font-size:0.65rem;background:#EEF7E0;color:#447A10;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:auto;">${a.ciclo}</span>
+        <div style="display:flex;gap:5px;margin-left:auto;">
+          ${enTemporada?'<span style="font-size:0.6rem;background:var(--cosecha);color:white;padding:2px 8px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;">🌿 Cosecha ahora</span>':''}
+          <span style="font-size:0.65rem;background:#EEF7E0;color:#447A10;padding:2px 8px;border-radius:10px;font-weight:700;">${a.ciclo}</span>
+        </div>
       </div>
       <p style="font-size:0.78rem;color:var(--gris);margin-bottom:10px;line-height:1.5;">${a.descripcion}</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
@@ -2451,22 +2869,29 @@ function renderBotiquin(){
 }
 
 function renderMedicinalesFiltradas(q){
-  const lista = q ? MEDICINALES.filter(a=>
+  let lista = q ? MEDICINALES.filter(a=>
     a.nombre.toLowerCase().includes(q)||
     a.propiedades.join(' ').toLowerCase().includes(q)||
     a.descripcion.toLowerCase().includes(q)||
     a.usos_medicinales.map(u=>u.uso).join(' ').toLowerCase().includes(q)
   ) : MEDICINALES;
+  lista = [...lista].sort((a,b)=>{
+    const aTemp = estaEnTemporadaTexto(a.epoca_recoleccion) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.epoca_recoleccion) ? 0 : 1;
+    return aTemp - bTemp;
+  });
   let html='';
   for(const a of lista){
+    const enTemporada = estaEnTemporadaTexto(a.epoca_recoleccion);
     const usosHtml = a.usos_medicinales.map(u=>`
       <div style="background:white;border-radius:7px;padding:8px 10px;margin-bottom:5px;border-left:3px solid #5A3A8A;">
         <div style="font-size:0.69rem;font-weight:800;color:#5A3A8A;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;">${u.uso}</div>
         <div style="font-size:0.78rem;line-height:1.4;">${u.prep}</div>
       </div>`).join('');
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid #5A3A8A;">
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:5px solid ${enTemporada?'var(--cosecha)':'#5A3A8A'};">
       <div style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:1.4rem">${a.emoji}</span>${a.nombre}
+        ${enTemporada?'<span style="font-size:0.58rem;background:var(--cosecha);color:white;padding:2px 7px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;">🌿 Recolección ahora</span>':''}
         <span style="font-size:0.63rem;background:#F0E8F8;color:#5A3A8A;padding:2px 8px;border-radius:10px;font-weight:700;">Parte: ${a.parte}</span>
         <span style="font-size:0.63rem;background:#EEF7E0;color:#447A10;padding:2px 8px;border-radius:10px;font-weight:700;">${a.epoca_recoleccion}</span>
       </div>
@@ -2860,6 +3285,8 @@ function cargarDiario(){
   try { return JSON.parse(localStorage.getItem('hj-diario') || '[]'); } catch(e){ return []; }
 }
 
+let idEdicionDiario = null;
+
 function guardarEntradaDiario(){
   const fecha = document.getElementById('diario-fecha').value;
   const tipo = document.getElementById('diario-tipo').value;
@@ -2868,29 +3295,78 @@ function guardarEntradaDiario(){
 
   if(!nota && !cultivo){ alert('Escribe algo antes de guardar.'); return; }
 
-  const entradas = cargarDiario();
-  entradas.unshift({
-    id: Date.now(),
-    fecha: fecha || new Date().toISOString().split('T')[0],
-    tipo, cultivo, nota
-  });
+  let entradas = cargarDiario();
+
+  if(idEdicionDiario !== null){
+    // Modo edición: actualiza la entrada existente en su misma posición
+    entradas = entradas.map(e => e.id===idEdicionDiario
+      ? { ...e, fecha: fecha || e.fecha, tipo, cultivo, nota }
+      : e
+    );
+    idEdicionDiario = null;
+  } else {
+    // Modo creación: añade una entrada nueva al principio
+    entradas.unshift({
+      id: Date.now(),
+      fecha: fecha || new Date().toISOString().split('T')[0],
+      tipo, cultivo, nota
+    });
+  }
+
   localStorage.setItem('hj-diario', JSON.stringify(entradas));
 
   document.getElementById('diario-cultivo').value = '';
   document.getElementById('diario-nota').value = '';
+  restaurarBotonGuardarDiario();
   renderDiario();
 
   // Feedback visual
-  const btn = event.target;
+  const btn = document.getElementById('btn-guardar-diario');
   btn.textContent = '✅ ¡Guardado!';
   btn.style.background = '#3D6B1A';
-  setTimeout(()=>{ btn.textContent='✅ Guardar entrada'; btn.style.background='var(--oliva)'; }, 1500);
+  setTimeout(()=>{ restaurarBotonGuardarDiario(); }, 1500);
+}
+
+function restaurarBotonGuardarDiario(){
+  const btn = document.getElementById('btn-guardar-diario');
+  if(!btn) return;
+  btn.textContent = '✅ Guardar entrada';
+  btn.style.background = 'var(--oliva)';
+}
+
+function editarEntradaDiario(id){
+  const entradas = cargarDiario();
+  const entrada = entradas.find(e=>e.id===id);
+  if(!entrada) return;
+
+  idEdicionDiario = id;
+  document.getElementById('diario-fecha').value = entrada.fecha;
+  document.getElementById('diario-tipo').value = entrada.tipo;
+  document.getElementById('diario-cultivo').value = entrada.cultivo || '';
+  document.getElementById('diario-nota').value = entrada.nota || '';
+
+  const btn = document.getElementById('btn-guardar-diario');
+  btn.textContent = '✏️ Guardar cambios';
+  btn.style.background = 'var(--miel)';
+
+  // Lleva la vista al formulario para que sea evidente que se está editando
+  document.getElementById('diario-nota').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function cancelarEdicionDiario(){
+  idEdicionDiario = null;
+  document.getElementById('diario-cultivo').value = '';
+  document.getElementById('diario-nota').value = '';
+  restaurarBotonGuardarDiario();
 }
 
 function borrarEntradaDiario(id){
   if(!confirm('¿Borrar esta entrada?')) return;
   const entradas = cargarDiario().filter(e=>e.id!==id);
   localStorage.setItem('hj-diario', JSON.stringify(entradas));
+  if(idEdicionDiario === id){
+    cancelarEdicionDiario();
+  }
   renderDiario();
 }
 
@@ -2937,7 +3413,8 @@ function renderDiario(){
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:0.68rem;color:var(--gris);">${fechaStr}</span>
-            <button onclick="borrarEntradaDiario(${e.id})" style="background:transparent;border:none;color:#CCC;font-size:0.85rem;cursor:pointer;padding:0;">✕</button>
+            <button onclick="editarEntradaDiario(${e.id})" style="background:#EEF3F8;border:none;color:#2A5A8A;font-size:0.8rem;cursor:pointer;padding:4px 7px;border-radius:6px;line-height:1;">✏️</button>
+            <button onclick="borrarEntradaDiario(${e.id})" style="background:#FDE8E8;border:none;color:#CC0A0A;font-size:0.8rem;cursor:pointer;padding:4px 7px;border-radius:6px;line-height:1;">🗑️</button>
           </div>
         </div>
         ${e.nota?`<div style="font-size:0.8rem;line-height:1.45;color:var(--tierra);padding-left:24px;">${e.nota}</div>`:''}
@@ -3199,99 +3676,284 @@ const FRUTALES = [
     ],
     consejos:['Las variedades japonesas maduran antes que las europeas','Riega con regularidad durante el crecimiento del fruto para evitar que se agriete','Un árbol adulto puede producir 30-60 kg de ciruelas','Excelente para mermelada y para secar (ciruela pasa)','Poda en verano tras la cosecha para controlar el vigor y la forma']
   },
+  { nombre:'Endrino', emoji:'🫐', origen:'Europa/Asia Occidental',
+    variedades:'Prunus spinosa (especie silvestre, sin variedades comerciales habituales)',
+    plantacion:'Noviembre–febrero (planta o esqueje) o directamente por semilla en otoño',
+    marco:'2×2 m (tiende a formar matorral si no se controla)', agua:'Muy escasa — planta de secano total, muy resistente',
+    cosecha:'Octubre–noviembre (tras las primeras heladas mejora el sabor)',
+    descripcion:'El endrino es un arbusto espinoso muy resistente que crece silvestre en linderos y bordes de camino de toda la sierra jiennense. Sus frutos, las endrinas, son la base del famoso pacharán y de licores caseros tradicionales.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de control si se cultiva en seto o borde: es muy invasivo por sus raíces y rebrota con fuerza. Época de reposo total.'},
+      {mes:'Marzo', t:'Floración blanca muy temprana, antes que las hojas, cubriendo el arbusto por completo. Resistente a heladas tardías.'},
+      {mes:'Abril–Septiembre', t:'Crecimiento del fruto sin apenas cuidados. No necesita riego ni abono: es planta de suelos pobres y pedregosos.'},
+      {mes:'Octubre–Noviembre', t:'Cosecha de las endrinas cuando estén de color azul-negro intenso. La tradición dice que mejoran de sabor tras la primera helada, que reduce su astringencia.'},
+    ],
+    consejos:['Muy usado como seto vivo defensivo en los linderos de fincas jiennenses por sus espinas','Las endrinas crudas son muy astringentes: no se comen frescas, siempre en maceración o licor','El pacharán casero (endrinas + anís + azúcar, macerado 3-6 meses) es la elaboración tradicional más extendida','Sus raíces emiten brotes nuevos (rebrota "de raíz"): controla bien si no quieres que se extienda por el huerto','La miel de las flores de endrino en marzo es muy apreciada por las abejas al ser una de las primeras floraciones del año']
+  },
+  { nombre:'Albaricoquero', emoji:'🍑', origen:'Asia Central/China',
+    variedades:'Búlida, Moniquí, Canino (variedades bien adaptadas al interior de Andalucía)',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Moderada, sensible a encharcamiento',
+    cosecha:'Mayo–junio (fruta de maduración muy temprana)',
+    descripcion:'El albaricoquero florece muy pronto en el año, lo que lo hace vulnerable a heladas tardías en zonas de sierra, pero en la vega baja junto al Guadalquivir se comporta muy bien y da una de las primeras frutas frescas del año.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o mantenimiento en pleno reposo, antes de que hinchen las yemas florales.'},
+      {mes:'Febrero–Marzo', t:'Floración muy temprana (antes que el almendro en muchas zonas). Riesgo alto de helada tardía en sierra; en la vega el riesgo es menor.'},
+      {mes:'Abril–Mayo', t:'Cuajado y engorde rápido del fruto. Aclara si hay demasiados para conseguir frutos más grandes.'},
+      {mes:'Mayo–Junio', t:'Cosecha: recoge cuando el fruto ceda ligeramente al tacto y tenga color anaranjado uniforme.'},
+    ],
+    consejos:['En la vega de Espeluy y Mengíbar el riesgo de helada en floración es menor que en zonas de sierra','Riego regular pero sin encharcar: las raíces son sensibles al exceso de agua','Un árbol adulto puede dar 40-80 kg de fruta','Excelente para mermelada, en almíbar o secado al sol del verano jiennense','Vigila el hongo de la monilia, que puede afectar a la flor y al fruto en primaveras húmedas']
+  },
+  { nombre:'Melocotonero', emoji:'🍑', origen:'China',
+    variedades:'Amarillo tardío de Calanda (tipo), Miraflores, variedades locales de pulpa blanca',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Regular, necesita riego constante en verano',
+    cosecha:'Junio–agosto según variedad',
+    descripcion:'El melocotonero es de los frutales de hueso más productivos y agradecidos en la vega jiennense, siempre que tenga riego suficiente durante el calor extremo del verano.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o aclareo de ramas. El melocotonero necesita poda anual intensa para mantener buena producción.'},
+      {mes:'Marzo', t:'Floración rosada muy vistosa. Sensible a heladas tardías: vigila el tiempo si hay previsión de frío intenso.'},
+      {mes:'Abril–Mayo', t:'Aclareo de frutos: deja uno cada 15-20 cm de rama para conseguir piezas grandes y de calidad.'},
+      {mes:'Jun–Agosto', t:'Riego crítico para el engorde final del fruto, especialmente en el calor extremo de julio. Cosecha escalonada según variedad.'},
+    ],
+    consejos:['Necesita poda anual fuerte: fructifica sobre madera del año anterior','El riego en las 3 semanas antes de cosechar determina el tamaño final del fruto','Vigila el pulgón verde y la abolladura del melocotonero (hongo) en primaveras húmedas','Un árbol adulto bien cuidado produce 40-100 kg','Ideal para mermelada, almíbar y consumo fresco en pleno verano jiennense']
+  },
+  { nombre:'Avellano', emoji:'🌰', origen:'Europa/Asia Menor',
+    variedades:'Negreta, Culplà, variedades comunes de secano',
+    plantacion:'Noviembre–febrero',
+    marco:'4×4 m', agua:'Moderada, agradece algo de sombra o humedad ambiental',
+    cosecha:'Septiembre–octubre',
+    descripcion:'El avellano se adapta a zonas algo más frescas y húmedas del huerto, como junto a acequias o zonas de sombra parcial. Menos exigente en espacio que el nogal y con cosecha más rápida.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación en "vaso" con varios troncos, o mantenimiento eliminando chupones excesivos. Floración masculina ya visible (amentos colgantes).'},
+      {mes:'Marzo–Abril', t:'Polinización por viento. Brotación de hojas tras la floración.'},
+      {mes:'Mayo–Agosto', t:'Crecimiento del fruto dentro de su envoltura verde característica (el "capuchón").'},
+      {mes:'Sep–Octubre', t:'Cosecha cuando las avellanas caen solas al suelo o se desprenden fácilmente. Seca al sol 1-2 semanas antes de guardar.'},
+    ],
+    consejos:['Prefiere una zona con algo más de humedad que el resto del huerto: junto a acequias o riego va bien','Emite muchos brotes desde la base (rebrota como mata): controla si quieres forma de árbol único','Necesita otra planta cerca para mejor polinización cruzada','Cosecha más rápida que el nogal: produce en 3-4 años frente a los 5-8 del nogal','Las avellanas se guardan muy bien secas en su cáscara durante todo el invierno']
+  },
+  { nombre:'Peral', emoji:'🍐', origen:'Asia/Europa',
+    variedades:'Ercolini (temprana), Blanquilla, Conference, Roma o de agua (variedades tradicionales)',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Regular, sensible a la sequía prolongada',
+    cosecha:'Julio–octubre según variedad',
+    descripcion:'El peral se comporta bien en las zonas de vega con riego disponible. Menos rústico que el membrillero pero de fruta muy apreciada y con variedades que escalonan la cosecha todo el verano.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o mantenimiento, similar al manzano. Elimina chupones y ramas mal orientadas.'},
+      {mes:'Marzo', t:'Floración blanca abundante. Necesita polinización cruzada con otra variedad para buena cosecha en la mayoría de casos.'},
+      {mes:'Abril–Junio', t:'Aclareo de frutos si hay exceso, para mejorar el tamaño final. Riego regular durante el crecimiento.'},
+      {mes:'Jul–Octubre', t:'Cosecha escalonada según variedad: las tempranas en julio, las tardías hasta octubre. Muchas peras maduran mejor recogidas algo verdes y reposadas unos días.'},
+    ],
+    consejos:['Planta al menos dos variedades distintas para asegurar buena polinización','Riego constante en verano: el peral sufre más la sequía que el membrillero o la higuera','Vigila el fuego bacteriano y la psila del peral, plagas comunes en la zona','Un árbol adulto puede producir 50-100 kg','Las variedades tradicionales como la de agua se conservan poco tiempo: consúmelas pronto tras la cosecha']
+  },
+  { nombre:'Manzano', emoji:'🍎', origen:'Asia Central',
+    variedades:'Golden Delicious, Granny Smith, Reineta (variedades que toleran bien el interior de Andalucía), Camuesa local',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Regular, sensible a la sequía prolongada en verano',
+    cosecha:'Agosto–octubre según variedad',
+    descripcion:'El manzano necesita algo más de frío invernal que otros frutales para una buena floración, por lo que rinde mejor en las zonas algo más altas de la provincia que en la vega más cálida, aunque con riego adecuado también se da bien junto al Guadalquivir.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o mantenimiento en pleno reposo. El manzano fructifica sobre madera de 2-3 años: no elimines en exceso los "dardos" (ramilletes cortos de fruta).'},
+      {mes:'Marzo–Abril', t:'Floración blanco-rosada muy vistosa. Necesita polinización cruzada con otra variedad compatible para buena cosecha.'},
+      {mes:'Mayo–Junio', t:'Aclareo de frutos: deja 1-2 manzanas por ramillete para conseguir piezas de buen tamaño.'},
+      {mes:'Ago–Octubre', t:'Cosecha escalonada según variedad. Recoge cuando las semillas estén oscuras y el fruto se desprenda con un giro suave.'},
+    ],
+    consejos:['Necesita cierto número de "horas de frío" en invierno: en la vega baja puede costar más que en zonas de sierra','Planta dos variedades compatibles cerca para asegurar la polinización','Riego regular en verano, especialmente en el mes previo a la cosecha','Vigila el pulgón lanígero y la carpocapsa (gusano de la manzana), plagas muy comunes','Las manzanas de otoño se conservan varios meses en lugar fresco, oscuro y seco']
+  },
+  { nombre:'Pistachero', emoji:'🌰', origen:'Asia Central/Oriente Medio',
+    variedades:'Kerman, Mateur (variedades más cultivadas en España)',
+    plantacion:'Marzo–abril',
+    marco:'6×6 m', agua:'Muy escasa — de los frutales más resistentes a la sequía',
+    cosecha:'Septiembre',
+    descripcion:'El pistachero es un cultivo en expansión en el interior de Andalucía por su extraordinaria resistencia al calor y la sequía del verano jiennense. Necesita un pie macho y varios pies hembra para producir.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Reposo total. Poda de formación en árboles jóvenes, muy ligera en adultos.'},
+      {mes:'Marzo–Abril', t:'Plantación de nuevos árboles. Floración (necesita polinización por viento del pie macho cercano).'},
+      {mes:'Mayo–Agosto', t:'Crecimiento del fruto con mínimas necesidades de agua, tolera muy bien el calor extremo del verano.'},
+      {mes:'Septiembre', t:'Cosecha cuando el fruto se abre ligeramente por sí solo y la cáscara externa se desprende con facilidad.'},
+    ],
+    consejos:['Imprescindible tener al menos un pie macho por cada 8-10 pies hembra para la polinización','De los frutales que mejor toleran el calor extremo de julio-agosto en la vega','Tarda 5-7 años en entrar en plena producción','Los frutos se secan al sol unos días tras la cosecha antes de guardar','Cultivo con gran potencial en el interior de Jaén por su bajísima necesidad de riego']
+  },
+  { nombre:'Azufaifo', emoji:'🟤', origen:'Asia/Norte de África',
+    variedades:'Ziziphus jujuba (variedad común, sin cultivares comerciales muy diferenciados en España)',
+    plantacion:'Noviembre–febrero',
+    marco:'4×4 m', agua:'Muy escasa — extremadamente resistente a la sequía y el calor',
+    cosecha:'Septiembre–octubre',
+    descripcion:'El azufaifo es un árbol poco conocido pero muy bien adaptado al clima extremo de la vega jiennense. Sus frutos, las azufaifas o "yuyubas", se comen frescos como una manzana pequeña o se secan como un dátil.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Reposo total, pierde la hoja. Poda mínima de limpieza si es necesaria.'},
+      {mes:'Marzo–Mayo', t:'Brotación tardía, después de que haya pasado cualquier riesgo de helada. Floración discreta pero muy melífera.'},
+      {mes:'Jun–Agosto', t:'Crecimiento del fruto prácticamente sin cuidados, tolera el calor extremo del verano sin apenas riego.'},
+      {mes:'Sep–Octubre', t:'Cosecha cuando el fruto pasa de verde a marrón rojizo. Se puede comer fresco (sabor a manzana suave) o dejar secar como una pasa.'},
+    ],
+    consejos:['De los árboles más resistentes a la sequía y el calor extremo que existen','Sus flores, aunque discretas, son muy atractivas para las abejas','El fruto seco (parecido al dátil) se conserva meses sin refrigeración','Prácticamente libre de plagas y enfermedades relevantes en la zona','Un árbol muy infrautilizado con gran potencial para huertos de bajo mantenimiento en Jaén']
+  },
+  { nombre:'Lima', emoji:'🍋', origen:'Sudeste Asiático',
+    variedades:'Lima ácida (Citrus aurantiifolia), Lima persa (menos sensible al frío)',
+    plantacion:'Marzo–abril',
+    marco:'4×4 m', agua:'Regular, similar al limonero',
+    cosecha:'Escalonada, con pico en otoño-invierno',
+    descripcion:'La lima es el cítrico más sensible al frío de los que se pueden intentar en Jaén, por lo que conviene plantarla en la zona más resguardada y cálida del huerto, junto a una pared orientada al sur.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Máxima vulnerabilidad al frío: protege con manta térmica si se prevén heladas por debajo de -2°C.'},
+      {mes:'Marzo–Mayo', t:'Floración aromática. Abona con nitrógeno para favorecer el crecimiento tras el invierno.'},
+      {mes:'Jun–Octubre', t:'Riego regular en el calor del verano, similar al limonero. Crecimiento activo del fruto.'},
+      {mes:'Nov–Febrero', t:'Cosecha principal, aunque puede dar frutos de forma más escalonada que otros cítricos a lo largo del año.'},
+    ],
+    consejos:['El cítrico más delicado frente al frío: resérvale el rincón más resguardado del huerto','La variedad "lima persa" tolera mejor el frío que la lima ácida clásica','Riego constante, no tolera bien la sequía','En años de invierno muy frío, cultivar en maceta grande y proteger o entrar en un lugar cubierto es más seguro','Muy usada en cocina y cócteles: un árbol pequeño da una cantidad considerable de fruta']
+  },
+  { nombre:'Nectarino', emoji:'🍑', origen:'China (variedad de piel lisa del melocotonero)',
+    variedades:'Variedades locales de piel lisa, tempranas y tardías, similares en manejo al melocotonero',
+    plantacion:'Noviembre–febrero',
+    marco:'4×5 m', agua:'Regular, necesita riego constante en verano',
+    cosecha:'Junio–agosto según variedad',
+    descripcion:'El nectarino es prácticamente un melocotonero de piel lisa y se cultiva exactamente igual. Muy productivo en la vega jiennense con riego suficiente durante el verano.',
+    calendario:[
+      {mes:'Enero–Febrero', t:'Poda de formación o aclareo de ramas, igual que el melocotonero: necesita poda anual intensa.'},
+      {mes:'Marzo', t:'Floración rosada. Sensible a heladas tardías, vigila el tiempo en previsión de frío intenso.'},
+      {mes:'Abril–Mayo', t:'Aclareo de frutos para conseguir piezas grandes y de calidad, igual criterio que en el melocotonero.'},
+      {mes:'Jun–Agosto', t:'Riego crítico para el engorde final, especialmente en julio. Cosecha escalonada según variedad.'},
+    ],
+    consejos:['El manejo es idéntico al melocotonero: poda anual fuerte y riego constante en verano','La piel lisa (sin pelusa) lo hace más sensible al rajado por lluvias en maduración','Vigila las mismas plagas que en el melocotonero: pulgón verde y abolladura','Un árbol adulto produce 40-80 kg','Excelente para consumo fresco directamente del árbol en pleno verano']
+  },
 ];
 
 // ══════ CONSERVAS Y RECETAS ══════
 const CONSERVAS = [
-  { nombre:'Aceitunas aliñadas de Jaén', tipo:'encurtido', emoji:'🫒', temporada:'Oct–Dic', dificultad:'Media',
+  { nombre:'Aceitunas aliñadas de Jaén', tipo:'encurtido', emoji:'🫒', temporada:'Oct–Dic', dificultad:'Media', duracion:'6 meses en nevera tras abrir',
     ingredientes:['1 kg aceitunas verdes (Manzanilla o Hojiblanca)','Agua','Sal gruesa (100g/litro)','Ajo (1 cabeza)','Orégano seco','Tomillo','Hinojo','Comino','Pimiento rojo seco','Limón'],
     pasos:['Lava las aceitunas y dale un corte o aplástelas ligeramente','Ponlas en agua fría durante 7 días, cambiando el agua cada día (para quitar el amargor)','Prepara la salmuera: 100g de sal por litro de agua fría','Añade todos los aliños: ajo machacado, orégano, tomillo, hinojo, comino, tiras de pimiento y rodajas de limón','Mete las aceitunas en tarros esterilizados y cúbrelas con la salmuera','Cierra y deja reposar mínimo 2 semanas en lugar fresco','Listas cuando estén al gusto. Duran 6 meses en nevera tras abrir.'],
     consejo:'El truco de Jaén: añade un chorrito de vinagre de vino blanco a la salmuera para más sabor.'
   },
-  { nombre:'Tomates en conserva', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+  { nombre:'Tomates en conserva', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil', duracion:'2 años sin abrir',
     ingredientes:['2 kg tomates maduros de pera','Sal','Hojas de albahaca fresca','Aceite de oliva virgen extra de Jaén'],
     pasos:['Esteriliza los tarros hirviéndolos 10 minutos','Escálda los tomates 30 segundos en agua hirviendo y pélalos','Córtalos en cuartos o déjalos enteros si son pequeños','Mete en los tarros con una pizca de sal y hojas de albahaca','Cúbrelos con aceite de oliva (sin dejar burbujas de aire)','Cierra herméticamente y pasteuriza: baño maría 30 minutos','Comprueba el vacío al enfriar: la tapa no debe ceder al presionar'],
     consejo:'Con aceite de oliva virgen extra de Jaén duran 2 años y el aceite queda impregnado del sabor del tomate.'
   },
-  { nombre:'Mermelada de higos', tipo:'mermelada', emoji:'🫐', temporada:'Ago–Oct', dificultad:'Fácil',
+  { nombre:'Mermelada de higos', tipo:'mermelada', emoji:'🫐', temporada:'Ago–Oct', dificultad:'Fácil', duracion:'1 año sin abrir, 1 mes en nevera tras abrir',
     ingredientes:['1 kg higos maduros (sin la piel si quieres más fina)','600g azúcar','Zumo de 1 limón','1 rama de canela (opcional)'],
     pasos:['Pela y trocea los higos','Mezcla con el azúcar y el zumo de limón en una cazuela','Deja macerar 1 hora para que suelten el jugo','Cocina a fuego medio-bajo removiendo constantemente','Cuando espese (30–40 min) y la mermelada no se extienda al poner en un plato frío, está lista','Mete en tarros esterilizados en caliente y cierra boca abajo hasta enfriar'],
     consejo:'Los higos de la variedad Negra de Jaén hacen la mermelada más oscura y aromática. Con queso de cabra jiennense es un manjar.'
   },
-  { nombre:'Mermelada de membrillos', tipo:'mermelada', emoji:'🍋', temporada:'Oct–Nov', dificultad:'Media',
+  { nombre:'Mermelada de membrillos', tipo:'mermelada', emoji:'🍋', temporada:'Oct–Nov', dificultad:'Media', duracion:'1 año sin abrir, 1 mes en nevera tras abrir',
     ingredientes:['1 kg membrillos (peso limpio, sin corazón)','800g azúcar','Zumo de 1 limón','1 vaso de agua'],
     pasos:['Pela, descorazona y trocea los membrillos','Cocina en el agua hasta que estén muy blandos (20–25 min)','Tritura con batidora hasta obtener un puré fino','Añade el azúcar y el limón y cocina removiendo sin parar','Está lista cuando al poner en un plato frío solidifica rápido (puede tardar 30–50 min)','Mete en tarros calientes y cierra boca abajo'],
     consejo:'Si la dejas más tiempo se convierte en carne de membrillo sólida que se puede cortar. Añade azafrán de La Mancha para un toque especial.'
   },
-  { nombre:'Pimientos del piquillo asados en conserva', tipo:'conserva', emoji:'🫑', temporada:'Ago–Oct', dificultad:'Media',
+  { nombre:'Pimientos del piquillo asados en conserva', tipo:'conserva', emoji:'🫑', temporada:'Ago–Oct', dificultad:'Media', duracion:'1 año sin abrir',
     ingredientes:['2 kg pimientos rojos de piquillo o italianos','Sal','Aceite de oliva virgen extra','Ajo (opcional)'],
     pasos:['Asa los pimientos directamente en el fuego o al horno a 200°C hasta que la piel esté negra y arrugada','Mete en una bolsa cerrada 15 minutos: el vapor facilita pelarlos','Pélalos con cuidado, quita las semillas y córtalos en tiras','Coloca en tarros esterilizados con sal y ajo laminado','Cubre completamente con aceite de oliva virgen extra','Pasteuriza en baño maría 20 minutos','Duran 1 año y el aceite queda para aliñar ensaladas'],
     consejo:'El aceite resultante es liquid oro para aliñar. En Jaén es tradición hacerlos con pimientos del campo propio.'
   },
-  { nombre:'Cebolla caramelizada en conserva', tipo:'conserva', emoji:'🧅', temporada:'Jun–Ago', dificultad:'Fácil',
+  { nombre:'Cebolla caramelizada en conserva', tipo:'conserva', emoji:'🧅', temporada:'Jun–Ago', dificultad:'Fácil', duracion:'6 meses sin abrir, 2 semanas en nevera tras abrir',
     ingredientes:['2 kg cebollas de Jaén','100g azúcar moreno','50ml aceite de oliva','1 cucharadita de sal','50ml vinagre de vino'],
     pasos:['Pela y corta las cebollas en juliana fina','Pochea en aceite a fuego muy bajo durante 45–60 minutos removiendo frecuentemente','Cuando estén muy blandas y doradas, añade el azúcar y el vinagre','Cocina 15 minutos más hasta que caramelicen','Mete en tarros esterilizados y pasteuriza 15 minutos en baño maría'],
     consejo:'Con cebollas de Fuentes de Cesna (Jaén) el resultado es excepcional. Ideal para acompañar quesos y carnes.'
   },
-  { nombre:'Licor de hierbas jiennense', tipo:'licor', emoji:'🍶', temporada:'Todo el año', dificultad:'Fácil',
+  { nombre:'Licor de hierbas jiennense', tipo:'licor', emoji:'🍶', temporada:'Todo el año', dificultad:'Fácil', duracion:'2-3 años sin abrir, no necesita nevera',
     ingredientes:['1 litro de aguardiente o anís (29–40°)','Romero fresco (2 ramas)','Tomillo (2 ramas)','Lavanda (1 cucharada de flores)','Menta (5 hojas)','Cáscara de limón','200g azúcar','100ml agua'],
     pasos:['Mete todas las hierbas y la cáscara de limón en el aguardiente','Cierra el tarro y deja macerar 3 semanas en lugar oscuro','Agita cada 3 días','Prepara un almíbar: azúcar + agua caliente hasta disolver','Filtra el licor con gasa y mezcla con el almíbar','Embotella y deja reposar 1 mes más antes de consumir'],
     consejo:'Con hierbas silvestres de la Sierra de Cazorla el licor tiene un aroma incomparable. Sírvelo muy frío.'
   },
-  { nombre:'Gazpacho de Jaén (en conserva)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+  { nombre:'Gazpacho de Jaén (en conserva)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil', duracion:'6 meses en nevera sin abrir, 3-4 días tras abrir',
     ingredientes:['2 kg tomates maduros de pera','1 pepino','1 pimiento verde','1 diente de ajo','100ml aceite de oliva virgen extra de Jaén','30ml vinagre de Jerez','Sal al gusto','Pan duro (opcional para espesar)'],
     pasos:['Tritura todos los vegetales crudos','Añade el aceite, vinagre y sal','Pasa por el chino o colador para una textura fina','Prueba y ajusta de sal y vinagre','Para conservar: pasteuriza en tarros herméticos 25 minutos en baño maría a 85°C','Enfría rápidamente y guarda en nevera hasta 6 meses'],
     consejo:'El aceite de oliva virgen extra de Jaén es insustituible en el gazpacho. Marca totalmente la diferencia.'
   },
-  { nombre:'Alcaparras en sal', tipo:'encurtido', emoji:'🟢', temporada:'May–Jul', dificultad:'Fácil',
+  { nombre:'Alcaparras en sal', tipo:'encurtido', emoji:'🟢', temporada:'May–Jul', dificultad:'Fácil', duracion:'Más de 2 años en lugar fresco',
     ingredientes:['500g alcaparras (capullos sin abrir, del tamaño de un guisante)','Sal gruesa marina (el mismo peso que las alcaparras)'],
     pasos:['Recoge los capullos de la alcaparra antes de que abran','Ponlos en un tarro en capas alternando alcaparras y sal gruesa','La proporción es 1:1 en peso','Cierra el tarro y deja curar en lugar fresco 1 mes','Se conservan así más de 2 años','Para usar: enjuaga bien con agua para quitar el exceso de sal'],
     consejo:'La alcaparra crece silvestre en los muros de piedra de los cortijos jiennenses. Recolecta a mano por la mañana temprano.'
   },
-  { nombre:'Habas a la jiennense (conserva)', tipo:'conserva', emoji:'🫘', temporada:'Abr–Jun', dificultad:'Media',
+  { nombre:'Habas a la jiennense (conserva)', tipo:'conserva', emoji:'🫘', temporada:'Abr–Jun', dificultad:'Media', duracion:'1 año sin abrir',
     ingredientes:['2 kg habas frescas (desgranadas)','100g jamón serrano en tacos','1 cebolla','4 dientes de ajo','Aceite de oliva virgen extra','Sal, pimienta, comino','Pimentón dulce de la Vera'],
     pasos:['Sofríe la cebolla y el ajo en abundante aceite de oliva','Añade el jamón y sofríe 2 minutos','Incorpora las habas y el pimentón','Cubre con agua y cocina 20–30 minutos según el tamaño','Sazona con sal, pimienta y comino','Mete en tarros esterilizados y pasteuriza 30 minutos en olla a presión o 45 en baño maría'],
     consejo:'Las habas de Jaén de siembra otoñal son las más tiernas. Este guiso en conserva sabe igual o mejor que recién hecho.'
   },
-  { nombre:'Naranjas en almíbar', tipo:'conserva', emoji:'🍊', temporada:'Nov–Mar', dificultad:'Fácil',
+  { nombre:'Naranjas en almíbar', tipo:'conserva', emoji:'🍊', temporada:'Nov–Mar', dificultad:'Fácil', duracion:'1 año sin abrir, 1 mes en nevera tras abrir',
     ingredientes:['1 kg naranjas (piel fina, tipo Navelina)','700g azúcar','500ml agua','1 rama de canela','1 clavo de olor'],
     pasos:['Lava bien las naranjas y córtalas en rodajas finas con piel','Hiérvelas 10 minutos en agua para quitar el amargor, cambia el agua y repite 2 veces','Prepara un almíbar con el azúcar, el agua y las especias','Añade las rodajas de naranja escurridas y cocina a fuego lento 45 minutos hasta que estén translúcidas','Mete en tarros esterilizados cubiertas de almíbar y cierra en caliente'],
     consejo:'Con las naranjas de la vega del Guadalquivir, dulces y de piel fina, el resultado es espectacular. Perfectas para acompañar quesos o como postre.'
   },
-  { nombre:'Mermelada de naranja amarga (tipo mermelada inglesa)', tipo:'mermelada', emoji:'🍊', temporada:'Dic–Feb', dificultad:'Media',
+  { nombre:'Mermelada de naranja amarga (tipo mermelada inglesa)', tipo:'mermelada', emoji:'🍊', temporada:'Dic–Feb', dificultad:'Media', duracion:'1 año sin abrir, 1 mes en nevera tras abrir',
     ingredientes:['1 kg naranjas (mezcla de amargas si tienes, o normales con más limón)','800g azúcar','2 limones (zumo)','1.2 litros de agua'],
     pasos:['Corta las naranjas por la mitad, exprime el zumo y reserva las pieles y pepitas','Corta las pieles en tiras finas','Ata las pepitas en una gasa (contienen la pectina) y cocina todo junto con el agua durante 1 hora','Retira la gasa, añade el zumo y el azúcar y cocina removiendo hasta que espese (30-40 min)','Comprueba el punto en un plato frío: si arruga al empujar con el dedo, está lista','Mete en tarros calientes y cierra boca abajo'],
     consejo:'La mermelada de naranja es perfecta para aprovechar el excedente de cítricos de la vega en pleno invierno. Con una tostada y aceite de oliva virgen extra es un desayuno excepcional.'
   },
-  { nombre:'Limones en conserva (estilo marroquí)', tipo:'encurtido', emoji:'🍋', temporada:'Ene–Mar', dificultad:'Fácil',
+  { nombre:'Limones en conserva (estilo marroquí)', tipo:'encurtido', emoji:'🍋', temporada:'Ene–Mar', dificultad:'Fácil', duracion:'Más de 1 año en lugar fresco',
     ingredientes:['8-10 limones (piel fina)','Sal gruesa (abundante)','Zumo de limón adicional si hace falta','Especias opcionales: laurel, canela, granos de pimienta'],
     pasos:['Lava bien los limones y córtalos en cuartos sin llegar a separar la base','Rellena los cortes con sal gruesa generosamente','Aprieta los limones en un tarro esterilizado, capa a capa con más sal entre medias','Presiona bien para que suelten su jugo, cubre completamente con zumo de limón si no llega el líquido','Cierra y deja curar en lugar fresco mínimo 3-4 semanas, agitando el tarro cada pocos días','Se conservan más de 1 año'],
     consejo:'El limonero produce casi todo el año en Jaén: esta es la forma perfecta de aprovechar el excedente. La piel confitada en sal es un condimento excepcional en guisos y tajines.'
   },
-  { nombre:'Nueces en almíbar', tipo:'conserva', emoji:'🌰', temporada:'Sep–Oct', dificultad:'Media',
+  { nombre:'Nueces en almíbar', tipo:'conserva', emoji:'🌰', temporada:'Sep–Oct', dificultad:'Media', duracion:'1 año sin abrir, 3 semanas en nevera tras abrir',
     ingredientes:['500g nueces verdes (recogidas antes de que endurezca la cáscara, a finales de junio)','1kg azúcar','1 litro de agua','Cal apagada (opcional, para el remojo)','1 rama de canela'],
     pasos:['Pincha bien las nueces verdes con un tenedor por todos lados','Remoja en agua con cal 24 horas (opcional, ayuda a fijar el color), luego enjuaga bien','Hierve las nueces en agua limpia 20 minutos, cambiando el agua 2-3 veces para quitar el amargor','Prepara un almíbar con el azúcar, agua y canela','Cuece las nueces en el almíbar a fuego lento 1 hora hasta que estén tiernas y oscuras','Mete en tarros esterilizados cubiertas de almíbar'],
     consejo:'Se hacen con nuez verde de junio, no con la nuez madura de otoño. Un dulce tradicional muy laborioso pero espectacular, típico de zonas con nogales en Jaén.'
   },
-  { nombre:'Ciruelas pasas caseras', tipo:'conserva', emoji:'🍑', temporada:'Jun–Ago', dificultad:'Fácil',
+  { nombre:'Ciruelas pasas caseras', tipo:'conserva', emoji:'🍑', temporada:'Jun–Ago', dificultad:'Fácil', duracion:'6-8 meses en tarro hermético',
     ingredientes:['2 kg ciruelas maduras (Claudia o similar)'],
     pasos:['Lava las ciruelas y córtalas por la mitad quitando el hueso','Colócalas con la piel hacia abajo en una bandeja con rejilla','Seca al sol 5-7 días, tapando con una gasa fina para evitar insectos y metiéndolas de noche','Alternativamente, usa el horno a 60-70°C con la puerta entreabierta durante 8-10 horas','Están listas cuando quedan flexibles pero sin humedad interior','Guarda en tarro hermético o bolsa de tela en lugar seco'],
     consejo:'El secado al sol de Jaén en pleno verano es ideal: calor seco y constante. Las ciruelas pasas caseras no tienen comparación con las industriales.'
   },
-  { nombre:'Salsa de tomate frito casera (para conservar)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil',
+  { nombre:'Salsa de tomate frito casera (para conservar)', tipo:'conserva', emoji:'🍅', temporada:'Jul–Sep', dificultad:'Fácil', duracion:'1 año sin abrir, 1 semana en nevera tras abrir',
     ingredientes:['3 kg tomates maduros de pera','1 cebolla grande','2 dientes de ajo','200ml aceite de oliva virgen extra','1 cucharadita de azúcar','Sal al gusto','Albahaca u orégano fresco (opcional)'],
     pasos:['Pela y trocea los tomates, la cebolla y el ajo','Sofríe la cebolla y el ajo en el aceite hasta que estén transparentes','Añade el tomate y cocina a fuego lento removiendo con frecuencia durante 45-60 minutos','Añade el azúcar (corrige la acidez) y la sal, cocina 10 minutos más','Tritura si prefieres textura fina, o deja con tropezones','Mete en tarros calientes y pasteuriza en baño maría 30 minutos'],
     consejo:'Con tomates de pera bien maduros del huerto de julio-agosto, el sofrito casero de Jaén no necesita nada industrial. Dura 1 año en despensa sin abrir.'
   },
-  { nombre:'Berenjenas en aceite (estilo Almagro adaptado)', tipo:'encurtido', emoji:'🍆', temporada:'Jul–Sep', dificultad:'Media',
+  { nombre:'Berenjenas en aceite (estilo Almagro adaptado)', tipo:'encurtido', emoji:'🍆', temporada:'Jul–Sep', dificultad:'Media', duracion:'6-8 meses en nevera cubiertas de aceite',
     ingredientes:['2 kg berenjenas pequeñas','Agua','Sal','Vinagre de vino blanco','Aceite de oliva virgen extra','Pimentón dulce','Ajo','Orégano y comino'],
     pasos:['Corta las berenjenas en tiras o rodajas gruesas','Hiérvelas 5-8 minutos en agua con sal hasta que estén tiernas pero firmes','Escurre muy bien y deja enfriar prensadas bajo un peso 2-3 horas para quitar el exceso de agua','Prepara un aliño con vinagre, ajo machacado, pimentón, orégano y comino','Mezcla las berenjenas con el aliño y mete en tarros','Cubre completamente con aceite de oliva virgen extra y deja curar mínimo 1 semana'],
     consejo:'Inspirado en la berenjena de Almagro pero con el toque de aceite de oliva jiennense. El calor de julio-agosto en Jaén da berenjenas muy carnosas, perfectas para este encurtido.'
   },
-  { nombre:'Cordero al ajillo en conserva (estilo pastoril)', tipo:'receta', emoji:'🐑', temporada:'Todo el año', dificultad:'Media',
+  { nombre:'Cordero al ajillo en conserva (estilo pastoril)', tipo:'receta', emoji:'🐑', temporada:'Todo el año', dificultad:'Media', duracion:'1 año sin abrir (pasteurizado en olla a presión), 4-5 días en nevera tras abrir',
     ingredientes:['1.5 kg de cordero segureño en trozos','1 cabeza de ajo','200ml aceite de oliva virgen extra','1 vaso de vino blanco','Laurel, tomillo y romero frescos','Sal y pimienta'],
     pasos:['Dora los trozos de cordero en el aceite de oliva a fuego fuerte','Añade los ajos machacados y las hierbas aromáticas','Vierte el vino blanco y deja reducir un poco','Cubre con agua, sazona y cocina a fuego lento 1.5-2 horas hasta que esté muy tierno','Para conservar: mete en tarros de cristal cubierto con su propio jugo y algo de aceite','Pasteuriza en olla a presión 45 minutos o en baño maría 90 minutos'],
     consejo:'El cordero segureño de las sierras de Jaén tiene un sabor incomparable. Esta conserva permite disfrutar del guiso pastoril tradicional durante todo el año.'
+  },
+  { nombre:'Pacharán casero (endrinas)', tipo:'licor', emoji:'🫐', temporada:'Oct–Nov (recolección de endrinas)', dificultad:'Fácil', duracion:'2-3 años en botella cerrada, mejora con el tiempo',
+    ingredientes:['500g de endrinas maduras (recogidas tras la primera helada)','1 litro de anís seco o aguardiente (35-40°)','100-150g de azúcar (al gusto)','1 rama de canela (opcional)','Cáscara de 1/4 de limón (opcional)'],
+    pasos:['Lava las endrinas y pínchalas varias veces con un tenedor o aguja para que suelten el jugo','Introdúcelas en un tarro grande de cristal junto con el azúcar y las especias opcionales','Cubre completamente con el anís o aguardiente','Cierra bien y guarda en lugar oscuro, agitando el tarro suavemente cada 3-4 días','Deja macerar mínimo 3 meses, aunque lo ideal son 6 meses para un sabor más redondo','Cuela y embotella. Se puede dejar el tarro macerando más tiempo para un sabor aún más intenso'],
+    consejo:'Las endrinas del endrino silvestre de los linderos de Jaén son perfectas para esto. Recógelas tras la primera helada del otoño, cuando pierden parte de su astringencia.'
+  },
+  { nombre:'Higos secos al sol', tipo:'conserva', emoji:'🫐', temporada:'Ago–Oct', dificultad:'Fácil', duracion:'1 año en lugar seco, guardados en tarro hermético o bolsa de tela',
+    ingredientes:['2 kg de higos maduros de la variedad que prefieras (Cuello de Dama o Blanca de Jaén van muy bien)','Hojas de laurel (opcional, para conservar)'],
+    pasos:['Elige higos bien maduros pero firmes, sin golpes ni signos de fermentación','Córtalos por la mitad y colócalos con el corte hacia arriba en una bandeja con rejilla','Cúbrelos con una gasa fina para protegerlos de insectos, dejando pasar el aire','Deja secar al sol durante 5-7 días, metiéndolos dentro por la noche para evitar la humedad del rocío','Dales la vuelta cada día para que sequen de forma uniforme','Cuando estén correosos pero no duros, guárdalos en tarro con alguna hoja de laurel entre capas para evitar bichitos'],
+    consejo:'El calor seco del verano jiennense es perfecto para este secado tradicional. Los higos secos con un poco de queso de cabra local son un aperitivo excepcional.'
+  },
+  { nombre:'Aceitunas negras de sartén', tipo:'encurtido', emoji:'🫒', temporada:'Nov–Ene (aceituna madura)', dificultad:'Media', duracion:'3-4 meses en nevera cubiertas de aceite',
+    ingredientes:['1 kg de aceitunas negras bien maduras','200g de sal gruesa','Aceite de oliva virgen extra','Ajo y tomillo o romero (opcional)'],
+    pasos:['Lava las aceitunas negras maduras (no verdes) y sécalas bien','Colócalas en un recipiente con perforaciones o en una gasa amplia, en capas alternadas con sal gruesa','Deja curar así 3-4 semanas removiendo cada 3-4 días, hasta que pierdan buena parte del amargor y se arruguen','Enjuaga ligeramente el exceso de sal si quedan demasiado saladas','Mete en tarros con ajo y hierbas al gusto y cubre con aceite de oliva virgen extra','Deja reposar al menos 1 semana antes de consumir para que se impregnen bien de los aromas'],
+    consejo:'Este método de curado en seco con sal es el tradicional para la aceituna negra jiennense, distinto al de la aceituna verde en salmuera. El resultado es una aceituna arrugada, intensa y muy sabrosa.'
+  },
+  { nombre:'Calabacín en conserva al natural', tipo:'conserva', emoji:'🥬', temporada:'Jun–Sep', dificultad:'Fácil', duracion:'1 año sin abrir (pasteurizado), 1 semana en nevera tras abrir',
+    ingredientes:['2 kg de calabacín tierno','Sal','Agua'],
+    pasos:['Lava y corta el calabacín en rodajas o dados según el uso que le quieras dar después','Escáldalo 2-3 minutos en agua hirviendo con una pizca de sal','Enfríalo rápidamente en agua con hielo para cortar la cocción y que mantenga textura','Escurre bien y mete en tarros esterilizados con un poco de agua o caldo ligero','Pasteuriza en baño maría 25-30 minutos','Guarda en lugar fresco y oscuro; útil para tener calabacín todo el invierno sin sabor a nada añadido, listo para cualquier receta'],
+    consejo:'Es la forma más sencilla de aprovechar el exceso de producción de calabacín en pleno verano, cuando la planta da mucho más de lo que se puede comer fresco.'
+  },
+  { nombre:'Espárragos en conserva', tipo:'conserva', emoji:'🌱', temporada:'Feb–Abr', dificultad:'Media', duracion:'1 año sin abrir (esterilizado en autoclave o esterilizadora), 3-4 días en nevera tras abrir',
+    ingredientes:['1 kg de espárragos frescos (trigueros o blancos del huerto)','Agua','Sal (10g por litro de agua)','Un chorrito de zumo de limón (opcional, ayuda a mantener el color)'],
+    pasos:['Lava los espárragos y corta la parte más leñosa del tallo','Iguala su tamaño a la altura del tarro que vayas a usar','Colócalos de pie dentro de tarros altos y estrechos','Prepara la salmuera hirviendo el agua con la sal y déjala templar un poco','Cubre los espárragos con la salmuera caliente dejando 1-2 cm de espacio en el borde','Esteriliza en autoclave o esterilizadora doméstica siguiendo las indicaciones del fabricante (normalmente 60-90 minutos a más de 100°C), imprescindible para este tipo de conserva de baja acidez'],
+    consejo:'Los espárragos son una conserva de baja acidez que requiere esterilización a alta temperatura, no solo pasteurización en baño maría, para garantizar la seguridad alimentaria. Si tienes esparraguero en el huerto, aprovecha bien la breve temporada de primavera.'
+  },
+  { nombre:'Pacharán casero de endrinas', tipo:'licor', emoji:'🫐', temporada:'Oct–Nov', dificultad:'Fácil', duracion:'2-3 años en botella bien cerrada, mejora con el tiempo',
+    ingredientes:['500g de endrinas maduras (recogidas tras la primera helada si es posible)','1 litro de anís dulce o aguardiente anisado','100-150g de azúcar (al gusto)','Un palito de canela (opcional)'],
+    pasos:['Lava las endrinas y pínchalas varias veces con un tenedor para que suelten el jugo','Mete las endrinas en un tarro grande junto con el azúcar y la canela','Cubre completamente con el anís o aguardiente','Cierra bien y guarda en un lugar oscuro durante 3-6 meses, agitando el tarro cada 1-2 semanas','Cuanto más tiempo macere, más intenso y suave será el sabor','Cuela con un colador fino o gasa y embotella, dejando reposar la botella otro mes antes de consumir'],
+    consejo:'El endrino silvestre de los linderos jiennenses da las mejores endrinas para este licor tradicional. Cuanto más tiempo repose en el armario, mejor sabe: no tengas prisa por consumirlo.'
+  },
+  { nombre:'Horchata casera de chufa', tipo:'receta', emoji:'🌾', temporada:'Todo el año (chufa seca se guarda bien)', dificultad:'Media', duracion:'2-3 días en nevera bien cerrada, no se puede congelar sin perder textura',
+    ingredientes:['250g de chufas secas','1 litro de agua para remojo','1 litro de agua para triturar','100-150g de azúcar (al gusto)','Canela en rama (opcional)','Piel de limón (opcional)'],
+    pasos:['Remoja las chufas en agua durante 24-48 horas, cambiando el agua una vez','Escurre y tritura las chufas remojadas con el litro de agua fresca hasta obtener una pasta fina','Cuela la mezcla con un paño fino o gasa, exprimiendo bien para extraer todo el líquido','Añade el azúcar y remueve hasta disolver, prueba y ajusta al gusto','Si quieres aromatizar, deja infusionar con canela y piel de limón unas horas en la nevera antes de servir','Sirve muy fría, removiendo bien porque tiende a decantar'],
+    consejo:'Con chufa cultivada en la propia vega jiennense, esta horchata casera no tiene comparación con la industrial. Guarda bien cerrada en nevera y consume en 2-3 días.'
+  },
+  { nombre:'Cardo en salsa de almendras (conserva)', tipo:'receta', emoji:'🥬', temporada:'Nov–Feb', dificultad:'Media', duracion:'6 meses sin abrir (pasteurizado), 3-4 días en nevera tras abrir',
+    ingredientes:['1 kg de pencas de cardo limpias y troceadas','100g de almendras crudas','2 dientes de ajo','1 rebanada de pan frito','Aceite de oliva virgen extra','Sal, un poco de harina para el rehogado','Caldo o agua'],
+    pasos:['Limpia bien las pencas de cardo quitando hilos e hilachas, y cocínalas en agua con sal hasta que estén tiernas (45-60 min)','Fríe las almendras, el ajo y el pan en aceite hasta dorar, y machácalos en el mortero o batidora con un poco de caldo hasta obtener una salsa','Rehoga el cardo cocido con un poco de harina, añade la salsa de almendras y el caldo necesario, cocina 10-15 minutos más','Mete en tarros esterilizados en caliente','Pasteuriza en baño maría 30-40 minutos'],
+    consejo:'El cardo es un cultivo tradicional del huerto de invierno jiennense, y en salsa de almendras es un plato clásico navideño que se conserva bien para disfrutarlo fuera de temporada.'
+  },
+  { nombre:'Borraja rehogada en conserva', tipo:'conserva', emoji:'🌸', temporada:'Abr–Jun', dificultad:'Fácil', duracion:'6 meses sin abrir (pasteurizado), 3-4 días en nevera tras abrir',
+    ingredientes:['1 kg de pencas y hojas tiernas de borraja','2 dientes de ajo','Aceite de oliva virgen extra','Sal','Un poco de vinagre o zumo de limón (opcional, para mantener el color)'],
+    pasos:['Limpia bien la borraja, retirando las partes más fibrosas de las pencas','Cocina en agua con sal (y un chorrito de vinagre si quieres mantener mejor el color) durante 15-20 minutos hasta que esté tierna','Escurre bien y rehoga con ajo laminado en aceite de oliva','Mete en tarros esterilizados en caliente, cubriendo con un poco del aceite del rehogado','Pasteuriza en baño maría 25-30 minutos'],
+    consejo:'La borraja es una verdura muy tradicional en la cocina jiennense de primavera. Conservarla así te permite disfrutarla el resto del año, cuando ya no está en su mejor temporada en el huerto.'
   },
 ];
 
@@ -3313,18 +3975,26 @@ function renderConservasFiltradas(q){
   let lista = filtroConservaActual==='all' ? CONSERVAS : CONSERVAS.filter(c=>c.tipo===filtroConservaActual);
   if(ql.length>1) lista = lista.filter(c=>c.nombre.toLowerCase().includes(ql)||c.ingredientes.join(' ').toLowerCase().includes(ql));
 
+  lista = [...lista].sort((a,b)=>{
+    const aTemp = estaEnTemporadaTexto(a.temporada) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.temporada) ? 0 : 1;
+    return aTemp - bTemp;
+  });
+
   const DIFICULTAD_COLOR = {Fácil:'#3D6B1A',Media:'#C8900A',Difícil:'#CC0A0A'};
   let html = '';
   lista.forEach(r=>{
     const color = DIFICULTAD_COLOR[r.dificultad]||'#888';
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid ${color};">
+    const enTemporada = estaEnTemporadaTexto(r.temporada);
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid ${enTemporada?'var(--cosecha)':color};">
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
         <span style="font-size:1.8rem">${r.emoji}</span>
         <div style="flex:1;">
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;">${r.nombre}</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:7px;">${r.nombre}${enTemporada?'<span style="font-size:0.58rem;background:var(--cosecha);color:white;padding:2px 7px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;">🌱 De temporada</span>':''}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
             <span style="font-size:0.63rem;font-weight:800;background:#F0F0F0;padding:2px 8px;border-radius:10px;">⏰ ${r.temporada}</span>
             <span style="font-size:0.63rem;font-weight:800;background:${color}22;color:${color};padding:2px 8px;border-radius:10px;">${r.dificultad}</span>
+            ${r.duracion ? `<span style="font-size:0.63rem;font-weight:800;background:#E8F0F8;color:#2A5A8A;padding:2px 8px;border-radius:10px;">🗓️ ${r.duracion}</span>` : ''}
           </div>
         </div>
       </div>
@@ -3346,18 +4016,24 @@ function renderConservasFiltradas(q){
 
 function renderFrutales(){
   let html='';
-  FRUTALES.forEach(f=>{
+  const listaOrdenada = [...FRUTALES].sort((a,b)=>{
+    const aTemp = estaEnTemporadaTexto(a.cosecha) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.cosecha) ? 0 : 1;
+    return aTemp - bTemp;
+  });
+  listaOrdenada.forEach(f=>{
+    const enTemporada = estaEnTemporadaTexto(f.cosecha);
     const calHtml = f.calendario.map(c=>`
       <div style="background:var(--crema);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:9px;">
         <div style="min-width:80px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${c.mes}</div>
         <div style="font-size:0.78rem;line-height:1.4;">${c.t}</div>
       </div>`).join('');
     const consHtml = f.consejos.map(c=>`<li>${c}</li>`).join('');
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid #6B8E3A;">
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border-top:4px solid ${enTemporada?'var(--cosecha)':'#6B8E3A'};">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <span style="font-size:2rem;background:var(--crema);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;">${f.emoji}</span>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${f.nombre}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:7px;">${f.nombre}${enTemporada?'<span style="font-size:0.6rem;background:var(--cosecha);color:white;padding:2px 8px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;">🧺 Cosecha ahora</span>':''}</div>
           <div style="font-size:0.65rem;color:var(--gris);font-weight:600;">${f.variedades.split(',')[0]} y más · Cosecha: ${f.cosecha}</div>
         </div>
       </div>
@@ -3738,10 +4414,10 @@ const SETAS = [
     kit_cultivo:'Kit de tronco inoculado: 25–40€. Produce durante 2–3 años. También en kits de sustrato de serrín de roble. Temperatura ideal: 15–22°C.',
     consejos:['El "shock" de frío activa la fructificación: mete el tronco en agua fría 12h','En Jaén funciona bien de octubre a abril en interior','El pie seco triturado es un condimento excepcional','Los troncos de encina del olivar son sustrato ideal','Una vez agotado el tronco, es excelente carbón para barbacoa']
   },
-  { nombre:'Champiñón cultivado (Agaricus bisporus)', emoji:'🍄', tipo:'cultivo',
+  { nombre:'Champiñón Portobello (Agaricus bisporus, variedad marrón)', emoji:'🍄', tipo:'cultivo',
     temporada:'Todo el año (cultivo interior)', habitat:'Cultivo en sustrato de compost de paja + estiércol de caballo',
-    descripcion:'El champiñón cultivado es el más fácil de producir en casa. Con un kit básico o preparando tu propio sustrato puedes tener champiñones frescos en 3–4 semanas durante todo el año en Jaén.',
-    identificacion:['Sombrero 3–12 cm, blanco o marrón (Portobello)','Láminas rosas en joven, marrón-chocolate en adulto','Pie central corto con anillo','Carne blanca firme','Olor agradable, inconfundible'],
+    descripcion:'El Portobello es la variedad marrón y de mayor tamaño del champiñón cultivado, con sabor más intenso que el blanco. Con un kit básico o preparando tu propio sustrato puedes tener champiñones frescos en 3–4 semanas durante todo el año en Jaén.',
+    identificacion:['Sombrero 3–12 cm (puede llegar a 15 cm en adulto), marrón claro a oscuro','Láminas rosas en joven, marrón-chocolate en adulto','Pie central corto con anillo','Carne blanca firme, sabor más intenso que el champiñón blanco','Olor agradable, inconfundible'],
     confusion:'En cultivo no hay confusión posible. Solo en silvestre puede confundirse con Amanita (láminas blancas). En tu casa con sustrato comprado: 100% seguro.',
     cocina:'Al ajillo, en tortilla, rellenos al horno, en cremas, rebozados, en pizza. El Portobello grande es perfecto a la plancha como sustituto de la carne.',
     cultivo: true,
@@ -3978,11 +4654,22 @@ function filtrarFito(animal, btn){
 }
 
 function renderSetas(){
-  const lista = filtroSetiActual==='all' ? SETAS : SETAS.filter(s=>s.tipo===filtroSetiActual);
+  const listaBase = filtroSetiActual==='all' ? SETAS : SETAS.filter(s=>s.tipo===filtroSetiActual);
+  // Prioridad de seguridad: las tóxicas SIEMPRE primero (para que el aviso no pueda pasar desapercibido).
+  // Dentro de cada grupo, las de temporada actual antes que las que no lo están.
+  const lista = [...listaBase].sort((a,b)=>{
+    const aPeligro = a.tipo==='peligrosa' ? 0 : 1;
+    const bPeligro = b.tipo==='peligrosa' ? 0 : 1;
+    if(aPeligro !== bPeligro) return aPeligro - bPeligro;
+    const aTemp = estaEnTemporadaTexto(a.temporada) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.temporada) ? 0 : 1;
+    return aTemp - bTemp;
+  });
   let html = '';
   lista.forEach(s=>{
     const esPeligrosa = s.tipo==='peligrosa';
     const esCultivo = s.cultivo;
+    const enTemporada = estaEnTemporadaTexto(s.temporada);
     const borderColor = esPeligrosa ? '#CC0A0A' : esCultivo ? '#3D6B1A' : '#B8860B';
     const badgeColor = esPeligrosa ? '#CC0A0A' : esCultivo ? '#3D6B1A' : '#B8860B';
     const badge = esPeligrosa ? '☠️ TÓXICA — NO RECOGER' : esCultivo ? '🏠 Cultivable en casa' : '🌲 Silvestre';
@@ -3994,6 +4681,7 @@ function renderSetas(){
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <span style="font-size:0.62rem;font-weight:800;background:${badgeColor};color:white;padding:2px 8px;border-radius:10px;">${badge}</span>
             <span style="font-size:0.62rem;font-weight:700;background:#F0F0F0;color:var(--gris);padding:2px 8px;border-radius:10px;">⏰ ${s.temporada}</span>
+            ${(!esPeligrosa && enTemporada) ? '<span style="font-size:0.62rem;font-weight:800;background:var(--cosecha);color:white;padding:2px 8px;border-radius:10px;">🌲 Época de recolección</span>' : ''}
           </div>
         </div>
       </div>
@@ -4024,7 +4712,13 @@ function renderSetas(){
 
 function renderCereales(){
   let html = '';
-  CEREALES.forEach(c=>{
+  const listaOrdenada = [...CEREALES].sort((a,b)=>{
+    const aTemp = estaEnTemporadaTexto(a.cosecha) ? 0 : 1;
+    const bTemp = estaEnTemporadaTexto(b.cosecha) ? 0 : 1;
+    return aTemp - bTemp;
+  });
+  listaOrdenada.forEach(c=>{
+    const enTemporada = estaEnTemporadaTexto(c.cosecha);
     const calHtml = c.calendario.map(e=>`
       <div style="background:var(--crema);border-radius:7px;padding:8px 10px;margin-bottom:5px;display:flex;gap:9px;">
         <div style="min-width:70px;font-size:0.65rem;font-weight:800;color:var(--oliva);text-transform:uppercase;padding-top:2px;">${e.mes}</div>
@@ -4032,11 +4726,11 @@ function renderCereales(){
       </div>`).join('');
     const usosHtml = c.usos.map(u=>`<li>${u}</li>`).join('');
     const consejosHtml = c.consejos.map(co=>`<li>${co}</li>`).join('');
-    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid #B8860B;">
+    html+=`<div style="background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-top:4px solid ${enTemporada?'var(--cosecha)':'#B8860B'};">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
         <span style="font-size:2rem;">${c.emoji}</span>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${c.nombre}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:7px;">${c.nombre}${enTemporada?'<span style="font-size:0.58rem;background:var(--cosecha);color:white;padding:2px 7px;border-radius:10px;font-family:Inter,sans-serif;font-weight:700;">🧺 Cosecha ahora</span>':''}</div>
           <div style="font-size:0.65rem;color:var(--gris);font-weight:600;">${c.variedad.split(',')[0]} · Cosecha: ${c.cosecha}</div>
         </div>
       </div>
@@ -4328,10 +5022,21 @@ function dibujarPlano(){
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     if(c){
+      const yOffset = b.nombrePersonalizado ? -16 : -8;
       ctx.font = '20px sans-serif';
-      ctx.fillText(c.emoji, bx+bw/2, by+bh/2-8);
+      ctx.fillText(c.emoji, bx+bw/2, by+bh/2+yOffset);
       ctx.font = 'bold 10px sans-serif';
-      ctx.fillText(b.cultivo.length>12?b.cultivo.substring(0,11)+'…':b.cultivo, bx+bw/2, by+bh/2+10);
+      ctx.fillText(b.cultivo.length>12?b.cultivo.substring(0,11)+'…':b.cultivo, bx+bw/2, by+bh/2+yOffset+18);
+      if(b.nombrePersonalizado){
+        ctx.font = '9px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        const nombreCorto = b.nombrePersonalizado.length>14 ? b.nombrePersonalizado.substring(0,13)+'…' : b.nombrePersonalizado;
+        ctx.fillText(nombreCorto, bx+bw/2, by+bh/2+yOffset+32);
+      }
+    } else if(b.nombrePersonalizado){
+      ctx.font = 'bold 11px sans-serif';
+      const nombreCorto = b.nombrePersonalizado.length>14 ? b.nombrePersonalizado.substring(0,13)+'…' : b.nombrePersonalizado;
+      ctx.fillText(nombreCorto, bx+bw/2, by+bh/2);
     } else {
       ctx.font = 'bold 11px sans-serif';
       ctx.fillStyle = '#6A6258';
@@ -4400,6 +5105,11 @@ function abrirModalBancal(id){
       <button class="modal-close" onclick="cerrarModalBancal()">✕</button>
     </div>
 
+    <div style="margin-bottom:12px;">
+      <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:4px;">📝 Nombre del bancal (opcional)</label>
+      <input type="text" id="input-nombre-bancal" value="${(b.nombrePersonalizado||'').replace(/"/g,'&quot;')}" placeholder="Ej: Bancal junto a la puerta, Zona norte..." maxlength="40" onchange="renombrarBancal(${b.id})" style="width:100%;padding:9px 11px;border:1.5px solid #D0C9BC;border-radius:8px;font-size:0.85rem;background:var(--crema);font-family:Inter,sans-serif;">
+    </div>
+
     <div style="background:var(--crema);border-radius:10px;padding:12px;margin-bottom:14px;">
       <label style="font-size:0.68rem;font-weight:700;color:var(--gris);text-transform:uppercase;display:block;margin-bottom:6px;">📐 Medidas reales del bancal</label>
       ${panelMedidas}
@@ -4422,6 +5132,16 @@ function abrirModalBancal(id){
     </div>
   `;
   document.getElementById('modal-bancal-overlay').classList.add('abierto');
+}
+
+function renombrarBancal(id){
+  const b = planoState.bancales.find(x=>x.id===id);
+  if(!b) return;
+  const nombre = document.getElementById('input-nombre-bancal').value.trim();
+  b.nombrePersonalizado = nombre || null;
+  guardarPlano();
+  dibujarPlano();
+  renderListaBancales();
 }
 
 function actualizarMedidasBancal(id){
@@ -4608,10 +5328,14 @@ function renderListaBancales(){
     const dims = b.tipo==='rect' ? `${b.w.toFixed(1)}×${b.h.toFixed(1)}m` : `${b.wCells}×${b.hCells} celdas`;
     const cosechaAhora = c && c.cosecha && c.cosecha.includes(MES_ACTUAL);
 
+    const tituloLista = b.nombrePersonalizado
+      ? `${b.nombrePersonalizado} ${c ? '— '+c.nombre : '— Sin asignar'}`
+      : `Bancal #${b.id} ${c ? '— '+c.nombre : '— Sin asignar'}`;
+
     html += `<div onclick="abrirModalBancal(${b.id})" style="background:white;border-radius:10px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 5px rgba(0,0,0,0.06);border-left:4px solid ${color};cursor:pointer;">
       <span style="font-size:1.5rem;">${c ? c.emoji : '➕'}</span>
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:0.85rem;">Bancal #${b.id} ${c ? '— '+c.nombre : '— Sin asignar'}</div>
+        <div style="font-weight:700;font-size:0.85rem;">${tituloLista}</div>
         <div style="font-size:0.68rem;color:var(--gris);">${dims} · ${familia}${b.historial&&b.historial.length ? ' · Historial: '+b.historial.length+' cultivo(s)' : ''}</div>
         ${cosechaAhora ? '<div style="font-size:0.68rem;font-weight:800;color:var(--cosecha);">🧺 ¡En cosecha!</div>' : ''}
       </div>
